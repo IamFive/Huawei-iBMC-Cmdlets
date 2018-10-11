@@ -4,13 +4,13 @@
 mkdir "$PSScriptRoot\logs" -ErrorAction SilentlyContinue > $null
 
 # all logging settins are here on top
-$logFile = "logs\log-$(gc env:computername).log"
+$logFile = "$PSScriptRoot\logs\log-$(gc env:computername).log"
 $logLevel = "DEBUG" # ("DEBUG","INFO","WARN","ERROR","FATAL")
 $logSize = 1mb # 30kb
 $logCount = 10
 # end of settings
 
-function Write-Log-Line ($line) {
+function Write-LogLine ($line) {
   Add-Content $logFile -Value $Line
 }
 
@@ -33,11 +33,11 @@ Function Write-Log {
   $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss:fff")
 
   if ($logLevelPos -lt 0) {
-    Write-Log-Line "$Stamp ERROR Wrong logLevel configuration [$logLevel]"
+    Write-LogLine "$Stamp ERROR Wrong logLevel configuration [$logLevel]"
   }
 
   if ($levelPos -lt 0) {
-    Write-Log-Line "$Stamp ERROR Wrong log level parameter [$Level]"
+    Write-LogLine "$Stamp ERROR Wrong log level parameter [$Level]"
   }
 
   # if level parameter is wrong or configuration is wrong I still want to see the
@@ -47,7 +47,7 @@ Function Write-Log {
   }
 
   $Line = "$Stamp $Level $Message"
-  Write-Log-Line $Line
+  Write-LogLine $Line
 }
 
 # https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Script-to-Roll-a96ec7d4

@@ -1,17 +1,8 @@
 <# NOTE: A Redfish Client PowerShell scripts. #>
 
-. $PSScriptRoot/Logger.ps1
+. $PSScriptRoot/Common.ps1
 
-Add-Type @'
-public class AsyncPipeline
-{
-    public System.Management.Automation.PowerShell Pipeline ;
-    public System.IAsyncResult AsyncResult ;
-}
-'@
-
-
-function Create-iBMC-Redfish-Session {
+function New-iBMCRedfishSession {
   <#
 .SYNOPSIS
 Create sessions for iBMC Redfish REST API.
@@ -44,14 +35,14 @@ See typical usage examples in the Redfish.ps1 file installed with this module.
 
 .INPUTS
 System.String
-You can pipe the Address i.e. the hostname or IP address to Create-iBMC-Redfish-Session.
+You can pipe the Address i.e. the hostname or IP address to New-iBMCRedfishSession.
 
 .OUTPUTS
 System.Management.Automation.PSCustomObject
-Create-iBMC-Redfish-Session returns a PSObject that has session details - X-Auth-Token, RootURI, Location and RootData.
+New-iBMCRedfishSession returns a PSObject that has session details - X-Auth-Token, RootURI, Location and RootData.
 
 .EXAMPLE
-PS C:\> $session = Create-iBMC-Redfish-Session -Address 10.1.1.2 -Username root -Password password
+PS C:\> $session = New-iBMCRedfishSession -Address 10.1.1.2 -Username root -Password password
 
 
 PS C:\> $session | fl
@@ -64,7 +55,7 @@ RootData     : @{@odata.context=/redfish/v1/$metadata#ServiceRoot/; @odata.id=/r
 
 .EXAMPLE
 PS C:\> $credential = Get-Credential
-PS C:\> $session = Create-iBMC-Redfish-Session -Address 192.184.217.212 -Credential $credential
+PS C:\> $session = New-iBMCRedfishSession -Address 192.184.217.212 -Credential $credential
 PS C:\> $session | fl
 
 RootUri      : https://10.1.1.2/redfish/v1/
@@ -100,10 +91,6 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $TrustCert
   )
 
-  # create a new session object for redfish server of $address
-  $session = New-Object PSObject
-  $session | Add-Member -MemberType NoteProperty 'TrustCert' $TrustCert
-
   # Fetch session with Credential by default if `Credential` is set
   if ($null -ne $Credential) {
     $username = $Credential.UserName
@@ -125,23 +112,18 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     }
   }
 
-  $uri = "https://$Address/redfish/v1/SessionService/Sessions"
+  # create a new session object for redfish server of $address
+  $session = New-Object PSObject
+  $session | Add-Member -MemberType NoteProperty BaseUri "https://$Address"
+  $session | Add-Member -MemberType NoteProperty TrustCert $TrustCert
+
+  $path = "/SessionService/Sessions"
   $method = "POST"
   $payload = @{'UserName' = $username; 'Password' = $passwd; } | ConvertTo-Json
-  $response = Invoke-Redfish-Request -Uri $uri -Method $method -Payload $payload -Session $Session
+  $response = Invoke-RedfishRequest -Path $path -Method $method -Payload $payload -Session $Session
 
-  $rootUri = $response.ResponseUri.ToString()
-  $split = $rootUri.Split('/')
-  $rootUri = ''
-  for ($i = 0; $i -le 4; $i++ ) {
-    # till v1/ is 4
-    $rootUri = $rootUri + $split[$i] + '/'
-  }
-
-  $session | Add-Member -MemberType NoteProperty 'RootUri' $rootUri
   $session | Add-Member -MemberType NoteProperty 'X-Auth-Token' $response.Headers['X-Auth-Token']
   $session | Add-Member -MemberType NoteProperty 'Location' $response.Headers['Location']
-  $session | Add-Member -MemberType NoteProperty 'TrustCert' $TrustCert
 
   # $rootData = Get-HPERedfishDataRaw -Odataid '/redfish/v1/' -Session $session
   # if ($rootData.Oem.PSObject.Properties.name.Contains('Hp') -eq $false) {
@@ -153,17 +135,17 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 }
 
 
-function Distroy-iBMC-Redfish-Session
+function Close-iBMCRedfishSession
 {
 <#
 .SYNOPSIS
-Distroy a specified session of iBMC Redfish Server.
+Close a specified session of iBMC Redfish Server.
 
 .DESCRIPTION
-Distroy a specified session of iBMC Redfish Server by sending HTTP Delete request to location holds by "Location" property in Session object passed as parameter.
+Close a specified session of iBMC Redfish Server by sending HTTP Delete request to location holds by "Location" property in Session object passed as parameter.
 
 .PARAMETER Session
-Session object that created by Create-iBMC-Redfish-Session cmdlet.
+Session object that created by New-iBMCRedfishSession cmdlet.
 
 .PARAMETER TrustCert
 If this switch parameter is present then server certificate authentication is disabled for this iBMC connection.
@@ -173,14 +155,14 @@ If not present, server certificate is enabled by default.
 The Session object will be detached from iBMC Redfish Server. And the Session can not be used by cmdlets which required Session parameter again.
 
 .INPUTS
-You can pipe the session object to Distroy-iBMC-Redfish-Session. The session object is obtained from executing Create-iBMC-Redfish-Session cmdlet.
+You can pipe the session object to Close-iBMCRedfishSession. The session object is obtained from executing New-iBMCRedfishSession cmdlet.
 
 .OUTPUTS
 This cmdlet does not generate any output.
 
 
 .EXAMPLE
-PS C:\> Distroy-iBMC-Redfish-Session -Session $session
+PS C:\> Close-iBMCRedfishSession -Session $session
 PS C:\>
 
 This will disconnect the session given in the variable $session
@@ -189,28 +171,24 @@ This will disconnect the session given in the variable $session
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 #>
-    param
-    (
-        [PSObject]
-        [parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-        $Session,
+  param
+  (
+      [PSObject]
+      [parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+      $Session
+  )
 
-        [switch]
-        [parameter(Mandatory=$false)]
-        $TrustCert
-    )
-
-    $method = "DELETE"
-    $uri = $Session.Location
-    $webResponse = Invoke-Redfish-Request -Uri $uri -Method $method -Session $Session
-    $webResponse.close()
+  $method = "DELETE"
+  $path = $Session.Location
+  $response = Invoke-RedfishRequest -Path $path -Method $method -Session $Session
+  $response.close()
 }
 
 
-function Invoke-Redfish-Request {
+function Invoke-RedfishRequest {
   param (
     [System.String]
-    $Uri,
+    $Path,
 
     [System.String]
     [ValidateSet('Get', 'Delete', 'Put', 'Post', 'Patch')]
@@ -220,23 +198,30 @@ function Invoke-Redfish-Request {
     $Payload,
 
     [PSObject]
+    [parameter(Mandatory=$true)]
     $Session
   )
 
-  Write-Log "Send new request: [$method] $uri"
+  Write-Log "Send new request: [$Method] $Path"
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
 
-  [System.Net.HttpWebRequest] $request = [System.Net.WebRequest]::Create($Uri)
+  if ($Path.StartsWith("https://", "CurrentCultureIgnoreCase")) {
+    $OdataId = $Path
+  } elseif ($Path.StartsWith("/redfish/v1", "CurrentCultureIgnoreCase")) {
+    $OdataId = "$($Session.BaseUri)$($Path)"
+  } else {
+    $OdataId = "$($Session.BaseUri)/redfish/v1$($Path)"
+  }
+
+  [System.Net.HttpWebRequest] $request = [System.Net.WebRequest]::Create($OdataId)
   $request.Method = $Method
   $request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
-  if ($null -ne $Session) {
-    if ($null -ne $Session.'X-Auth-Token') {
-      $request.Headers.Add('X-Auth-Token', $Session.'X-Auth-Token')
-    }
-    if ($true -eq $Session.TrustCert) {
-      $request.ServerCertificateValidationCallback = { $true }
-    }
+  if ($null -ne $Session.'X-Auth-Token') {
+    $request.Headers.Add('X-Auth-Token', $Session.'X-Auth-Token')
+  }
+  if ($true -eq $Session.TrustCert) {
+    $request.ServerCertificateValidationCallback = { $true }
   }
 
   if ($method -in @('PUT', 'POST', 'PATCH')) {
@@ -268,7 +253,7 @@ function Invoke-Redfish-Request {
   }
 }
 
-function Convert-Response-As-Json {
+function ConvertFrom-WebResponse {
   param (
     [System.Net.HttpWebResponse]
     [parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]

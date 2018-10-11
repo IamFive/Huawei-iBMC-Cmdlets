@@ -1,4 +1,4 @@
-$i18n = Data {
+$Bundles = Data {
   #culture="en-US"
   ConvertFrom-StringData @'
   helloWorld = Hello, World.
@@ -6,4 +6,4 @@ $i18n = Data {
 }
 
 # Not necessary for now
-# Import-LocalizedData -BindingVariable i18n
+# Import-LocalizedData -BindingVariable bundles
