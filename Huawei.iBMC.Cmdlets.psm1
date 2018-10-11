@@ -1,6 +1,5 @@
 # Implement your module commands in this script.
-. $PSScriptRoot/Logger.ps1
-. $PSScriptRoot/Redfish.ps1
+. $PSScriptRoot/Common.ps1
 
 
 # Export only the functions using PowerShell standard verb-noun naming.

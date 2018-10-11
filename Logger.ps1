@@ -1,8 +1,9 @@
-# all logging settins are here on top
+<# NOTE: A PowerShell Logger implementation. #>
 
 # create log folder if not exists
-mkdir "$PSScriptRoot\logs" | out-null
+mkdir "$PSScriptRoot\logs" -ErrorAction SilentlyContinue > $null
 
+# all logging settins are here on top
 $logFile = "logs\log-$(gc env:computername).log"
 $logLevel = "DEBUG" # ("DEBUG","INFO","WARN","ERROR","FATAL")
 $logSize = 1mb # 30kb

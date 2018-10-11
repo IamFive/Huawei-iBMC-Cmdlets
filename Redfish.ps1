@@ -11,13 +11,13 @@ public class AsyncPipeline
 '@
 
 
-function Connect-iBMC {
+function Create-iBMC-Redfish-Session {
   <#
 .SYNOPSIS
-Create sessions for Redfish REST API.
+Create sessions for iBMC Redfish REST API.
 
 .DESCRIPTION
-Creates sessions for Redfish REST API. The session object returned which has members:
+Creates sessions for iBMC Redfish REST API. The session object returned which has members:
 1. 'X-Auth-Token' to identify the session
 2. 'RootURI' of the Redfish API
 3. 'Location' which is used for logging out of the session.
@@ -44,17 +44,17 @@ See typical usage examples in the Redfish.ps1 file installed with this module.
 
 .INPUTS
 System.String
-You can pipe the Address i.e. the hostname or IP address to Connect-HPERedfish.
+You can pipe the Address i.e. the hostname or IP address to Create-iBMC-Redfish-Session.
 
 .OUTPUTS
 System.Management.Automation.PSCustomObject
-Connect-HPERedfish returns a PSObject that has session details - X-Auth-Token, RootURI, Location and RootData.
+Create-iBMC-Redfish-Session returns a PSObject that has session details - X-Auth-Token, RootURI, Location and RootData.
 
 .EXAMPLE
-PS C:\> $s = Connect-HPERedfish -Address 10.1.1.2 -Username root -Password password
+PS C:\> $session = Create-iBMC-Redfish-Session -Address 10.1.1.2 -Username root -Password password
 
 
-PS C:\> $s|fl
+PS C:\> $session | fl
 
 
 RootUri      : https://10.1.1.2/redfish/v1/
@@ -64,8 +64,8 @@ RootData     : @{@odata.context=/redfish/v1/$metadata#ServiceRoot/; @odata.id=/r
 
 .EXAMPLE
 PS C:\> $credential = Get-Credential
-PS C:\> $s = Connect-HPERedfish -Address 192.184.217.212 -Credential $credential
-PS C:\> $s|fl
+PS C:\> $session = Create-iBMC-Redfish-Session -Address 192.184.217.212 -Credential $credential
+PS C:\> $session | fl
 
 RootUri      : https://10.1.1.2/redfish/v1/
 X-Auth-Token : this-is-a-sample-token
@@ -73,7 +73,7 @@ Location     : https://10.1.1.2/redfish/v1/Sessions/{session-id}/
 RootData     : @{@odata.context=/redfish/v1/$metadata#ServiceRoot/; @odata.id=/redfish/v1/; @odata.type=#ServiceRoot.1.0.0.ServiceRoot; AccountService=; Chassis=; EventService=; Id=v1; JsonSchemas=; Links=; Managers=; Name=HP RESTful Root Service; Oem=; RedfishVersion=1.0.0; Registries=; SessionService=; Systems=; UUID=8dea7372-23f9-565f-9396-2cd07febbe29}
 
 .LINK
-http://www.huawei.com/xxxx
+http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 #>
   [cmdletbinding(DefaultParameterSetName = 'account')]
@@ -141,7 +141,7 @@ http://www.huawei.com/xxxx
   $session | Add-Member -MemberType NoteProperty 'RootUri' $rootUri
   $session | Add-Member -MemberType NoteProperty 'X-Auth-Token' $response.Headers['X-Auth-Token']
   $session | Add-Member -MemberType NoteProperty 'Location' $response.Headers['Location']
-
+  $session | Add-Member -MemberType NoteProperty 'TrustCert' $TrustCert
 
   # $rootData = Get-HPERedfishDataRaw -Odataid '/redfish/v1/' -Session $session
   # if ($rootData.Oem.PSObject.Properties.name.Contains('Hp') -eq $false) {
@@ -150,6 +150,60 @@ http://www.huawei.com/xxxx
   # $session|Add-Member -MemberType NoteProperty 'RootData' $rootData
 
   return $session
+}
+
+
+function Distroy-iBMC-Redfish-Session
+{
+<#
+.SYNOPSIS
+Distroy a specified session of iBMC Redfish Server.
+
+.DESCRIPTION
+Distroy a specified session of iBMC Redfish Server by sending HTTP Delete request to location holds by "Location" property in Session object passed as parameter.
+
+.PARAMETER Session
+Session object that created by Create-iBMC-Redfish-Session cmdlet.
+
+.PARAMETER TrustCert
+If this switch parameter is present then server certificate authentication is disabled for this iBMC connection.
+If not present, server certificate is enabled by default.
+
+.NOTES
+The Session object will be detached from iBMC Redfish Server. And the Session can not be used by cmdlets which required Session parameter again.
+
+.INPUTS
+You can pipe the session object to Distroy-iBMC-Redfish-Session. The session object is obtained from executing Create-iBMC-Redfish-Session cmdlet.
+
+.OUTPUTS
+This cmdlet does not generate any output.
+
+
+.EXAMPLE
+PS C:\> Distroy-iBMC-Redfish-Session -Session $session
+PS C:\>
+
+This will disconnect the session given in the variable $session
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
+    param
+    (
+        [PSObject]
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+        $Session,
+
+        [switch]
+        [parameter(Mandatory=$false)]
+        $TrustCert
+    )
+
+    $method = "DELETE"
+    $uri = $Session.Location
+    $webResponse = Invoke-Redfish-Request -Uri $uri -Method $method -Session $Session
+    $webResponse.close()
 }
 
 
