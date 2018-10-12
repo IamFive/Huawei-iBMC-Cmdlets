@@ -2,6 +2,31 @@
 
 . $PSScriptRoot/Common.ps1
 
+try { [RedfishSession] | Out-Null } catch {
+Add-Type @'
+  public class RedfishSession
+  {
+    public System.String Id ;
+    public System.String Name ;
+    public System.String ManagerType ;
+    public System.String FirmwareVersion ;
+    public System.String UUID ;
+    public System.String Model ;
+    public System.String Health ;
+    public System.String State ;
+    public System.String DateTime ;
+    public System.String DateTimeLocalOffset ;
+
+    public System.String BaseUri ;
+    public System.String Location ;
+    public System.Boolean Alive ;
+    public System.String AuthToken ;
+    public System.Boolean TrustCert ;
+    public System.String resourceId ;
+  }
+'@
+}
+
 function New-iBMCRedfishSession {
   <#
 .SYNOPSIS
@@ -9,10 +34,11 @@ Create sessions for iBMC Redfish REST API.
 
 .DESCRIPTION
 Creates sessions for iBMC Redfish REST API. The session object returned which has members:
-1. 'X-Auth-Token' to identify the session
-2. 'RootURI' of the Redfish API
+1. 'AuthToken' to identify the session
+2. 'BaseUri' of the Redfish API
 3. 'Location' which is used for logging out of the session.
-4. 'RootData' includes data from '/redfish/v1/'. It includes the refish data and the odata id of components like systems, chassis, etc.
+4. 'TrustCert' to identify trust all SSL Certification or not
+5. 'Alive' to identify whether the session is alive or not
 
 .PARAMETER Address
 IP address or Hostname of the target iBMC Redfish API.
@@ -39,7 +65,7 @@ You can pipe the Address i.e. the hostname or IP address to New-iBMCRedfishSessi
 
 .OUTPUTS
 System.Management.Automation.PSCustomObject
-New-iBMCRedfishSession returns a PSObject that has session details - X-Auth-Token, RootURI, Location and RootData.
+New-iBMCRedfishSession returns a RedfishSession Object which contains - AuthToken, BaseUri, Location, TrustCert and Alive.
 
 .EXAMPLE
 PS C:\> $session = New-iBMCRedfishSession -Address 10.1.1.2 -Username root -Password password
@@ -102,7 +128,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $passwd = $password
   }
   else {
-    throw $(Get-Message('MSG_INVALID_CREDENTIALS'))
+    throw $(Get-Message('ERROR_INVALID_CREDENTIALS'))
   }
 
   [IPAddress]$ipAddress = $null
@@ -113,31 +139,47 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   }
 
   # create a new session object for redfish server of $address
-  $session = New-Object PSObject
-  $session | Add-Member -MemberType NoteProperty BaseUri "https://$Address"
-  $session | Add-Member -MemberType NoteProperty TrustCert $TrustCert
+  $session = New-Object RedfishSession
+  $session.BaseUri = "https://$Address"
+  $session.TrustCert = $TrustCert
 
+  # New session
   $path = "/SessionService/Sessions"
   $method = "POST"
   $payload = @{'UserName' = $username; 'Password' = $passwd; } | ConvertTo-Json
-  $response = Invoke-RedfishRequest -Path $path -Method $method -Payload $payload -Session $Session
+  $response = Invoke-RedfishRequest -Path $path -Method $method -Payload $payload -Session $session
+  $response.close()
 
-  $session | Add-Member -MemberType NoteProperty 'X-Auth-Token' $response.Headers['X-Auth-Token']
-  $session | Add-Member -MemberType NoteProperty 'Location' $response.Headers['Location']
+  # set session properties
+  $session.Location = $response.Headers['Location']
+  $session.AuthToken = $response.Headers['X-Auth-Token']
+  $session.Alive = $true
 
-  # $rootData = Get-HPERedfishDataRaw -Odataid '/redfish/v1/' -Session $session
-  # if ($rootData.Oem.PSObject.Properties.name.Contains('Hp') -eq $false) {
-  #   throw $(Get-Message('MSG_INVALID_OEM'))
-  # }
-  # $session|Add-Member -MemberType NoteProperty 'RootData' $rootData
+  # get bmc resource Id (BladeN, SwiN, N)
+  $managers = Invoke-RedfishRequest -Path "/Managers" -Session $session | ConvertFrom-WebResponse
+  $managerOdataId = $managers.Members[0].'@odata.id'
+  $session.resourceId = $($managerOdataId -split '/')[-1]
+
+  # get bmc manager
+  $manager = Invoke-RedfishRequest -Path $managerOdataId -Session $session | ConvertFrom-WebResponse
+
+  $session.Id = $manager.Id
+  $session.Name = $manager.Name
+  $session.ManagerType = $manager.ManagerType
+  $session.FirmwareVersion = $manager.FirmwareVersion
+  $session.UUID = $manager.UUID
+  $session.Model = $manager.Model
+  $session.DateTime = $manager.DateTime
+  $session.DateTimeLocalOffset = $manager.DateTimeLocalOffset
+  $session.State = $manager.Status.State
+  $session.Health = $manager.Status.Health
 
   return $session
 }
 
 
-function Close-iBMCRedfishSession
-{
-<#
+function Close-iBMCRedfishSession {
+  <#
 .SYNOPSIS
 Close a specified session of iBMC Redfish Server.
 
@@ -146,10 +188,6 @@ Close a specified session of iBMC Redfish Server by sending HTTP Delete request 
 
 .PARAMETER Session
 Session object that created by New-iBMCRedfishSession cmdlet.
-
-.PARAMETER TrustCert
-If this switch parameter is present then server certificate authentication is disabled for this iBMC connection.
-If not present, server certificate is enabled by default.
 
 .NOTES
 The Session object will be detached from iBMC Redfish Server. And the Session can not be used by cmdlets which required Session parameter again.
@@ -173,15 +211,75 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 #>
   param
   (
-      [PSObject]
-      [parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-      $Session
+    [PSObject]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $session
   )
 
+  if($null -eq $session -or $session -isnot [RedfishSession])
+  {
+    throw $([string]::Format($bundle.ERROR_PARAMETER_ILLEGAL, 'Session'))
+  }
+
   $method = "DELETE"
-  $path = $Session.Location
-  $response = Invoke-RedfishRequest -Path $path -Method $method -Session $Session
+  $path = $session.Location
+  $response = Invoke-RedfishRequest -Path $path -Method $method -Session $session
   $response.close()
+
+  $success = $response.StatusCode.value__ -lt 400
+  $session.Alive = $success
+  return $session
+}
+
+
+function Test-iBMCRedfishSession {
+  <#
+.SYNOPSIS
+Test whether a specified session of iBMC Redfish Server is still alive
+
+.DESCRIPTION
+Test whether a specified session of iBMC Redfish Server is still alive by sending a HTTP get request to Session Location Uri.
+
+.PARAMETER Session
+Session object that created by New-iBMCRedfishSession cmdlet.
+
+.INPUTS
+You can pipe the session object to Test-iBMCRedfishSession. The session object is obtained from executing New-iBMCRedfishSession cmdlet.
+
+.OUTPUTS
+true if still alive else false
+
+
+.EXAMPLE
+PS C:\> Test-iBMCRedfishSession -Session $session
+PS C:\>
+
+true
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
+  param
+  (
+    [PSObject]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $session
+  )
+
+  if($null -eq $session -or $session -isnot [RedfishSession])
+  {
+    throw $([string]::Format($bundle.ERROR_PARAMETER_ILLEGAL, 'Session'))
+  }
+
+  $method = "GET"
+  $path = $session.Location
+  $response = Invoke-RedfishRequest -Path $path -Method $method -Session $session -ContinueEvenFailed
+  $response.close()
+
+  $success = $response.StatusCode.value__ -lt 400
+  $session.Alive = $success
+  return $session
 }
 
 
@@ -198,8 +296,12 @@ function Invoke-RedfishRequest {
     $Payload,
 
     [PSObject]
-    [parameter(Mandatory=$true)]
-    $Session
+    [parameter(Mandatory = $true)]
+    $session,
+
+    [Switch]
+    [parameter(Mandatory = $false)]
+    $ContinueEvenFailed
   )
 
   Write-Log "Send new request: [$Method] $Path"
@@ -207,20 +309,22 @@ function Invoke-RedfishRequest {
 
   if ($Path.StartsWith("https://", "CurrentCultureIgnoreCase")) {
     $OdataId = $Path
-  } elseif ($Path.StartsWith("/redfish/v1", "CurrentCultureIgnoreCase")) {
-    $OdataId = "$($Session.BaseUri)$($Path)"
-  } else {
-    $OdataId = "$($Session.BaseUri)/redfish/v1$($Path)"
+  }
+  elseif ($Path.StartsWith("/redfish/v1", "CurrentCultureIgnoreCase")) {
+    $OdataId = "$($session.BaseUri)$($Path)"
+  }
+  else {
+    $OdataId = "$($session.BaseUri)/redfish/v1$($Path)"
   }
 
   [System.Net.HttpWebRequest] $request = [System.Net.WebRequest]::Create($OdataId)
   $request.Method = $Method
   $request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
-  if ($null -ne $Session.'X-Auth-Token') {
-    $request.Headers.Add('X-Auth-Token', $Session.'X-Auth-Token')
+  if ($null -ne $session.AuthToken) {
+    $request.Headers.Add('X-Auth-Token', $session.AuthToken)
   }
-  if ($true -eq $Session.TrustCert) {
+  if ($true -eq $session.TrustCert) {
     $request.ServerCertificateValidationCallback = { $true }
   }
 
@@ -244,7 +348,18 @@ function Invoke-RedfishRequest {
     # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
     # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
     # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
-    return $_.Exception.InnerException.Response
+    $response = $_.Exception.InnerException.Response
+    if ($ContinueEvenFailed) {
+      return $response
+    }
+
+    $result = $response | ConvertFrom-WebResponse
+    $extendInfoList = $result.error.'@Message.ExtendedInfo'
+    if ($extendInfoList.Count -gt 0) {
+      $extendInfo0 = $extendInfoList[0]
+      throw "[$($extendInfo0.Severity)] $($extendInfo0.Message)"
+    }
+    throw $_
   }
   finally {
     if ($null -ne $reqWriter -and $reqWriter -is [System.IDisposable]) {
@@ -256,7 +371,7 @@ function Invoke-RedfishRequest {
 function ConvertFrom-WebResponse {
   param (
     [System.Net.HttpWebResponse]
-    [parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $Response
   )
 
@@ -268,8 +383,8 @@ function ConvertFrom-WebResponse {
     return $json
   }
   finally {
-    $response.close()
-    $stream.close()
     $streamReader.close()
+    $stream.close()
+    $response.close()
   }
 }

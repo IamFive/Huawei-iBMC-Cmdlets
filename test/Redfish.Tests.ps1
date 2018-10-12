@@ -1,9 +1,15 @@
 Import-Module Huawei.iBMC.Cmdlets -Force
 
 $session = New-iBMCRedfishSession -Address "112.93.129.9" -Username "chajian1" -Password "chajian12#$" -TrustCert
-$session | Format-List
+Write-Host "Session:"
+$session | fl
+
+Write-Host "Close Session:"
 Close-iBMCRedfishSession $session
-$session | Format-List
+
+Write-Host "Test Session:"
+Test-iBMCRedfishSession $session
+
 
 # Describe "Connect-iBMC" {
 #     It "Connect with account" {
