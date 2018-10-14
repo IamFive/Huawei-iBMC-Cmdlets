@@ -3,7 +3,7 @@
 . $PSScriptRoot/Common.ps1
 
 try { [RedfishSession] | Out-Null } catch {
-Add-Type @'
+  Add-Type @'
   public class RedfishSession
   {
     public System.String Id ;
@@ -93,7 +93,7 @@ RootData     : @{@odata.context=/redfish/v1/$metadata#ServiceRoot/; @odata.id=/r
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 #>
-  [cmdletbinding(DefaultParameterSetName = 'account')]
+  [cmdletbinding(DefaultParameterSetName = 'AccountSet')]
   param
   (
     [System.String]
@@ -101,15 +101,15 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $Address,
 
     [System.String]
-    [parameter(ParameterSetName = "account", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    [parameter(ParameterSetName = "AccountSet", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $Username,
 
     [System.String]
-    [parameter(ParameterSetName = "account", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
+    [parameter(ParameterSetName = "AccountSet", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
     $Password,
 
     [PSCredential]
-    [parameter(ParameterSetName = "Credential", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    [parameter(ParameterSetName = "CredentialSet", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $Credential,
 
     [switch]
@@ -216,8 +216,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $session
   )
 
-  if($null -eq $session -or $session -isnot [RedfishSession])
-  {
+  if ($null -eq $session -or $session -isnot [RedfishSession]) {
     throw $([string]::Format($bundle.ERROR_PARAMETER_ILLEGAL, 'Session'))
   }
 
@@ -267,8 +266,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $session
   )
 
-  if($null -eq $session -or $session -isnot [RedfishSession])
-  {
+  if ($null -eq $session -or $session -isnot [RedfishSession]) {
     throw $([string]::Format($bundle.ERROR_PARAMETER_ILLEGAL, 'Session'))
   }
 
