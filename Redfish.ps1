@@ -3,7 +3,7 @@
 . $PSScriptRoot/Common.ps1
 
 try { [RedfishSession] | Out-Null } catch {
-  Add-Type @'
+Add-Type @'
   public class RedfishSession
   {
     public System.String Id ;

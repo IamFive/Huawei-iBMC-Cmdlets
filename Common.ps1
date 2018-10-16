@@ -2,6 +2,7 @@
 
 . $PSScriptRoot/I18n.ps1
 . $PSScriptRoot/Logger.ps1
+. $PSScriptRoot/Threads.ps1
 
 function Convert-IPSegment($IPSegment) {
   <#
@@ -21,10 +22,9 @@ PS C:\> 3 4 5 10
   return $result
 }
 
-
 function ConvertFrom-IPRangeString {
   param (
-    [System.String][parameter(Mandatory=$false)] $IPRangeString
+    [System.String[]][parameter(Mandatory=$false)] $IPRangeString
   )
 
   $port_regex = ':([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])'
@@ -44,7 +44,8 @@ function ConvertFrom-IPRangeString {
 
   $IPArray = New-Object System.Collections.ArrayList
 
-  -split $IPRangeString | ForEach-Object {
+  $AllIpRangeString = $IPRangeString -join ' '
+  -split $AllIpRangeString | ForEach-Object {
     $matches = $ipv4_regex.Matches($_)
     if ($matches.Count -eq 1) {
       $singleIpRange = $matches[0].Groups[1].Value
@@ -60,19 +61,43 @@ function ConvertFrom-IPRangeString {
         foreach ($s2 in $segment2) {
           foreach ($s3 in $segment3) {
             foreach ($s4 in $segment4) {
-              $IPArray.Add("$(@($s1, $s2, $s3, $s4) -join '.')$port")
+              [Void] $IPArray.Add("$(@($s1, $s2, $s3, $s4) -join '.')$port")
             }
           }
         }
       }
     }
     elseif ($_ -match $hostnameRegex) {
-      $IPArray.Add($_)
+      [Void] $IPArray.Add($_)
     }
     else {
-      Write-Host "Illegal: "$_;
+      throw "Illegal Address: $_"
     }
   }
 
   return $IPArray
+}
+
+
+function Get-MatchedSizeArray($Source, $Target, $SourceName, $TargetName) {
+  if ($Target.Count -eq 1 -and $Source.Count -ne 1) {
+    $Target = $Target * $Source.Count
+  }
+  if ($Source.Count -ne $Target.Count) {
+    throw $([string]::Format($Bundle.ERROR_PARAMETER_COUNT_DIFFERERNT, $SourceName, $TargetName))
+  }
+  return $Target
+}
+
+
+function Assert-NotNull($Parameter, $ParameterName) {
+  if ($null -eq $Parameter) {
+    throw $([string]::Format($Bundle.ERROR_PARAMETER_EMPTY, $ParameterName))
+  }
+}
+
+function Assert-ArrayNotNull($Parameter, $ParameterName) {
+  if ($null -eq $Parameter -or $Parameter.Count -eq 0 -or $Parameter -contains $null) {
+    throw $([string]::Format($Bundle.ERROR_PARAMETER_ARRAY_EMPTY, $ParameterName))
+  }
 }

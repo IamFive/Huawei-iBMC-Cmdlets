@@ -1,13 +1,17 @@
 $bundle = Data {
   #culture="en-US"
   ConvertFrom-StringData @'
+  MSG_WAIT_PROGRESS_TITLE = Waiting multiple thread results
+  MSG_WAIT_PROGRESS_PERCENT = Percent Complete
   ERROR_INVALID_CREDENTIALS = Failure: Invalid credentials
-  ERROR_PARAMETER_EMPTY = Failure: parameter "{0}" should not be empty
+  ERROR_PARAMETER_EMPTY = Failure: parameter "{0}" should not be null or empty
   ERROR_PARAMETER_ILLEGAL = Failure: parameter "{0}" is illegal, please check it
+  ERROR_PARAMETER_COUNT_DIFFERERNT = Failure: Array parameter "{0}" and "{1}" should have same element count
+  ERROR_PARAMETER_ARRAY_EMPTY = Failure: Array parameter "{0}" should not be null or empty or contains null element.
 '@
 }
 
-  # 'MSG_PROGRESS_ACTIVITY'='Receiving Results'
+  # 'MSG_PROGRESS_ACTIVITY'='Waiting multiple thread results'
   # 'MSG_PROGRESS_STATUS'='Percent Complete'
   # 'MSG_SENDING_TO'='Sending to {0}'
   # 'MSG_FAIL_HOSTNAME'='DNS name translation not available for {0} - Host name left blank.'

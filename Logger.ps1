@@ -18,11 +18,11 @@ function Write-LogLine ($line) {
 Function Write-Log {
   [CmdletBinding()]
   Param(
-    [Parameter(Mandatory = $True)]
+    [Parameter(Mandatory = $True, Position=0)]
     [string]
     $Message,
 
-    [Parameter(Mandatory = $False)]
+    [Parameter(Mandatory = $False, Position=1)]
     [String]
     $Level = "INFO"
   )
