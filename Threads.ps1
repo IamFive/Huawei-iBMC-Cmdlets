@@ -89,7 +89,7 @@ function Start-ScriptBlockThread {
     [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
-  Write-Log "Invoke Script block: $ScriptBlock , parameters: $Parameters"
+  Write-Log "Invoke Script block in new thread"
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
@@ -120,7 +120,7 @@ function Start-CommandThread {
     [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
-  Write-Log "Invoke Script block: $ScriptBlock , parameters: $Parameters"
+  Write-Log "Invoke Command: $Command , parameters: $Parameters in new thread"
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
