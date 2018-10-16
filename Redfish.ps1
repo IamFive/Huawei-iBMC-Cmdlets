@@ -143,6 +143,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   $session.BaseUri = "https://$Address"
   $session.TrustCert = $TrustCert
 
+  Write-Log "Create Redfish session For $($session.BaseUri) now"
+
   # New session
   $path = "/SessionService/Sessions"
   $method = "POST"

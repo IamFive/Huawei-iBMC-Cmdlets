@@ -115,17 +115,16 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $tasks = New-Object System.Collections.ArrayList
     $pool = New-RunspacePool $ParametersArray.Count
     $ParametersArray | ForEach-Object {
-      $ScriptBlock = {
-        if ($useCredential) {
-          return New-iBMCRedfishSession -Address $_[0] -Credential $_[1] -TrustCert:$_[2]
-        } else {
-          return New-iBMCRedfishSession -Address $_[0] -Username $_[1] -Password $_[2] -TrustCert:$_[3]
-        }
+      $TrustCertFlag = if ($_[-1]) {"-TrustCert"} else {""}
+      if ($useCredential) {
+        $Script = "New-iBMCRedfishSession -Address $($_[0]) -Credential $($_[1]) $($TrustCertFlag)"
+      } else {
+        $Script = "New-iBMCRedfishSession -Address $($_[0]) -Username $($_[1]) -Password $($_[2]) $($TrustCertFlag)"
       }
-      [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock))
+      [Void] $tasks.Add($(Start-ScriptBlockThread $pool $Script))
     }
 
-    Get-AsyncTaskResults $tasks
+    return Get-AsyncTaskResults -AsyncTasks $tasks
   } finally {
     $pool.close()
   }

@@ -85,7 +85,7 @@ function Start-ScriptBlockThread {
   Param
   (
     [Parameter(Position = 0, Mandatory = $True)]$ThreadPool,
-    [Parameter(Position = 1, Mandatory = $True)][ScriptBlock]$ScriptBlock,
+    [Parameter(Position = 1, Mandatory = $True)]$ScriptBlock,
     [Parameter(Position = 2, Mandatory = $False)][Object[]]$Parameters
   )
 
@@ -93,9 +93,12 @@ function Start-ScriptBlockThread {
   $PowerShell.RunspacePool = $ThreadPool
 
   [Void] $PowerShell.AddScript($ScriptBlock)
-  Foreach ($Arg in $Parameters) {
-    [Void] $PowerShell.AddArgument($Arg)
+  if ($null -ne $Parameters -and $Parameters.Count -gt 0) {
+    Foreach ($Arg in $Parameters) {
+      [Void] $PowerShell.AddArgument($Arg)
+    }
   }
+
 
   Write-Log "Start script block thread" "DEBUG"
   $AsyncResult = $PowerShell.BeginInvoke()
