@@ -128,7 +128,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $passwd = $password
   }
   else {
-    throw $(Get-Message('ERROR_INVALID_CREDENTIALS'))
+    throw $i18n.ERROR_INVALID_CREDENTIALS
   }
 
   [IPAddress]$ipAddress = $null
@@ -212,8 +212,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 #>
   param
   (
-    [PSObject]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    [RedfishSession]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
     $session
   )
 
@@ -227,7 +227,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   $response.close()
 
   $success = $response.StatusCode.value__ -lt 400
-  $session.Alive = $success
+  $session.Alive = !$success
   return $session
 }
 
@@ -262,9 +262,9 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 #>
   param
   (
-    [PSObject]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    $session
+    [RedfishSession]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session
   )
 
   if ($null -eq $session -or $session -isnot [RedfishSession]) {

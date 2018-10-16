@@ -3,7 +3,9 @@ Import-Module Huawei.iBMC.Cmdlets -Force
 
 Describe "Connect-iBMC" {
   It "Connect with account" {
-    Connect-iBMC -Address 112.93.129.9,112.93.129.117 -Username chajian1,Administrator -Password "chajian12#$",Admin@7000
+    $connection = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+    Disconnect-iBMC $connection
+    Disconnect-iBMC $connection
   }
 
   # It "Connect with credential" {
@@ -18,7 +20,7 @@ Describe "New-iBMCRedfishSession" {
     Write-Host $($session | fl)
 
     Write-Host "Close Session:"
-    Close-iBMCRedfishSession $session
+    Close-iBMCRedfishSession $Session
     Write-Host $($session | fl)
 
     Write-Host "Test Session:"

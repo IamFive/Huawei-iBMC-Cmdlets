@@ -86,9 +86,10 @@ function Start-ScriptBlockThread {
   (
     [Parameter(Position = 0, Mandatory = $True)]$ThreadPool,
     [Parameter(Position = 1, Mandatory = $True)]$ScriptBlock,
-    [Parameter(Position = 2, Mandatory = $False)][Object[]]$Parameters
+    [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
+  Write-Log "Invoke Script block: $ScriptBlock , parameters: $Parameters"
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
@@ -99,6 +100,34 @@ function Start-ScriptBlockThread {
     }
   }
 
+  Write-Log "Start script block thread" "DEBUG"
+  $AsyncResult = $PowerShell.BeginInvoke()
+
+  $Task = New-Object AsyncTask
+  $Task.PowerShell = $PowerShell
+  $Task.StartTime = Get-Date
+  $Task.AsyncResult = $AsyncResult
+  $Task.isRunning = $true
+  return $Task
+}
+
+function Start-CommandThread {
+  [Cmdletbinding()]
+  Param
+  (
+    [Parameter(Position = 0, Mandatory = $True)]$ThreadPool,
+    [Parameter(Position = 1, Mandatory = $True)]$Command,
+    [Parameter(Position = 2, Mandatory = $False)]$Parameters
+  )
+
+  Write-Log "Invoke Script block: $ScriptBlock , parameters: $Parameters"
+  $PowerShell = [System.Management.Automation.PowerShell]::Create()
+  $PowerShell.RunspacePool = $ThreadPool
+
+  [Void] $PowerShell.AddCommand($Command)
+  if ($null -ne $Parameters -and $Parameters.Count -gt 0) {
+    [Void] $PowerShell.AddParameters($Parameters)
+  }
 
   Write-Log "Start script block thread" "DEBUG"
   $AsyncResult = $PowerShell.BeginInvoke()
@@ -129,7 +158,11 @@ function Get-AsyncTaskResults {
       }
     }
     catch {
-      Write-Error $_
+      $ex = $_.Exception
+      while($null -ne $ex.InnerException) {
+        $ex = $ex.InnerException
+      }
+      Write-Error $ex.Message
     }
     finally {
       $AsyncTask.isRunning = $false

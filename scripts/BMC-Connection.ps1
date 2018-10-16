@@ -3,10 +3,10 @@
 function Connect-iBMC {
   <#
 .SYNOPSIS
-Create connections for iBMC Servers used by other cmdlets.
+Connect to iBMC Servers and initialize sessions used by other cmdlets.
 
 .DESCRIPTION
-Create connections for one or multiple iBMC servers. This cmdlet has following parameters:
+Initialize sessions for one or multiple iBMC servers and. This cmdlet has following parameters:
 
 - Address - Holds the iBMC server IP/hostname.
 - Username - Holds  the iBMC server username.
@@ -27,29 +27,34 @@ Password of iBMC account to access the iBMC server.
 PowerShell PSCredential object having username and passwword of iBMC account to access the iBMC.
 
 .PARAMETER TrustCert
-If this switch parameter is present then server certificate authentication is disabled for this iBMC connection.
+If this switch parameter is present then server certificate authentication is disabled for this iBMC session.
 If not present, server certificate is enabled by default.
 
 
 .OUTPUTS
 RedfishSession[]
-Connect-iBMC returns a RedfishSession Object or List.
-
-
-HPE.iLO.Response.Connection[]
-    If the cmdlet executes successfully it returns HPE.iLO.Response.Connection or HPE.iLO.Response.Connection[] obj
-    ect. In case of error or warning, the corresponding error message is displayed.
-
+Connect-iBMC returns a RedfishSession Array
 
 .EXAMPLE
-PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Username root -Password password
-PS C:\> $session | Format-List
-
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Username root -Password password
+PS C:\> $sessions
 
 .EXAMPLE
 PS C:\> $credential = Get-Credential
-PS C:\> $session = Connect-iBMC -Address 192.184.217.212 -Credential $credential
-PS C:\> $session | fl
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Credential $credential
+PS C:\> $sessions
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2-10 -Username root -Password password
+PS C:\> $sessions
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username root -Password password
+PS C:\> $sessions
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username user1,user2 -Password password1,password2
+PS C:\> $sessions
 
 
 .LINK
@@ -124,6 +129,63 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       [Void] $tasks.Add($(Start-ScriptBlockThread $pool $Script))
     }
 
+    return Get-AsyncTaskResults -AsyncTasks $tasks
+  } finally {
+    $pool.close()
+  }
+}
+
+
+function Disconnect-iBMC {
+<#
+.SYNOPSIS
+Disconnects specified session[s] of iBMC Redfish Server.
+
+.DESCRIPTION
+Disconnects specified session[s] of iBMC Redfish Server by sending HTTP Delete request to location holds by "Location" property in RedfishSession Object passed as parameter.
+
+.PARAMETER Connection
+RedfishSession array that created by Connect-iBMC cmdlet.
+
+.NOTES
+The RedfishSession object will be detached from iBMC Redfish Server. And the Session can not be used by cmdlets which required Session parameter again.
+
+.INPUTS
+You can pipe the RedfishSession object array to Disconnect-iBMC. The RedfishSession array is obtained from executing Connect-iBMC cmdlet.
+
+.OUTPUTS
+This cmdlet does not generate any output.
+
+
+.EXAMPLE
+PS C:\> Disconnect-iBMC -Session $session
+PS C:\>
+
+.EXAMPLE
+PS C:\> $session | Disconnect-iBMC
+PS C:\>
+
+This will disconnect the sessions given in the variable $Session
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
+  param
+  (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $Session
+  )
+
+  Assert-ArrayNotNull $Session 'Session'
+  try {
+    $tasks = New-Object System.Collections.ArrayList
+    $pool = New-RunspacePool $Session.Count
+    $Session | ForEach-Object {
+      $Command = "Close-iBMCRedfishSession"
+      [Void] $tasks.Add($(Start-CommandThread $pool $Command @($_)))
+    }
     return Get-AsyncTaskResults -AsyncTasks $tasks
   } finally {
     $pool.close()

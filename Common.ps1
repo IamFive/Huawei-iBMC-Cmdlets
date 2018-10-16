@@ -4,8 +4,13 @@
 . $PSScriptRoot/Logger.ps1
 . $PSScriptRoot/Threads.ps1
 
+function Write-Input {
+  param($input)
+  return $input
+}
+
 function Convert-IPSegment($IPSegment) {
-  <#
+<#
 .DESCRIPTION
 Convert a specified ip segment expression to all possible int ip segment array
 
