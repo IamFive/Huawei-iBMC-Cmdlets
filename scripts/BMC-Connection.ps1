@@ -191,3 +191,65 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     $pool.close()
   }
 }
+
+
+function Test-iBMCConnect {
+  <#
+.SYNOPSIS
+Test whether specified session[s] of iBMC Redfish Server is still alive
+
+.DESCRIPTION
+Test whether specified session[s] of iBMC Redfish Server is still alive by sending a HTTP get request to Session Location Uri.
+
+.PARAMETER Session
+RedfishSession array that created by Connect-iBMC cmdlet.
+
+.INPUTS
+You can pipe the RedfishSession array to Test-iBMCConnect. The RedfishSession array is obtained from executing Connect-iBMC cmdlet.
+
+.OUTPUTS
+RedfishSession Object with field Alive identified whether session is still alive
+
+
+.EXAMPLE
+PS C:\> Test-iBMCRedfishSession -Session $Session
+
+Id                  : 1
+Name                : Manager
+ManagerType         : BMC
+FirmwareVersion     : 3.00
+UUID                : 877AA970-58F9-8432-E811-80345C184638
+Model               : iBMC
+Health              : OK
+State               : Enabled
+DateTime            : 2018-10-16T17:50:05+08:00
+DateTimeLocalOffset : Asia/Chongqing
+BaseUri             : https://112.93.129.9
+Location            : /redfish/v1/SessionService/Sessions/8c2790fbef51b40c
+Alive               : False
+AuthToken           : eac9b1d6be37f69fd783355ece67f2f2
+TrustCert           : True
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
+  param
+  (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session
+  )
+  Assert-ArrayNotNull $Session 'Session'
+  try {
+    $tasks = New-Object System.Collections.ArrayList
+    $pool = New-RunspacePool $Session.Count
+    $Session | ForEach-Object {
+      $Command = "Test-iBMCRedfishSession"
+      [Void] $tasks.Add($(Start-CommandThread $pool $Command @($_)))
+    }
+    return Get-AsyncTaskResults -AsyncTasks $tasks
+  } finally {
+    $pool.close()
+  }
+}
