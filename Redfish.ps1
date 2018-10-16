@@ -175,7 +175,6 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   $session.DateTimeLocalOffset = $manager.DateTimeLocalOffset
   $session.State = $manager.Status.State
   $session.Health = $manager.Status.Health
-
   return $session
 }
 
@@ -304,7 +303,6 @@ function Invoke-RedfishRequest {
     $ContinueEvenFailed
   )
 
-  Write-Log "Send new request: [$Method] $Path"
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
 
   if ($Path.StartsWith("https://", "CurrentCultureIgnoreCase")) {
@@ -317,6 +315,8 @@ function Invoke-RedfishRequest {
     $OdataId = "$($session.BaseUri)/redfish/v1$($Path)"
   }
 
+  Write-Log "Send new request: [$Method] $OdataId"
+
   [System.Net.HttpWebRequest] $request = [System.Net.WebRequest]::Create($OdataId)
   $request.Method = $Method
   $request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
@@ -328,19 +328,19 @@ function Invoke-RedfishRequest {
     $request.ServerCertificateValidationCallback = { $true }
   }
 
-  if ($method -in @('PUT', 'POST', 'PATCH')) {
-    if ($null -eq $Payload -or '' -eq $Payload) {
-      $Payload = '{}'
-    }
-    $request.ContentType = 'application/json'
-    $request.ContentLength = $Payload.length
-
-    $reqWriter = New-Object System.IO.StreamWriter($request.GetRequestStream(), [System.Text.Encoding]::ASCII)
-    $reqWriter.Write($Payload)
-    $reqWriter.Close()
-  }
-
   try {
+    if ($method -in @('PUT', 'POST', 'PATCH')) {
+      if ($null -eq $Payload -or '' -eq $Payload) {
+        $Payload = '{}'
+      }
+      $request.ContentType = 'application/json'
+      $request.ContentLength = $Payload.length
+
+      $reqWriter = New-Object System.IO.StreamWriter($request.GetRequestStream(), [System.Text.Encoding]::ASCII)
+      $reqWriter.Write($Payload)
+      $reqWriter.Close()
+    }
+
     # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
     return $request.GetResponse()
   }
@@ -349,17 +349,22 @@ function Invoke-RedfishRequest {
     # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
     # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
     $response = $_.Exception.InnerException.Response
-    if ($ContinueEvenFailed) {
-      return $response
-    }
+    if ($null -ne $response) {
+      if ($ContinueEvenFailed) {
+        return $response
+      }
 
-    $result = $response | ConvertFrom-WebResponse
-    $extendInfoList = $result.error.'@Message.ExtendedInfo'
-    if ($extendInfoList.Count -gt 0) {
-      $extendInfo0 = $extendInfoList[0]
-      throw "[$($extendInfo0.Severity)] $($extendInfo0.Message)"
+      $result = $response | ConvertFrom-WebResponse
+      $extendInfoList = $result.error.'@Message.ExtendedInfo'
+      if ($extendInfoList.Count -gt 0) {
+        $extendInfo0 = $extendInfoList[0]
+        throw "[$($extendInfo0.Severity)] $($extendInfo0.Message)"
+      }
+
+      throw $_.Exception
+    } else {
+      throw $_.Exception
     }
-    throw $_
   }
   finally {
     if ($null -ne $reqWriter -and $reqWriter -is [System.IDisposable]) {

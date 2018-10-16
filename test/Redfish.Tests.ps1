@@ -3,7 +3,7 @@ Import-Module Huawei.iBMC.Cmdlets -Force
 
 Describe "Connect-iBMC" {
   It "Connect with account" {
-    Connect-iBMC -Address 112.93.129.9,112.93.129.117 -Username chajian1,Administrator -Password "chajian12#$",Admin@7000 -TrustCert
+    Connect-iBMC -Address 112.93.129.9,112.93.129.117 -Username chajian1,Administrator -Password "chajian12#$",Admin@7000
   }
 
   # It "Connect with credential" {
@@ -13,7 +13,7 @@ Describe "Connect-iBMC" {
 
 Describe "New-iBMCRedfishSession" {
   It "new with account" {
-    $session = New-iBMCRedfishSession -Address "112.93.129.9" -Username "chajian1" -Password "chajian12#$" -TrustCert
+    $session = New-iBMCRedfishSession -Address "112.93.129.9" -Username "chajian1" -Password "chajian12#$"
     Write-Host "Session:"
     Write-Host $($session | fl)
 
@@ -26,22 +26,22 @@ Describe "New-iBMCRedfishSession" {
     Write-Host $($session | fl)
   }
 
-  It "new with credential" {
-    $Username = "chajian1"
-    $Password = ConvertTo-SecureString -String "chajian12#$" -AsPlainText -Force
-    $Credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $Username, $Password
-    $session = New-iBMCRedfishSession 112.93.129.9 $Credential -TrustCert
-    Write-Host "Session:"
-    Write-Host $session
+  # It "new with credential" {
+  #   $Username = "chajian1"
+  #   $Password = ConvertTo-SecureString -String "chajian12#$" -AsPlainText -Force
+  #   $Credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $Username, $Password
+  #   $session = New-iBMCRedfishSession 112.93.129.9 $Credential -TrustCert
+  #   Write-Host "Session:"
+  #   Write-Host $session
 
-    Write-Host "Close Session:"
-    Close-iBMCRedfishSession $session
-    Write-Host $session
+  #   Write-Host "Close Session:"
+  #   Close-iBMCRedfishSession $session
+  #   Write-Host $session
 
-    Write-Host "Test Session:"
-    Test-iBMCRedfishSession $session
-    Write-Host $session
-  }
+  #   Write-Host "Test Session:"
+  #   Test-iBMCRedfishSession $session
+  #   Write-Host $session
+  # }
 }
 
 Describe "matches test" {
