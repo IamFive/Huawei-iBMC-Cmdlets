@@ -6,7 +6,7 @@ $bundle = Data {
   ERROR_INVALID_CREDENTIALS = Failure: Invalid credentials
   ERROR_PARAMETER_EMPTY = Failure: parameter "{0}" should not be null or empty
   ERROR_PARAMETER_ILLEGAL = Failure: parameter "{0}" is illegal, please check it
-  ERROR_PARAMETER_COUNT_DIFFERERNT = Failure: Array parameter "{0}" and "{1}" should have same element count
+  ERROR_PARAMETER_COUNT_DIFFERERNT = Failure: The array size of parameter "{1}" should be one or the same as parameter "{0}"
   ERROR_PARAMETER_ARRAY_EMPTY = Failure: Array parameter "{0}" should not be null or empty or contains null element.
 '@
 }
