@@ -37,10 +37,10 @@ function Add-iBMCUser {
       $pwd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
       $payload = @{
         'UserName' = $Username;
-        'Password' = $Password;
+        'Password' = $pwd;
         'RoleId' = $Role;
       } | ConvertTo-Json
-      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'POST' $payload
+      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
       return $response | ConvertFrom-WebResponse
     }
     try {
@@ -62,15 +62,37 @@ function Add-iBMCUser {
 
 
 function Get-iBMCUser {
-  [CmdletBinding()]
   param (
-
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session
   )
 
   begin {
+    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    $GetUserBlock = {
+      param($Session)
+      $users = New-Object System.Collections.ArrayList
+      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
+      $response.Members | ForEach-Object {
+        $userResponse = Invoke-RedfishRequest $session $_.'@odata.id'
+        [Void] $users.Add($($userResponse | ConvertFrom-WebResponse))
+      }
+      return $users
+    }
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $GetUserBlock @($Session[$idx])))
+      }
+      return Get-AsyncTaskResults -AsyncTasks $tasks
+    } finally {
+      $pool.close()
+    }
   }
 
   end {
@@ -96,13 +118,50 @@ function Set-iBMCUser {
 function Remove-iBMCUser {
   [CmdletBinding()]
   param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session,
 
+    [string[]]
+    [parameter(Mandatory = $true, Position=1)]
+    $Username
   )
 
   begin {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $Username 'Username'
+    $Username = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
   }
 
   process {
+    $DeleteUserBlock = {
+      param($Session, $Username)
+      # try load all users
+      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
+      for ($idx=0; $idx -lt $response.Members.Count; $idx++) {
+        $member = $response.Members[$idx]
+        $user = Invoke-RedfishRequest $session $member.'@odata.id' | ConvertFrom-WebResponse
+        if ($user.UserName -eq $Username) {
+          # delete user with provided $Username
+          Invoke-RedfishRequest $Session $member.'@odata.id' 'Delete' > $null
+          return
+        }
+      }
+
+      throw $([string]::Format($(Get-i18n FAIL_NO_USER_WITH_NAME_EXISTS), $Username))
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        $parameter = @($Session[$idx], $Username[$idx])
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $DeleteUserBlock $parameter))
+      }
+      return Get-AsyncTaskResults -AsyncTasks $tasks
+    } finally {
+      $pool.close()
+    }
   }
 
   end {

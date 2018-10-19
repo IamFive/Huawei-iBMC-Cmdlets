@@ -3,11 +3,12 @@ $bundle = Data {
   ConvertFrom-StringData @'
   MSG_WAIT_PROGRESS_TITLE = Waiting multiple thread results
   MSG_WAIT_PROGRESS_PERCENT = Percent Complete
-  ERROR_INVALID_CREDENTIALS = Failure: Invalid credentials
-  ERROR_PARAMETER_EMPTY = Failure: parameter "{0}" should not be null or empty
-  ERROR_PARAMETER_ILLEGAL = Failure: parameter "{0}" is illegal, please check it
-  ERROR_PARAMETER_COUNT_DIFFERERNT = Failure: The array size of parameter "{1}" should be one or the same as parameter "{0}"
-  ERROR_PARAMETER_ARRAY_EMPTY = Failure: Array parameter "{0}" should not be null or empty or contains null element.
+  FAIL_NO_USER_WITH_NAME_EXISTS = Failure: No user with name "{0}" does not exist
+  ERROR_INVALID_CREDENTIALS = Error: Invalid credentials
+  ERROR_PARAMETER_EMPTY = Error: parameter "{0}" should not be null or empty
+  ERROR_PARAMETER_ILLEGAL = Error: parameter "{0}" is illegal, please check it
+  ERROR_PARAMETER_COUNT_DIFFERERNT = Error: The array size of parameter "{1}" should be one or the same as parameter "{0}"
+  ERROR_PARAMETER_ARRAY_EMPTY = Error: Array parameter "{0}" should not be null or empty or contains null element.
 '@
 }
 
@@ -35,3 +36,7 @@ $bundle = Data {
 
 # Not necessary for now
 # Import-LocalizedData -BindingVariable bundles
+
+function Get-i18n($key) {
+  return $bundle[$Key]
+}
