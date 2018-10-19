@@ -119,6 +119,18 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   try {
     $tasks = New-Object System.Collections.ArrayList
     $pool = New-RunspacePool $ParametersArray.Count
+    # $ScriptBlock = {
+    #   param($p)
+    #   if ($p.Count -eq 3) {
+    #     New-iBMCRedfishSession -Address $($p[0]) -Credential $($p[1]) -TrustCert $($p[2])
+    #   } else {
+    #     New-iBMCRedfishSession -Address $($p[0]) -Username $($p[1]) -Password $($p[2]) -TrustCert $($p[3])
+    #   }
+    # }
+    # $ParametersArray | ForEach-Object {
+    #   [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $($_)))
+    # }
+
     $ParametersArray | ForEach-Object {
       $TrustCertFlag = if ($_[-1]) {"-TrustCert"} else {""}
       if ($useCredential) {

@@ -149,7 +149,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   $path = "/SessionService/Sessions"
   $method = "POST"
   $payload = @{'UserName' = $username; 'Password' = $passwd; } | ConvertTo-Json
-  $response = Invoke-RedfishRequest -Path $path -Method $method -Payload $payload -Session $session
+  $response = Invoke-RedfishRequest -Session $session -Path $path -Method $method -Payload $payload
   $response.close()
 
   # set session properties
@@ -158,12 +158,12 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   $session.Alive = $true
 
   # get bmc resource Id (BladeN, SwiN, N)
-  $managers = Invoke-RedfishRequest -Path "/Managers" -Session $session | ConvertFrom-WebResponse
+  $managers = Invoke-RedfishRequest -Session $session -Path "/Managers" | ConvertFrom-WebResponse
   $managerOdataId = $managers.Members[0].'@odata.id'
   $session.resourceId = $($managerOdataId -split '/')[-1]
 
   # get bmc manager
-  $manager = Invoke-RedfishRequest -Path $managerOdataId -Session $session | ConvertFrom-WebResponse
+  $manager = Invoke-RedfishRequest -Session $session -Path $managerOdataId | ConvertFrom-WebResponse
 
   $session.Id = $manager.Id
   $session.Name = $manager.Name
@@ -223,7 +223,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
   $method = "DELETE"
   $path = $session.Location
-  $response = Invoke-RedfishRequest -Path $path -Method $method -Session $session
+  $response = Invoke-RedfishRequest -Session $session -Path $path -Method $method
   $response.close()
 
   $success = $response.StatusCode.value__ -lt 400
@@ -273,7 +273,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
   $method = "GET"
   $path = $session.Location
-  $response = Invoke-RedfishRequest -Path $path -Method $method -Session $session -ContinueEvenFailed
+  $response = Invoke-RedfishRequest -Session $session -Path $path -Method $method -ContinueEvenFailed
   $response.close()
 
   $success = $response.StatusCode.value__ -lt 400
@@ -284,22 +284,25 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 function Invoke-RedfishRequest {
   param (
+    [RedfishSession]
+    [parameter(Mandatory = $true, Position=0)]
+    $Session,
+
     [System.String]
+    [parameter(Mandatory = $true, Position=1)]
     $Path,
 
     [System.String]
+    [parameter(Mandatory = $false, Position=2)]
     [ValidateSet('Get', 'Delete', 'Put', 'Post', 'Patch')]
     $Method = 'Get',
 
     [System.Object]
+    [parameter(Mandatory = $false, Position=3)]
     $Payload,
 
-    [PSObject]
-    [parameter(Mandatory = $true)]
-    $session,
-
     [Switch]
-    [parameter(Mandatory = $false)]
+    [parameter(Mandatory = $false, Position=4)]
     $ContinueEvenFailed
   )
 

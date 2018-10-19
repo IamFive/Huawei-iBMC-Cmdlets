@@ -5,7 +5,6 @@ Describe "Connect-iBMC" {
   It "Connect with account" {
     $connection = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
     Disconnect-iBMC $connection
-    Disconnect-iBMC $connection
   }
 
   # It "Connect with credential" {
@@ -15,7 +14,7 @@ Describe "Connect-iBMC" {
 
 Describe "New-iBMCRedfishSession" {
   It "new with account" {
-    $session = New-iBMCRedfishSession -Address "112.93.129.9" -Username "chajian1" -Password "chajian12#$"
+    $session = New-iBMCRedfishSession -Address "112.93.129.9" -Username "chajian1" -Password "chajian12#$" -TrustCert
     Write-Host "Session:"
     Write-Host $($session | fl)
 

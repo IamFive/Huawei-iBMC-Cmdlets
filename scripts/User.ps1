@@ -13,9 +13,9 @@ function Add-iBMCUser {
     [parameter(Mandatory = $true, Position=2)]
     $Password,
 
-    [string[]]
+    [String[]]
     [parameter(Mandatory = $true, Position=3)]
-    [ValidateSet('Administrator', 'Operator', 'Commonuser', 'NoAccess', 'CustomRole1', 'CustomRole2', 'CustomRole3', 'CustomRole4')]
+    [ValidateSet("Administrator", "Operator", "Commonuser", "NoAccess", "CustomRole1", "CustomRole2", "CustomRole3", "CustomRole4")]
     $Role
   )
 
@@ -27,16 +27,28 @@ function Add-iBMCUser {
 
     $Username = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
     $Password = Get-MatchedSizeArray $Session $Password 'Session' 'Password'
-    $Role = Get-MatchedSizeArray $Session $Username 'Session' 'Role'
+    $Role = Get-MatchedSizeArray $Session $Role 'Session' 'Role'
   }
 
   process {
+    $AddUserBlock = {
+      param($Session, $Username, $Password, $Role)
+      $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+      $pwd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+      $payload = @{
+        'UserName' = $Username;
+        'Password' = $Password;
+        'RoleId' = $Role;
+      } | ConvertTo-Json
+      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'POST' $payload
+      return $response | ConvertFrom-WebResponse
+    }
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
-      $Session | ForEach-Object {
-        $Command = "Test-iBMCRedfishSession"
-        [Void] $tasks.Add($(Start-CommandThread $pool $Command @($_)))
+      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        $parameter = @($Session[$idx], $Username[$idx], $Password[$idx], $Role[$idx])
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $AddUserBlock $parameter))
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
     } finally {
