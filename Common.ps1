@@ -84,23 +84,32 @@ function ConvertFrom-IPRangeString {
 }
 
 
-function Get-MatchedSizeArray($Source, $Target, $SourceName, $TargetName) {
+function Get-MatchedSizeArray {
+  [CmdletBinding()]
+  param($Source, $Target, $SourceName, $TargetName)
+
   if ($Target.Count -eq 1 -and $Source.Count -ne 1) {
     $Target = $Target * $Source.Count
   }
   if ($Source.Count -ne $Target.Count) {
     throw $([string]::Format($(Get-i18n ERROR_PARAMETER_COUNT_DIFFERERNT), $SourceName, $TargetName))
   }
-  return $Target
+
+  return ,$Target
 }
 
-function Get-OptionalMatchedSizeArray($Source, $Target, $SourceName, $TargetName) {
+function Get-OptionalMatchedSizeArray {
+  [CmdletBinding()]
+  param($Source, $Target)
+
   if ($null -eq $Target -or $Target.Count -eq 0) {
-    return $null
+    $empty = @($null) * $Source.Count
+    return ,$empty
+  } else {
+    $matched = Get-MatchedSizeArray $Source $Target 'source' 'target'
+    return ,$matched
   }
-  return Get-MatchedSizeArray $Source $Target $SourceName $TargetName
 }
-
 
 function Assert-NotNull($Parameter, $ParameterName) {
   if ($null -eq $Parameter) {
@@ -112,4 +121,30 @@ function Assert-ArrayNotNull($Parameter, $ParameterName) {
   if ($null -eq $Parameter -or $Parameter.Count -eq 0 -or $Parameter -contains $null) {
     throw $([string]::Format($(Get-i18n ERROR_PARAMETER_ARRAY_EMPTY), $ParameterName))
   }
+}
+
+function Remove-EmptyValues {
+  [CmdletBinding()]
+  param ($Target)
+
+  if ($null -ne $Target) {
+    $hash = @{}
+    $filtered = $Target.GetEnumerator() | Where-Object value
+    $filtered | ForEach-Object {
+      [Void]$hash.Add($_.Key, $_.Value)
+    }
+    return $hash
+  }
+  return $null
+}
+
+function Get-PlainPassword {
+  [CmdletBinding()]
+  param ($SecurePassword)
+
+  if ($null -ne $SecurePassword -and $SecurePassword -is [SecureString]) {
+    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
+    return [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+  }
+  return $SecurePassword
 }

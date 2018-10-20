@@ -163,7 +163,7 @@ function Get-AsyncTaskResults {
       while($null -ne $ex.InnerException) {
         $ex = $ex.InnerException
       }
-      Write-Error $ex.Message
+      Write-Error $ex
     }
     finally {
       $AsyncTask.isRunning = $false

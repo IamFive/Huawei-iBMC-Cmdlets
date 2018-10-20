@@ -32,14 +32,14 @@ function Add-iBMCUser {
 
   process {
     $AddUserBlock = {
-      param($Session, $Username, $Password, $Role)
-      $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
-      $pwd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+      param($Session, $Username, $SecurePasswd, $Role)
+      $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePasswd)
+      $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
       $payload = @{
-        'UserName' = $Username;
-        'Password' = $pwd;
-        'RoleId' = $Role;
-      } | ConvertTo-Json
+        'UserName' = "$Username";
+        'Password' = "$PlainPasswd";
+        'RoleId' = "$Role";
+      }
       $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload
       # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
       return $response | ConvertFrom-WebResponse
@@ -48,8 +48,8 @@ function Add-iBMCUser {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
-        $parameter = @($Session[$idx], $Username[$idx], $Password[$idx], $Role[$idx])
-        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $AddUserBlock $parameter))
+        $Parameters = @($Session[$idx], $Username[$idx], $Password[$idx], $Role[$idx])
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $AddUserBlock $Parameters))
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
     } finally {
@@ -137,43 +137,61 @@ function Set-iBMCUser {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $Username 'Username'
     $Username = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
-    $NewUsername = Get-OptionalMatchedSizeArray $Session $NewUsername 'Session' 'NewUsername'
-    $NewPassword = Get-OptionalMatchedSizeArray $Session $NewPassword 'Session' 'NewPassword'
-    $NewRole = Get-OptionalMatchedSizeArray $Session $NewRole 'Session' 'NewRole'
-    $Enabled = Get-OptionalMatchedSizeArray $Session $Enabled 'Session' 'Enabled'
-    $Locked = Get-OptionalMatchedSizeArray $Session $Locked 'Session' 'Locked'
+    $NewUsernames = Get-OptionalMatchedSizeArray $Session $NewUsername
+    $NewPasswords = Get-OptionalMatchedSizeArray $Session $NewPassword
+    $NewRoles = Get-OptionalMatchedSizeArray $Session $NewRole
+    $Enableds = Get-OptionalMatchedSizeArray $Session $Enabled
+    $Lockeds = Get-OptionalMatchedSizeArray $Session $Locked
   }
 
   process {
-    # payload = {
-    #   "UserName": args.newusername,
-    #   "Password": args.newpassword,
-    #   "RoleId": args.newrole,
-    #   "Locked": args.locked,
-    #   "Enabled": args.enabled == 'True'
-    # }
-
     $SetUserBlock = {
       param($Session, $Username, $Payload)
       # try load all users
       $Users = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
+      $found = $false
       for ($idx=0; $idx -lt $Users.Members.Count; $idx++) {
         $member = $Users.Members[$idx]
-        $User = Invoke-RedfishRequest $session $member.'@odata.id' | ConvertFrom-WebResponse
+        $UserResponse = Invoke-RedfishRequest $session $member.'@odata.id'
+        $User = $UserResponse | ConvertFrom-WebResponse
         if ($User.UserName -eq $Username) {
+          $found = $true
           # Update user with provided $Username
-          Invoke-RedfishRequest $Session $member.'@odata.id' 'PUT'
+          Write-Log "User $($User.UserName) found, will patch user now"
+          $Headers = @{'If-Match'=$UserResponse.Headers['Etag'];}
+          Write-Log "User Etag is $($UserResponse.Headers['Etag'])"
+          if ('Password' -in $Payload) {
+            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.Password)
+            $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+            $Payload.Password = $PlainPasswd
+          }
+          return Invoke-RedfishRequest $Session $member.'@odata.id' 'Patch' $Payload $Headers
         }
       }
-      throw $([string]::Format($(Get-i18n FAIL_NO_USER_WITH_NAME_EXISTS), $Username))
+
+      if (-not $found) {
+        throw $([string]::Format($(Get-i18n FAIL_NO_USER_WITH_NAME_EXISTS), $Username))
+      }
     }
 
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
-        $parameter = @($Session[$idx], $Username[$idx])
-        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $SetUserBlock $parameter))
+        $Payload = Remove-EmptyValues @{
+          "UserName"= $NewUsernames[$idx];
+          "Password"= $NewPasswords[$idx];
+          "RoleId"= $NewRoles[$idx];
+          "Locked"= $Lockeds[$idx];
+          "Enabled"= $Enableds[$idx];
+        }
+
+        if ($null -eq $Payload -or $Payload.Keys.Count -eq 0) {
+          throw $(Get-i18n FAIL_NO_UPDATE_PARAMETER)
+        } else {
+          $Parameters = @($Session[$idx], $Username[$idx], $Payload)
+          [Void] $tasks.Add($(Start-ScriptBlockThread $pool $SetUserBlock $Parameters))
+        }
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
     } finally {
@@ -208,16 +226,20 @@ function Remove-iBMCUser {
       param($Session, $Username)
       # try load all users
       $Users = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
+      $success = $false
       for ($idx=0; $idx -lt $Users.Members.Count; $idx++) {
         $member = $Users.Members[$idx]
         $user = Invoke-RedfishRequest $session $member.'@odata.id' | ConvertFrom-WebResponse
         if ($user.UserName -eq $Username) {
           # delete user with provided $Username
           Invoke-RedfishRequest $Session $member.'@odata.id' 'Delete' | Out-null
+          $success = $true
         }
       }
 
-      throw $([string]::Format($(Get-i18n FAIL_NO_USER_WITH_NAME_EXISTS), $Username))
+      if (-not $success) {
+        throw $([string]::Format($(Get-i18n FAIL_NO_USER_WITH_NAME_EXISTS), $Username))
+      }
     }
 
     try {
