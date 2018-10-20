@@ -148,7 +148,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   # New session
   $path = "/SessionService/Sessions"
   $method = "POST"
-  $payload = @{'UserName' = $username; 'Password' = $passwd; } | ConvertTo-Json
+  $payload = @{'UserName' = $username; 'Password' = $passwd; }
   $response = Invoke-RedfishRequest -Session $session -Path $path -Method $method -Payload $payload
   $response.close()
 
@@ -306,11 +306,11 @@ function Invoke-RedfishRequest {
     $Headers,
 
     [Switch]
-    [parameter(Mandatory = $false, Position=4)]
+    [parameter(Mandatory = $false, Position=5)]
     $ContinueEvenFailed
   )
 
-  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
+
 
   if ($Path.StartsWith("https://", "CurrentCultureIgnoreCase")) {
     $OdataId = $Path
@@ -322,8 +322,16 @@ function Invoke-RedfishRequest {
     $OdataId = "$($session.BaseUri)/redfish/v1$($Path)"
   }
 
+  if ('If-Match' -notin $Headers.Keys -and $method -in @('Put', 'Patch')) {
+    $Response = Invoke-RedfishRequest -Session $Session -Path $Path
+    $Response.close()
+    $etag = $Response.Headers.ETag
+    Write-Log "Odata $OdataId 's etag is $etag"
+  }
+
   Write-Log "Send new request: [$Method] $OdataId"
 
+  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
   [System.Net.HttpWebRequest] $request = [System.Net.WebRequest]::Create($OdataId)
   $request.Method = $Method
   $request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
@@ -334,30 +342,34 @@ function Invoke-RedfishRequest {
   if ($true -eq $session.TrustCert) {
     $request.ServerCertificateValidationCallback = { $true }
   }
-
   if ($null -ne $Headers) {
     $Headers.Keys | ForEach-Object {
       $request.Headers.Add($_, $Headers.Item($_))
     }
   }
 
-  if ('If-Match' -notin $Headers.Keys -and $method -in @('Put', 'Patch')) {
-    $Response = Invoke-RedfishRequest -Session $Session -Path $Path
-    $request.Headers.Add('If-Match', $Response.Headers.ETag)
+  if ($null -ne $etag) {
+    $request.Headers.Add('If-Match', $etag)
   }
+
+  $headers = $($request.Headers | Format-List)
+  Write-Log "Request header: $headers"
 
   try {
     if ($method -in @('Put', 'Post', 'Patch')) {
       if ($null -eq $Payload -or '' -eq $Payload) {
-        $Payload = '{}'
+        $PayloadString = '{}'
+      } else {
+        $PayloadString = $Payload | ConvertTo-Json
       }
       $request.ContentType = 'application/json'
-      $request.ContentLength = $Payload.length
-
+      $request.ContentLength = $PayloadString.length
 
       $reqWriter = New-Object System.IO.StreamWriter($request.GetRequestStream(), [System.Text.Encoding]::ASCII)
-      $reqWriter.Write($Payload)
+      $reqWriter.Write($PayloadString)
       $reqWriter.Close()
+
+      Write-Log "Send request payload: $PayloadString"
     }
 
     # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
