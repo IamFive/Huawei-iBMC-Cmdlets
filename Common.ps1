@@ -89,20 +89,27 @@ function Get-MatchedSizeArray($Source, $Target, $SourceName, $TargetName) {
     $Target = $Target * $Source.Count
   }
   if ($Source.Count -ne $Target.Count) {
-    throw $([string]::Format($Bundle.ERROR_PARAMETER_COUNT_DIFFERERNT, $SourceName, $TargetName))
+    throw $([string]::Format($(Get-i18n ERROR_PARAMETER_COUNT_DIFFERERNT), $SourceName, $TargetName))
   }
   return $Target
+}
+
+function Get-OptionalMatchedSizeArray($Source, $Target, $SourceName, $TargetName) {
+  if ($null -eq $Target -or $Target.Count -eq 0) {
+    return $null
+  }
+  return Get-MatchedSizeArray $Source $Target $SourceName $TargetName
 }
 
 
 function Assert-NotNull($Parameter, $ParameterName) {
   if ($null -eq $Parameter) {
-    throw $([string]::Format($Bundle.ERROR_PARAMETER_EMPTY, $ParameterName))
+    throw $([string]::Format($(Get-i18n ERROR_PARAMETER_EMPTY), $ParameterName))
   }
 }
 
 function Assert-ArrayNotNull($Parameter, $ParameterName) {
   if ($null -eq $Parameter -or $Parameter.Count -eq 0 -or $Parameter -contains $null) {
-    throw $([string]::Format($Bundle.ERROR_PARAMETER_ARRAY_EMPTY, $ParameterName))
+    throw $([string]::Format($(Get-i18n ERROR_PARAMETER_ARRAY_EMPTY), $ParameterName))
   }
 }
