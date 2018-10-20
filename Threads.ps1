@@ -95,9 +95,10 @@ function Start-ScriptBlockThread {
 
   [Void] $PowerShell.AddScript($ScriptBlock)
   if ($null -ne $Parameters -and $Parameters.Count -gt 0) {
-    Foreach ($Arg in $Parameters) {
-      [Void] $PowerShell.AddArgument($Arg)
-    }
+    [Void] $PowerShell.AddParameters($Parameters)
+    # Foreach ($Arg in $Parameters) {
+    #   [Void] $PowerShell.AddArgument($Arg)
+    # }
   }
 
   Write-Log "Start script block thread" "DEBUG"
@@ -170,9 +171,9 @@ function Get-AsyncTaskResults {
     }
 
     If ($ShowProgress) {
-      Write-Progress -Activity $bundle.MSG_WAIT_PROGRESS_TITLE `
+      Write-Progress -Activity $(Get-i18n MSG_WAIT_PROGRESS_TITLE) `
         -PercentComplete $(($i++ / $AsyncTasks.Count) * 100) `
-        -Status $bundle.MSG_WAIT_PROGRESS_PERCENT
+        -Status $(Get-i18n MSG_WAIT_PROGRESS_PERCENT)
     }
   }
 }
