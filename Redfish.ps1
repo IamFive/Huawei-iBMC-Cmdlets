@@ -301,6 +301,10 @@ function Invoke-RedfishRequest {
     [parameter(Mandatory = $false, Position=3)]
     $Payload,
 
+    [System.Object]
+    [parameter(Mandatory = $false, Position=4)]
+    $Headers,
+
     [Switch]
     [parameter(Mandatory = $false, Position=4)]
     $ContinueEvenFailed
@@ -331,13 +335,25 @@ function Invoke-RedfishRequest {
     $request.ServerCertificateValidationCallback = { $true }
   }
 
+  if ($null -ne $Headers) {
+    $Headers.Keys | ForEach-Object {
+      $request.Headers.Add($_, $Headers.Item($_))
+    }
+  }
+
+  if ('If-Match' -notin $Headers.Keys -and $method -in @('Put', 'Patch')) {
+    $Response = Invoke-RedfishRequest -Session $Session -Path $Path
+    $request.Headers.Add('If-Match', $Response.Headers.ETag)
+  }
+
   try {
-    if ($method -in @('PUT', 'POST', 'PATCH')) {
+    if ($method -in @('Put', 'Post', 'Patch')) {
       if ($null -eq $Payload -or '' -eq $Payload) {
         $Payload = '{}'
       }
       $request.ContentType = 'application/json'
       $request.ContentLength = $Payload.length
+
 
       $reqWriter = New-Object System.IO.StreamWriter($request.GetRequestStream(), [System.Text.Encoding]::ASCII)
       $reqWriter.Write($Payload)

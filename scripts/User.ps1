@@ -15,7 +15,7 @@ function Add-iBMCUser {
 
     [String[]]
     [parameter(Mandatory = $true, Position=3)]
-    [ValidateSet("Administrator", "Operator", "Commonuser", "NoAccess", "CustomRole1", "CustomRole2", "CustomRole3", "CustomRole4")]
+    [ValidateSet("Administrator", "Operator", "Commonuser", "Noaccess", "CustomRole1", "CustomRole2", "CustomRole3", "CustomRole4")]
     $Role
   )
 
@@ -40,7 +40,8 @@ function Add-iBMCUser {
         'Password' = $pwd;
         'RoleId' = $Role;
       } | ConvertTo-Json
-      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
+      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload
+      # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
       return $response | ConvertFrom-WebResponse
     }
     try {
@@ -102,13 +103,82 @@ function Get-iBMCUser {
 function Set-iBMCUser {
   [CmdletBinding()]
   param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session,
 
+    [string[]]
+    [parameter(Mandatory = $true)]
+    $Username,
+
+    [string[]]
+    [parameter(Mandatory = $false)]
+    $NewUsername,
+
+    [SecureString[]]
+    [parameter(Mandatory = $false)]
+    $NewPassword,
+
+    [string[]]
+    [parameter(Mandatory = $false)]
+    [ValidateSet("Administrator", "Operator", "Commonuser", "Noaccess", "CustomRole1", "CustomRole2", "CustomRole3", "CustomRole4")]
+    $NewRole,
+
+    [Boolean[]]
+    [parameter(Mandatory = $false)]
+    $Enabled,
+
+    [Switch[]]
+    [parameter(Mandatory = $false)]
+    $Locked
   )
 
   begin {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $Username 'Username'
+    $Username = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
+    $NewUsername = Get-OptionalMatchedSizeArray $Session $NewUsername 'Session' 'NewUsername'
+    $NewPassword = Get-OptionalMatchedSizeArray $Session $NewPassword 'Session' 'NewPassword'
+    $NewRole = Get-OptionalMatchedSizeArray $Session $NewRole 'Session' 'NewRole'
+    $Enabled = Get-OptionalMatchedSizeArray $Session $Enabled 'Session' 'Enabled'
+    $Locked = Get-OptionalMatchedSizeArray $Session $Locked 'Session' 'Locked'
   }
 
   process {
+    # payload = {
+    #   "UserName": args.newusername,
+    #   "Password": args.newpassword,
+    #   "RoleId": args.newrole,
+    #   "Locked": args.locked,
+    #   "Enabled": args.enabled == 'True'
+    # }
+
+    $SetUserBlock = {
+      param($Session, $Username, $Payload)
+      # try load all users
+      $Users = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
+      for ($idx=0; $idx -lt $Users.Members.Count; $idx++) {
+        $member = $Users.Members[$idx]
+        $User = Invoke-RedfishRequest $session $member.'@odata.id' | ConvertFrom-WebResponse
+        if ($User.UserName -eq $Username) {
+          # Update user with provided $Username
+          Invoke-RedfishRequest $Session $member.'@odata.id' 'PUT'
+        }
+      }
+      throw $([string]::Format($(Get-i18n FAIL_NO_USER_WITH_NAME_EXISTS), $Username))
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        $parameter = @($Session[$idx], $Username[$idx])
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $SetUserBlock $parameter))
+      }
+      return Get-AsyncTaskResults -AsyncTasks $tasks
+    } finally {
+      $pool.close()
+    }
   }
 
   end {
@@ -137,14 +207,13 @@ function Remove-iBMCUser {
     $DeleteUserBlock = {
       param($Session, $Username)
       # try load all users
-      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
-      for ($idx=0; $idx -lt $response.Members.Count; $idx++) {
-        $member = $response.Members[$idx]
+      $Users = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
+      for ($idx=0; $idx -lt $Users.Members.Count; $idx++) {
+        $member = $Users.Members[$idx]
         $user = Invoke-RedfishRequest $session $member.'@odata.id' | ConvertFrom-WebResponse
         if ($user.UserName -eq $Username) {
           # delete user with provided $Username
-          Invoke-RedfishRequest $Session $member.'@odata.id' 'Delete' > $null
-          return
+          Invoke-RedfishRequest $Session $member.'@odata.id' 'Delete' | Out-null
         }
       }
 
