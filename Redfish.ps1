@@ -218,7 +218,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   )
 
   if ($null -eq $session -or $session -isnot [RedfishSession]) {
-    throw $([string]::Format($bundle.ERROR_PARAMETER_ILLEGAL, 'Session'))
+    throw $([string]::Format($(Get-i18n ERROR_PARAMETER_ILLEGAL), 'Session'))
   }
 
   $method = "DELETE"
@@ -268,7 +268,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   )
 
   if ($null -eq $session -or $session -isnot [RedfishSession]) {
-    throw $([string]::Format($bundle.ERROR_PARAMETER_ILLEGAL, 'Session'))
+    throw $([string]::Format($(Get-i18n ERROR_PARAMETER_ILLEGAL), 'Session'))
   }
 
   $method = "GET"
