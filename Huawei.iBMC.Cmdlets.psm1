@@ -1,7 +1,7 @@
 # Implement your module commands in this script.
 
-. $PSScriptRoot/Common.ps1
-. $PSScriptRoot/Redfish.ps1
+. $PSScriptRoot/common/Common.ps1
+. $PSScriptRoot/common/Redfish.ps1
 
 # Import all functional scripts
 Get-ChildItem -Path $PSScriptRoot\scripts\ -Recurse -Filter *.ps1 | foreach {

@@ -21,7 +21,7 @@ A string of 1 to 20 characters is allowed.
 - If password complexity check is not enabled for other interfaces, there is not restriction on the password
 
 .PARAMETER Role
-Password specifies the role of this new add user.
+Role specifies the role of this new add user.
 Available role value set is:
 - "Administrator"
 - "Operator"
@@ -40,22 +40,6 @@ Returns the new created User object array.
 PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Username root -Password password
 PS C:\> $sessions
 
-.EXAMPLE
-PS C:\> $credential = Get-Credential
-PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Credential $credential
-PS C:\> $sessions
-
-.EXAMPLE
-PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2-10 -Username root -Password password
-PS C:\> $sessions
-
-.EXAMPLE
-PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username root -Password password
-PS C:\> $sessions
-
-.EXAMPLE
-PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username user1,user2 -Password password1,password2
-PS C:\> $sessions
 
 
 .LINK
