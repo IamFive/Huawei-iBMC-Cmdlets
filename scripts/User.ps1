@@ -1,4 +1,67 @@
 function Add-iBMCUser {
+<#
+.SYNOPSIS
+Add a new iBMC user account.
+
+.DESCRIPTION
+Add a new iBMC user account. The session user must have privilege to add new user.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.PARAMETER Username
+Username specifies the new username to be added.
+A string of 1 to 16 characters is allowed. It can contain letters, digits, and special characters (excluding <>&,'"/\%), but cannot contain spaces or start with a number sign (#).
+
+.PARAMETER Password
+Password specifies the password of this new add user.
+A string of 1 to 20 characters is allowed.
+- If password complexity check is enabled for other interfaces, the password must meet password complexity requirements.
+- If password complexity check is not enabled for other interfaces, there is not restriction on the password
+
+.PARAMETER Role
+Password specifies the role of this new add user.
+Available role value set is:
+- "Administrator"
+- "Operator"
+- "Commonuser"
+- "Noaccess"
+- "CustomRole1"
+- "CustomRole2"
+- "CustomRole3"
+- "CustomRole4"
+
+.OUTPUTS
+PSObject[]
+Returns the new created User object array.
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Username root -Password password
+PS C:\> $sessions
+
+.EXAMPLE
+PS C:\> $credential = Get-Credential
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Credential $credential
+PS C:\> $sessions
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2-10 -Username root -Password password
+PS C:\> $sessions
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username root -Password password
+PS C:\> $sessions
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username user1,user2 -Password password1,password2
+PS C:\> $sessions
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
   [CmdletBinding()]
   param (
     [RedfishSession[]]
