@@ -34,12 +34,32 @@ Available role value set is:
 
 .OUTPUTS
 PSObject[]
-Returns the new created User object array.
+Returns the new created User object array if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
 
 .EXAMPLE
-PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Username root -Password password
-PS C:\> $sessions
 
+Create a new user with name "new-user" for a single iBMC server
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
+PS C:\> Add-iBMCUser -Session $session -Username new-user -Password $pwd -Role Operator
+
+.EXAMPLE
+
+Create a new user with name "new-user" for a single iBMC server with pipelined session
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Password password -TrustCert
+PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
+PS C:\> ,$session | Add-iBMCUser -Username new-user -Password $pwd -Role Operator
+
+.EXAMPLE
+
+Create a new user with name "new-user" for multiple iBMC servers with pipelined session
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Password password -TrustCert
+PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
+PS C:\> ,$session | Add-iBMCUser -Username new-user,new-user2 -Password $pwd,$pwd -Role Operator,Administrator
 
 
 .LINK
@@ -110,6 +130,34 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 
 function Get-iBMCUser {
+<#
+.SYNOPSIS
+Get all iBMC user account details
+
+.DESCRIPTION
+Get all iBMC user account information, excluding password.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+
+.OUTPUTS
+Array[PSObject[]]
+Returns array of the user object array if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+Get all user account infomation for multiple iBMC servers
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2-10 -Username username -Password password -TrustCert
+PS C:\> Get-iBMCUser -Session $session
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
   param (
     [RedfishSession[]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
@@ -148,6 +196,95 @@ function Get-iBMCUser {
 }
 
 function Set-iBMCUser {
+<#
+.SYNOPSIS
+Modify an existing iBMC user account's infomation.
+
+.DESCRIPTION
+Modify an existing iBMC user account's infomation. The NewUsername parameter must not exists in all user accounts.
+
+Modify the following properties of a user:
+- User name
+- Password
+- Rights
+- Lockout status
+- Whether the user is enabled
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.PARAMETER Username
+Username specifies the user to be modified.
+
+.PARAMETER NewUsername
+NewUsername specifies the new username of the modified user.
+A string of 1 to 16 characters is allowed. It can contain letters, digits, and special characters (excluding <>&,'"/\%), but cannot contain spaces or start with a number sign (#).
+
+.PARAMETER NewPassword
+NewPassword specifies the new password of the modified user.
+
+A string of 1 to 20 characters is allowed.
+- If password complexity check is enabled for other interfaces, the password must meet password complexity requirements.
+- If password complexity check is not enabled for other interfaces, there is not restriction on the password
+
+.PARAMETER NewRole
+NewRole specifies the new role of the modified user.
+Available role value set is:
+- "Administrator"
+- "Operator"
+- "Commonuser"
+- "Noaccess"
+- "CustomRole1"
+- "CustomRole2"
+- "CustomRole3"
+- "CustomRole4"
+
+.PARAMETER Enabled
+Enabled specifies Whether the user is enabled. A power shell bool($true|$false) value is accept.
+
+.PARAMETER Unlocked
+If this switch parameter is present then the modified user's lockout status is set to false.
+
+
+.OUTPUTS
+PSObject[]
+Returns the modified User object array if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+Create a user account with name powershell and then modify "username", "password", "role", "Enabled", "Locked" properties of this user for a single iBMC server
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
+PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
+PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
+PS C:\> Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator -Enabled $true -Unlocked
+
+.EXAMPLE
+
+Create a user account with name powershell and then modify the "username", "password", "role" properties of this user for multiple iBMC servers
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2,10.10.10.4 -Username username -Password password -TrustCert
+PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
+PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
+PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
+PS C:\> Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator
+
+.EXAMPLE
+
+Modify "username", "password", "role" properties of a user with name "username" for multiple iBMC servers
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Password password -TrustCert
+PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
+PS C:\> ,$session | Set-iBMCUser -Username username -NewUsername new-user2 -NewPassword $newPwd -NewRole Administrator
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
   [CmdletBinding()]
   param (
     [RedfishSession[]]
@@ -175,9 +312,9 @@ function Set-iBMCUser {
     [parameter(Mandatory = $false)]
     $Enabled,
 
-    [Switch[]]
+    [switch[]]
     [parameter(Mandatory = $false)]
-    $Locked
+    $Unlocked
   )
 
   begin {
@@ -188,7 +325,7 @@ function Set-iBMCUser {
     $NewPasswords = Get-OptionalMatchedSizeArray $Session $NewPassword
     $NewRoles = Get-OptionalMatchedSizeArray $Session $NewRole
     $Enableds = Get-OptionalMatchedSizeArray $Session $Enabled
-    $Lockeds = Get-OptionalMatchedSizeArray $Session $Locked
+    $Unlockeds = Get-OptionalMatchedSizeArray $Session $Unlocked
   }
 
   process {
@@ -225,23 +362,28 @@ function Set-iBMCUser {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
-        $Payload = Remove-EmptyValues @{
+        $Payload = @{
           "UserName"= $NewUsernames[$idx];
           "Password"= $NewPasswords[$idx];
           "RoleId"= $NewRoles[$idx];
-          "Locked"= $Lockeds[$idx];
           "Enabled"= $Enableds[$idx];
         }
 
-        if ($null -eq $Payload -or $Payload.Keys.Count -eq 0) {
+        $Playload_ = Remove-EmptyValues $Payload
+        if ($Unlockeds[$idx] -eq $true) {
+          $Playload_.Locked = $false
+        }
+
+        if ($null -eq $Playload_ -or $Playload_.Keys.Count -eq 0) {
           throw $(Get-i18n FAIL_NO_UPDATE_PARAMETER)
         } else {
-          $Parameters = @($Session[$idx], $Username[$idx], $Payload)
+          $Parameters = @($Session[$idx], $Username[$idx], $Playload_)
           [Void] $tasks.Add($(Start-ScriptBlockThread $pool $SetUserBlock $Parameters))
         }
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
-    } finally {
+    }
+    finally {
       $pool.close()
     }
   }
@@ -251,6 +393,45 @@ function Set-iBMCUser {
 }
 
 function Remove-iBMCUser {
+<#
+.SYNOPSIS
+Remove an existing iBMC user account.
+
+.DESCRIPTION
+Remove an existing iBMC user account identified by "Username" parameter
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.PARAMETER Username
+Username specifies the user to be removed.
+
+.OUTPUTS
+None
+Nothing returned if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+Remove a iBMC user account that has a username "user1"
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Remove-iBMCUser -Session $session -Username user1
+
+
+.EXAMPLE
+
+Remove a iBMC user account that has a username "user1"
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $session | Remove-iBMCUser -Username user1
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
   [CmdletBinding()]
   param (
     [RedfishSession[]]

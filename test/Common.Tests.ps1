@@ -35,11 +35,34 @@ Describe "Common Utils" {
       "key2"= "value2";
       "key3"= $null;
       "key4"= @();
+      "key5"= $false;
+      "key6"= $true;
     }
 
     $result = Remove-EmptyValues $Source
-    $result.count | Should -Be 1
-    $result.keys.count | Should -Be 1
+    $result.count | Should -Be 3
+    $result.keys.count | Should -Be 3
     $result.key2 | Should -Be "value2"
+    $result.key5 | Should -Be $false
+    $result.key6 | Should -Be $true
+  }
+
+  It "Remove-EmptyValues with complex object" {
+    $pwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
+    $Source = @{
+      "key1"= "";
+      "key2"= $pwd;
+      "key3"= $null;
+      "key4"= @();
+      "key5"= $false;
+      "key6"= $true;
+    }
+
+    $result = Remove-EmptyValues $Source
+    $result.count | Should -Be 3
+    $result.keys.count | Should -Be 3
+    $result.key2 | Should -Be "value2"
+    $result.key5 | Should -Be $false
+    $result.key6 | Should -Be $true
   }
 }
