@@ -332,16 +332,41 @@ function Invoke-RedfishRequest {
   Write-Log "Send new request: [$Method] $OdataId"
 
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
-  [System.Net.HttpWebRequest] $request = [System.Net.WebRequest]::Create($OdataId)
+  [System.Net.HttpWebRequest] $request = [System.Net.HttpWebRequest]::Create($OdataId)
+  # $cert = Get-ChildItem -Path cert:\CurrentUser\My | where-object Thumbprint -eq B2536A31C7A7462BBA542B4A8B0C34E315D16AB9
+  # Write-Host $cert
+  # $Store = New-Object System.Security.Cryptography.X509Certificates.X509Store(
+  #         [System.Security.Cryptography.X509Certificates.StoreName]::My, "CurrentUser")
+  # $Store.Open("MaxAllowed")
+  # $Certificate = $Store.Certificates |  Where-Object Thumbprint -Eq "B2536A31C7A7462BBA542B4A8B0C34E315D16AB9"
+  # Write-Host $Certificate
+  # # $request.ClientCertificates.Add($Certificate)
+  # $request.ClientCertificates.AddRange($Certificate)
+
+  $request.ServerCertificateValidationCallback = {
+    param($sender, $certificate, $chain, $errors)
+    if ($true -eq $session.TrustCert) {
+      return $true
+    }
+    if ($request -eq $sender) {
+      $Certificates = $(Get-ChildItem -Path cert:\ -Recurse | where-object Thumbprint -eq $certificate.Thumbprint)
+      if ($null -ne $Certificates -and $Certificates.count -gt 0) {
+        return $true
+      } else {
+        return $false
+      }
+    }
+    return $($errors -eq 'None')
+  }
+
+
   $request.Method = $Method
   $request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
   if ($null -ne $session.AuthToken) {
     $request.Headers.Add('X-Auth-Token', $session.AuthToken)
   }
-  if ($true -eq $session.TrustCert) {
-    $request.ServerCertificateValidationCallback = { $true }
-  }
+
   if ($null -ne $Headers) {
     $Headers.Keys | ForEach-Object {
       $request.Headers.Add($_, $Headers.Item($_))

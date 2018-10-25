@@ -14,7 +14,7 @@ Describe "Connect-iBMC" {
 
 Describe "New-iBMCRedfishSession" {
   It "new with account" {
-    $session = New-iBMCRedfishSession -Address "112.93.129.9" -Username "chajian1" -Password "chajian12#$" -TrustCert
+    $session = New-iBMCRedfishSession -Address 112.93.129.9 -Username "chajian1" -Password "chajian12#$"
     Write-Host "Session:"
     Write-Host $($session | fl)
 

@@ -1,4 +1,4 @@
-<# NOTE: BMC Connect related Cmdlets. #>
+<# NOTE: iBMC Connect module Cmdlets #>
 
 function Connect-iBMC {
   <#

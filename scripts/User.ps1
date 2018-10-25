@@ -1,3 +1,5 @@
+<# NOTE: iBMC User Module Cmdlets #>
+
 function Add-iBMCUser {
 <#
 .SYNOPSIS
