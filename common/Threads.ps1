@@ -164,12 +164,11 @@ function Get-AsyncTaskResults {
       }
     }
     catch {
-      # $ex = $_.Exception
-      # while($null -ne $ex.InnerException) {
-      #   $ex = $ex.InnerException
-      # }
-      # $ex
-      $_.Exception
+      $ex = $_.Exception
+      while($null -ne $ex.InnerException) {
+        $ex = $ex.InnerException
+      }
+      $ex
     }
     finally {
       $AsyncTask.isRunning = $false
