@@ -1,10 +1,10 @@
 <# NOTE: A PowerShell Logger implementation. #>
 
 # create log folder if not exists
-mkdir "$PSScriptRoot\logs" -ErrorAction SilentlyContinue > $null
+mkdir "$PSScriptRoot\..\logs" -ErrorAction SilentlyContinue > $null
 
 # all logging settins are here on top
-$logFile = "$PSScriptRoot\logs\log-$(gc env:computername).log"
+$logFile = "$PSScriptRoot\..\logs\log-$(gc env:computername).log"
 $logLevel = "DEBUG" # ("DEBUG","INFO","WARN","ERROR","FATAL")
 $logSize = 1mb # 30kb
 $logCount = 10

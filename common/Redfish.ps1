@@ -346,7 +346,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
             $TaskPercent = [int]$TaskPercent.replace('%', '')
           }
           Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -PercentComplete $TaskPercent `
-            -Status $(Get-i18n MSG_PROGRESS_PERCENT)
+            -Status "$($TaskPercent)% $(Get-i18n MSG_PROGRESS_PERCENT)"
         }
         elseif ($TaskState -eq 'Completed') {
           Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
@@ -372,11 +372,12 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     }
 
     while ($true) {
-      $RunningTasks = ,$($Tasks | Where-Object TaskState -eq 'Running')
+      $RunningTasks = @($($Tasks | Where-Object TaskState -eq 'Running'))
       Write-Log "Remain running task count: $($RunningTasks.Count)"
-      if ($RunningTasks.Count -gt 0) {
+      if ($RunningTasks.Count -eq 0) {
         break
       }
+      Start-Sleep -Seconds 1
       # filter running task and fetch task new status
       $AsyncTasks = New-Object System.Collections.ArrayList
       for ($idx=0; $idx -lt $RunningTasks.Count; $idx++) {
@@ -385,7 +386,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         [Void] $AsyncTasks.Add($(Start-CommandThread $pool "Get-RedfishTask" $Parameters))
       }
       # new updated task list
-      $ProcessedTasks = Get-AsyncTaskResults $AsyncTasks
+      $ProcessedTasks = @($(Get-AsyncTaskResults $AsyncTasks))
       for ($idx=0; $idx -lt $ProcessedTasks.Count; $idx++) {
         $ProcessedTask = $ProcessedTasks[$idx]
         $Tasks[$ProcessedTask.index] = $ProcessedTask # update task
@@ -608,8 +609,7 @@ function Invoke-RedfishRequest {
     $request.Headers.Add('If-Match', $etag)
   }
 
-  $headers = $($request.Headers | Format-List)
-  Write-Log "Request header: $headers"
+  Write-Log "Request header: $($request.Headers)"
 
   try {
     if ($method -in @('Put', 'Post', 'Patch')) {
