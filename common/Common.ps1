@@ -1,8 +1,8 @@
 <# NOTE: Common Utilities #>
 
-. $PSScriptRoot/I18n.ps1
-. $PSScriptRoot/Logger.ps1
-. $PSScriptRoot/Threads.ps1
+# . $PSScriptRoot/I18n.ps1
+# . $PSScriptRoot/Logger.ps1
+# . $PSScriptRoot/Threads.ps1
 
 function Write-Input {
   param($input)

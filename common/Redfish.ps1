@@ -1,6 +1,6 @@
 <# NOTE: A Redfish Client PowerShell scripts. #>
 
-. $PSScriptRoot/Common.ps1
+# . $PSScriptRoot/Common.ps1
 
 try { [RedfishSession] | Out-Null } catch {
 Add-Type @'
