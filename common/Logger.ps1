@@ -1,123 +1,28 @@
 <# NOTE: A PowerShell Logger implementation. #>
 
-# create log folder if not exists
-mkdir "$PSScriptRoot\..\logs" -ErrorAction SilentlyContinue > $null
+function Enable-Log4Net() {
+  $env:LogFileRoot = "$PSScriptRoot\..\logs"
+  $Log4NetDllPath = "$PSScriptRoot\log4net.dll"
+  $Log4NetConfigFilePath = "$PSScriptRoot\Log4Net.xml"
 
-# all logging settins are here on top
-$logFile = "$PSScriptRoot\..\logs\log-$(gc env:computername).log"
-$logLevel = "DEBUG" # ("DEBUG","INFO","WARN","ERROR","FATAL")
-$logSize = 1mb # 30kb
-$logCount = 10
-# end of settings
+  # load the log4net library
+  [void][Reflection.Assembly]::LoadFile($Log4NetDllPath)
+  # configure logging
+  [log4net.LogManager]::ResetConfiguration()
 
-function Write-LogLine ($line) {
-  Add-Content $logFile -Value $Line
+  $LogConfigFileInfo = New-Object System.IO.FileInfo($Log4NetConfigFilePath)
+  [log4net.Config.XmlConfigurator]::Configure($LogConfigFileInfo)
+
+  $global:Logger = [log4net.LogManager]::GetLogger("root")
+  $Logger.info("Log4Net initialized.")
+  return $Logger
 }
 
-# http://stackoverflow.com/a/38738942
-Function Write-Log {
-  [CmdletBinding()]
-  Param(
-    [Parameter(Mandatory = $True, Position=0)]
-    [string]
-    $Message,
-
-    [Parameter(Mandatory = $False, Position=1)]
-    [String]
-    $Level = "INFO"
-  )
-
-  $levels = ("DEBUG", "INFO", "WARN", "ERROR", "FATAL")
-  $logLevelPos = [array]::IndexOf($levels, $logLevel)
-  $levelPos = [array]::IndexOf($levels, $Level)
-  $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss:fff")
-
-  if ($logLevelPos -lt 0) {
-    Write-LogLine "$Stamp ERROR Wrong logLevel configuration [$logLevel]"
-  }
-
-  if ($levelPos -lt 0) {
-    Write-LogLine "$Stamp ERROR Wrong log level parameter [$Level]"
-  }
-
-  # if level parameter is wrong or configuration is wrong I still want to see the
-  # message in log
-  if ($levelPos -lt $logLevelPos -and $levelPos -ge 0 -and $logLevelPos -ge 0) {
-    return
-  }
-
-  $Line = "$Stamp $Level $Message"
-  Write-LogLine $Line
-}
-
-# https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Script-to-Roll-a96ec7d4
-function Reset-Log {
-  # function checks to see if file in question is larger than the paramater specified
-  # if it is it will roll a log and delete the oldes log if there are more than x logs.
-  param([string]$fileName, [int64]$filesize = 1mb , [int] $logcount = 5)
-
-  $logRollStatus = $true
-  if (test-path $filename) {
-    $file = Get-ChildItem $filename
-    if ((($file).length) -ige $filesize) { #this starts the log roll
-      $fileDir = $file.Directory
-      #this gets the name of the file we started with
-      $fn = $file.name
-      $files = Get-ChildItem $filedir | ? {$_.name -like "$fn*"} | Sort-Object lastwritetime
-      #this gets the fullname of the file we started with
-      $filefullname = $file.fullname
-      #$logcount +=1 #add one to the count as the base file is one more than the count
-      for ($i = ($files.count); $i -gt 0; $i--) {
-        #[int]$fileNumber = ($f).name.Trim($file.name) #gets the current number of
-        # the file we are on
-        $files = Get-ChildItem $filedir | ? {$_.name -like "$fn*"} | Sort-Object lastwritetime
-        $operatingFile = $files | ? {($_.name).trim($fn) -eq $i}
-        if ($operatingfile)
-        {$operatingFilenumber = ($files | ? {($_.name).trim($fn) -eq $i}).name.trim($fn)}
-        else
-        {$operatingFilenumber = $null}
-
-        if (($null -eq $operatingFilenumber) -and ($i -ne 1) -and ($i -lt $logcount)) {
-          $operatingFilenumber = $i
-          $newfilename = "$filefullname.$operatingFilenumber"
-          $operatingFile = $files | ? {($_.name).trim($fn) -eq ($i - 1)}
-          write-host "moving to $newfilename"
-          move-item ($operatingFile.FullName) -Destination $newfilename -Force
-        }
-        elseif ($i -ge $logcount) {
-          if ($null -eq $operatingFilenumber) {
-            $operatingFilenumber = $i - 1
-            $operatingFile = $files | ? {($_.name).trim($fn) -eq $operatingFilenumber}
-
-          }
-          write-host "deleting " ($operatingFile.FullName)
-          remove-item ($operatingFile.FullName) -Force
-        }
-        elseif ($i -eq 1) {
-          $operatingFilenumber = 1
-          $newfilename = "$filefullname.$operatingFilenumber"
-          write-host "moving to $newfilename"
-          move-item $filefullname -Destination $newfilename -Force
-        }
-        else {
-          $operatingFilenumber = $i + 1
-          $newfilename = "$filefullname.$operatingFilenumber"
-          $operatingFile = $files | ? {($_.name).trim($fn) -eq ($i - 1)}
-          write-host "moving to $newfilename"
-          move-item ($operatingFile.FullName) -Destination $newfilename -Force
-        }
-      }
-    }
-    else
-    { $logRollStatus = $false}
-  }
-  else {
-    $logrollStatus = $false
-  }
-  $LogRollStatus
+function Get-Logger ($name) {
+  return [log4net.LogManager]::GetLogger($name)
 }
 
 # to null to avoid output
 $Null = @(
-  Reset-Log -fileName $logFile -filesize $logSize -logcount $logCount
+  Enable-Log4Net
 )
