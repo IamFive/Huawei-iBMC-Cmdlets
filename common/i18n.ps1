@@ -2,7 +2,10 @@ $bundle = Data {
   #culture="en-US"
   ConvertFrom-StringData @'
   MSG_WAIT_PROGRESS_TITLE = Waiting multiple thread results
-  MSG_WAIT_PROGRESS_PERCENT = Percent Complete
+  MSG_PROGRESS_PERCENT = Percent Complete
+  MSG_PROGRESS_COMPLETE = Task Complete
+  MSG_PROGRESS_FAILED = Task Failed
+
   FAIL_NO_USER_WITH_NAME_EXISTS = Failure: No user with name "{0}" exists
   FAIL_NO_UPDATE_PARAMETER = Failure: at least one update parameter must be set
 

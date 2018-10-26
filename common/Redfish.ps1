@@ -17,6 +17,7 @@ Add-Type @'
     public System.String DateTime ;
     public System.String DateTimeLocalOffset ;
 
+    public System.String Address ;
     public System.String BaseUri ;
     public System.String Location ;
     public System.Boolean Alive ;
@@ -131,6 +132,11 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     throw $i18n.ERROR_INVALID_CREDENTIALS
   }
 
+  # create a new session object for redfish server of $address
+  $session = New-Object RedfishSession
+  $session.Address = $Address
+  $session.TrustCert = $TrustCert
+
   [IPAddress]$ipAddress = $null
   if ([IPAddress]::TryParse($Address, [ref]$ipAddress)) {
     if (([IPAddress]$Address).AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetworkV6 -and $Address.IndexOf('[') -eq -1) {
@@ -138,10 +144,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     }
   }
 
-  # create a new session object for redfish server of $address
-  $session = New-Object RedfishSession
   $session.BaseUri = "https://$Address"
-  $session.TrustCert = $TrustCert
+
 
   Write-Log "Create Redfish session For $($session.BaseUri) now"
 
@@ -279,6 +283,233 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   $success = $response.StatusCode.value__ -lt 400
   $session.Alive = $success
   return $session
+}
+
+
+function Wait-RedfishTasks {
+<#
+.SYNOPSIS
+Wait redfish tasks util success or failed
+
+.DESCRIPTION
+Wait redfish tasks util success or failed
+
+.PARAMETER Session
+Session array that created by New-iBMCRedfishSession cmdlet.
+
+.PARAMETER Task
+Task array that return by redfish async job API
+
+.OUTPUTS
+
+.EXAMPLE
+PS C:\> Wait-RedfishTasks $Sessions $Tasks
+PS C:\>
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, Position = 0)]
+    $ThreadPool,
+
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, Position=1)]
+    $Sessions,
+
+    [PSObject[]]
+    [parameter(Mandatory = $true, Position=2)]
+    $Tasks,
+
+    [Parameter(Mandatory = $false, Position = 3)]
+    [switch]
+    $ShowProgress
+  )
+
+  begin {
+    Assert-NotNull $ThreadPool
+    Assert-ArrayNotNull $Sessions
+    Assert-ArrayNotNull $Tasks
+  }
+
+  process {
+    function Write-TaskProgress($Task) {
+      if ($ShowProgress) {
+        $TaskState = $Task.TaskState
+        if ($TaskState -eq 'Running') {
+          $TaskPercent = $Task.Oem.Huawei.TaskPercentage
+          if ($null -eq $TaskPercent) {
+            $TaskPercent = 0
+          } else {
+            $TaskPercent = [int]$TaskPercent.replace('%', '')
+          }
+          Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -PercentComplete $TaskPercent `
+            -Status $(Get-i18n MSG_PROGRESS_PERCENT)
+        }
+        elseif ($TaskState -eq 'Completed') {
+          Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
+        }
+        elseif ($TaskState -eq 'Exception') {
+          Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_FAILED)
+        }
+      }
+    }
+
+    Write-Log "Waiting all redfish task done"
+
+    $GuidPrefix = [string]$(Get-Random -Maximum 1000000)
+    # initialize tasks
+    for ($idx=0; $idx -lt $Tasks.Count; $idx++) {
+      $Task = $Tasks[$idx]
+      $Session = $Sessions[$idx]
+      $TaskGuid = [int]$($GuidPrefix + $idx)
+      $Task | Add-Member -MemberType NoteProperty 'index' $idx
+      $Task | Add-Member -MemberType NoteProperty 'Guid' $TaskGuid
+      $Task | Add-Member -MemberType NoteProperty 'ActivityName' "[$($Session.Address)] $($Task.Name)"
+      Write-TaskProgress $Task
+    }
+
+    while ($true) {
+      $RunningTasks = ,$($Tasks | Where-Object TaskState -eq 'Running')
+      Write-Log "Remain running task count: $($RunningTasks.Count)"
+      if ($RunningTasks.Count -gt 0) {
+        break
+      }
+      # filter running task and fetch task new status
+      $AsyncTasks = New-Object System.Collections.ArrayList
+      for ($idx=0; $idx -lt $RunningTasks.Count; $idx++) {
+        $RunningTask = $RunningTasks[$idx]
+        $Parameters = @($Session[$RunningTask.index], $RunningTask)
+        [Void] $AsyncTasks.Add($(Start-CommandThread $pool "Get-RedfishTask" $Parameters))
+      }
+      # new updated task list
+      $ProcessedTasks = Get-AsyncTaskResults $AsyncTasks
+      for ($idx=0; $idx -lt $ProcessedTasks.Count; $idx++) {
+        $ProcessedTask = $ProcessedTasks[$idx]
+        $Tasks[$ProcessedTask.index] = $ProcessedTask # update task
+        Write-TaskProgress $ProcessedTask
+      }
+    }
+
+    return $Tasks
+  }
+
+  end {
+  }
+}
+
+
+function Get-RedfishTask {
+<#
+.SYNOPSIS
+Wait a redfish task util success or failed
+
+.DESCRIPTION
+Wait a redfish task util success or failed
+
+.PARAMETER Session
+Session object that created by New-iBMCRedfishSession cmdlet.
+
+.PARAMETER Task
+Task object that return by redfish async job API
+
+Completed Task object sample:
+{
+    "@odata.context": "/redfish/v1/$metadata#TaskService/Tasks/Members/$entity",
+    "@odata.type": "#Task.v1_0_2.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/1",
+    "Id": "1",
+    "Name": "Export Config File Task",
+    "TaskState": "Completed",
+    "StartTime": "2018-10-25T13:31:52+08:00",
+    "EndTime": "2018-10-25T13:32:28+08:00",
+    "TaskStatus": "OK",
+    "Messages": {
+        "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry",
+        "MessageId": "iBMC.1.0.CollectingConfigurationOK",
+        "RelatedProperties": [],
+        "Message": "Successfully collected the configuration file.",
+        "MessageArgs": [],
+        "Severity": "OK",
+        "Resolution": "None"
+    },
+    "Oem": {
+        "Huawei": {
+            "TaskPercentage": "100%"
+        }
+    }
+}
+
+
+Exception Task object sample:
+
+{
+    "@odata.context": "/redfish/v1/$metadata#TaskService/Tasks/Members/$entity",
+    "@odata.type": "#Task.v1_0_2.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/1",
+    "Id": "1",
+    "Name": "Export Config File Task",
+    "TaskState": "Exception",
+    "StartTime": "2018-10-25T15:19:40+08:00",
+    "EndTime": "2018-10-25T15:20:26+08:00",
+    "TaskStatus": "Warning",
+    "Messages": {
+        "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry",
+        "MessageId": "iBMC.1.0.FileTransferErrorDesc",
+        "RelatedProperties": [],
+        "Message": "An error occurred during the file transfer process. Details: unknown error.",
+        "MessageArgs": [
+            "unknown error"
+        ],
+        "Severity": "Warning",
+        "Resolution": "Rectify the fault and submit the request again."
+    },
+    "Oem": {
+        "Huawei": {
+            "TaskPercentage": "10%"
+        }
+    }
+}
+
+.OUTPUTS
+
+.EXAMPLE
+PS C:\> Wait-RedfishTask $session $task
+PS C:\>
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
+  [CmdletBinding()]
+  param (
+    [RedfishSession]
+    [parameter(Mandatory = $true, Position=0)]
+    $Session,
+
+    [PSObject]
+    [parameter(Mandatory = $true, Position=1)]
+    $Task
+  )
+
+  begin {
+    Assert-NotNull $Session
+    Assert-NotNull $Task
+  }
+
+  process {
+    $TaskOdataId = $Task.'@odata.id'
+    $NewTask = Invoke-RedfishRequest $Session $TaskOdataId | ConvertFrom-WebResponse
+    $NewTask | Add-Member -MemberType NoteProperty 'index' $Task.index
+    $NewTask | Add-Member -MemberType NoteProperty 'Guid' $Task.Guid
+    $NewTask | Add-Member -MemberType NoteProperty 'ActivityName' $Task.ActivityName
+    return $NewTask
+  }
+
+  end {
+  }
 }
 
 

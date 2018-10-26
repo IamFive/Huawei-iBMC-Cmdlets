@@ -149,31 +149,31 @@ function Get-AsyncTaskResults {
     [Parameter(Position = 1, Mandatory = $false)][Switch] $ShowProgress
   )
   # incrementing for Write-Progress
-  $i = 1
+  $i = 0
   foreach ($AsyncTask in $AsyncTasks) {
+    if ($ShowProgress) {
+      Write-Progress -Activity $(Get-i18n MSG_WAIT_PROGRESS_TITLE) `
+        -PercentComplete $(($i++ / $AsyncTasks.Count) * 100) `
+        -Status $(Get-i18n MSG_PROGRESS_PERCENT)
+    }
     try {
       # waiting for powershell invoke finished and return result
       $AsyncTask.PowerShell.EndInvoke($AsyncTask.AsyncResult)
-      If ($AsyncTask.PowerShell.Streams.Error) {
-        throw $AsyncTask.PowerShell.Streams.Error
+      if ($AsyncTask.PowerShell.Streams.Error) {
+        $AsyncTask.PowerShell.Streams.Error
       }
     }
     catch {
-      $ex = $_.Exception
-      while($null -ne $ex.InnerException) {
-        $ex = $ex.InnerException
-      }
-      Write-Error $ex
+      # $ex = $_.Exception
+      # while($null -ne $ex.InnerException) {
+      #   $ex = $ex.InnerException
+      # }
+      # $ex
+      $_.Exception
     }
     finally {
       $AsyncTask.isRunning = $false
       $AsyncTask.PowerShell.Dispose()
-    }
-
-    If ($ShowProgress) {
-      Write-Progress -Activity $(Get-i18n MSG_WAIT_PROGRESS_TITLE) `
-        -PercentComplete $(($i++ / $AsyncTasks.Count) * 100) `
-        -Status $(Get-i18n MSG_WAIT_PROGRESS_PERCENT)
     }
   }
 }
