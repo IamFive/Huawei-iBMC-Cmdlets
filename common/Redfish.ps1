@@ -147,7 +147,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   $session.BaseUri = "https://$Address"
 
 
-  Write-Log "Create Redfish session For $($session.BaseUri) now"
+  $Logger.info("Create Redfish session For $($session.BaseUri) now")
 
   # New session
   $path = "/SessionService/Sessions"
@@ -357,7 +357,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       }
     }
 
-    Write-Log "Waiting all redfish task done"
+    $Logger.info("Waiting all redfish task done")
 
     $GuidPrefix = [string]$(Get-Random -Maximum 1000000)
     # initialize tasks
@@ -373,7 +373,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
     while ($true) {
       $RunningTasks = @($($Tasks | Where-Object TaskState -eq 'Running'))
-      Write-Log "Remain running task count: $($RunningTasks.Count)"
+      $Logger.info("Remain running task count: $($RunningTasks.Count)")
       if ($RunningTasks.Count -eq 0) {
         break
       }
@@ -558,10 +558,10 @@ function Invoke-RedfishRequest {
     $Response = Invoke-RedfishRequest -Session $Session -Path $Path
     $Response.close()
     $etag = $Response.Headers.ETag
-    Write-Log "Odata $OdataId 's etag is $etag"
+    $Logger.info("Odata $OdataId 's etag is $etag")
   }
 
-  Write-Log "Send new request: [$Method] $OdataId"
+  $Logger.info("Send new request: [$Method] $OdataId")
 
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
   [System.Net.HttpWebRequest] $request = [System.Net.HttpWebRequest]::Create($OdataId)
@@ -609,7 +609,7 @@ function Invoke-RedfishRequest {
     $request.Headers.Add('If-Match', $etag)
   }
 
-  Write-Log "Request header: $($request.Headers)"
+  # $Logger.debug("Request header: $($request.Headers)")
 
   try {
     if ($method -in @('Put', 'Post', 'Patch')) {
@@ -625,7 +625,7 @@ function Invoke-RedfishRequest {
       $reqWriter.Write($PayloadString)
       $reqWriter.Close()
 
-      Write-Log "Send request payload: $PayloadString"
+      $Logger.debug("Send request payload: $PayloadString")
     }
 
     # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
@@ -671,6 +671,7 @@ function ConvertFrom-WebResponse {
     $stream = $response.GetResponseStream();
     $streamReader = New-Object System.IO.StreamReader($stream)
     $content = $streamReader.ReadToEnd();
+    $Logger.debug("Responsed Content: $content")
     $json = $content | ConvertFrom-Json
     return $json
   }

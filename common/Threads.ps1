@@ -66,14 +66,14 @@ function New-RunspacePool {
   )
 
   $PoolSize = Get-RunspacePoolSize $ExpectPoolSize
-  Write-Log "Create thread pool, expect pool size: $ExpectPoolSize, real pool size: $PoolSize"
+  $Logger.info("Create thread pool, expect pool size: $ExpectPoolSize, real pool size: $PoolSize")
 
   $pool = [RunspaceFactory]::CreateRunspacePool(1, $PoolSize)
   If (!$MTA) {
-    Write-Log "Thread pool apartment state: STA"
+    $Logger.info("Thread pool apartment state: STA")
     $pool.ApartmentState = 'STA'
   } else {
-    Write-Log "Thread pool apartment state: MTA"
+    $Logger.info("Thread pool apartment state: MTA")
     $pool.ApartmentState = 'MTA'
   }
   $pool.Open()
@@ -89,7 +89,7 @@ function Start-ScriptBlockThread {
     [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
-  Write-Log "Invoke Script block in new thread"
+  $Logger.info("Invoke Script block in new thread")
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
@@ -101,7 +101,7 @@ function Start-ScriptBlockThread {
     # }
   }
 
-  Write-Log "Start script block thread" "DEBUG"
+  $Logger.debug("Start script block thread")
   $AsyncResult = $PowerShell.BeginInvoke()
 
   $Task = New-Object AsyncTask
@@ -121,7 +121,7 @@ function Start-CommandThread {
     [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
-  Write-Log "Invoke Command: $Command , parameters: $Parameters in new thread"
+  $Logger.info("Invoke Command: $Command , parameters: $Parameters in new thread")
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
@@ -130,7 +130,7 @@ function Start-CommandThread {
     [Void] $PowerShell.AddParameters($Parameters)
   }
 
-  Write-Log "Start script block thread" "DEBUG"
+  $Logger.debug("Start script block thread")
   $AsyncResult = $PowerShell.BeginInvoke()
 
   $Task = New-Object AsyncTask

@@ -13,8 +13,8 @@ function Enable-Log4Net() {
   $LogConfigFileInfo = New-Object System.IO.FileInfo($Log4NetConfigFilePath)
   [log4net.Config.XmlConfigurator]::Configure($LogConfigFileInfo)
 
-  $global:Logger = [log4net.LogManager]::GetLogger("root")
-  $Logger.info("Log4Net initialized.")
+  $Global:Logger = [log4net.LogManager]::GetLogger("root")
+  # $Logger.info("Log4Net initialized.")
   return $Logger
 }
 

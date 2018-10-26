@@ -343,9 +343,9 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         if ($User.UserName -eq $Username) {
           $found = $true
           # Update user with provided $Username
-          Write-Log "User $($User.UserName) found, will patch user now"
+          $Logger.info("User $($User.UserName) found, will patch user now")
           $Headers = @{'If-Match'=$UserResponse.Headers['Etag'];}
-          Write-Log "User Etag is $($UserResponse.Headers['Etag'])"
+          $Logger.info("User Etag is $($UserResponse.Headers['Etag'])")
           if ('Password' -in $Payload) {
             $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.Password)
             $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)

@@ -19,7 +19,7 @@ function Export-iBMCBIOSSetting {
   }
 
   process {
-    Write-Log "Export BIOS Configurations Now"
+    $Logger.info("Export BIOS Configurations Now")
 
     $ScriptBlock = {
       param($Session, $DestFilePath)
