@@ -40,6 +40,8 @@ function Export-iBMCBIOSSetting {
         $Parameters = @($Session[$idx], $DestFilePath[$idx])
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
+
+      # TODO
       $RedfishTasks = Get-AsyncTaskResults $tasks
       Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
     } finally {

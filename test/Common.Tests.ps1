@@ -61,7 +61,7 @@ Describe "Common Utils" {
     $result = Remove-EmptyValues $Source
     $result.count | Should -Be 3
     $result.keys.count | Should -Be 3
-    $result.key2 | Should -Be "value2"
+    $result.key2 | Should -Be $pwd
     $result.key5 | Should -Be $false
     $result.key6 | Should -Be $true
   }
