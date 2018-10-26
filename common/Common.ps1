@@ -142,21 +142,9 @@ function Remove-EmptyValues {
     #     [Void]$hash.Add($key, $value)
     #   }
     # }
-    # for ($idx=0; $idx -lt $Target.Keys.Count; $idx++) {
-    #   $key = $Target.keys[$idx]
-    #   $value = $Target.Item($key)
-    #   if ($null -ne $value) {
-    #     if ($value -is [array] -and $value.count -eq 0) {
-    #       continue
-    #     }
-    #     if ($value -is [string] -and $value -ne '') {
-    #       continue
-    #     }
-    #     [Void]$hash.Add($key, $value)
-    #   }
-    # }
-    $Target.Keys | ForEach-Object {
-      $value = $Target.Item($_)
+
+    foreach ($key in $Target.Keys) {
+      $value = $Target.Item($key)
       if ($null -ne $value) {
         if ($value -is [array] -and $value.count -eq 0) {
           continue
@@ -164,9 +152,35 @@ function Remove-EmptyValues {
         if ($value -is [string] -and $value -eq '') {
           continue
         }
-        [Void]$hash.Add($_, $value)
+        [Void]$hash.Add($key, $value)
       }
     }
+
+    # for ($idx=0; $idx -lt $Target.Keys.Count; $idx++) {
+    #   $key = $Target.keys[$idx]
+    #   $value = $Target.Item($key)
+    #   if ($null -ne $value) {
+    #     if ($value -is [array] -and $value.count -eq 0) {
+    #       continue
+    #     }
+    #     if ($value -is [string] -and $value -eq '') {
+    #       continue
+    #     }
+    #     [Void]$hash.Add($key, $value)
+    #   }
+    # }
+    # $Target.Keys | ForEach-Object {
+    #   $value = $Target.Item($_)
+    #   if ($null -ne $value) {
+    #     if ($value -is [array] -and $value.count -eq 0) {
+    #       continue
+    #     }
+    #     if ($value -is [string] -and $value -eq '') {
+    #       continue
+    #     }
+    #     [Void]$hash.Add($_, $value)
+    #   }
+    # }
     return $hash
   }
   return $null
