@@ -337,8 +337,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       $Users = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
       $found = $false
       for ($idx=0; $idx -lt $Users.Members.Count; $idx++) {
-        $member = $Users.Members[$idx]
-        $UserResponse = Invoke-RedfishRequest $session $member.'@odata.id'
+        $Member = $Users.Members[$idx]
+        $UserResponse = Invoke-RedfishRequest $session $Member.'@odata.id'
         $User = $UserResponse | ConvertFrom-WebResponse
         if ($User.UserName -eq $Username) {
           $found = $true
@@ -351,7 +351,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
             $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
             $Payload.Password = $PlainPasswd
           }
-          return Invoke-RedfishRequest $Session $member.'@odata.id' 'Patch' $Payload $Headers
+          $SetUserResponse = Invoke-RedfishRequest $Session $User.'@odata.id' 'Patch' $Payload $Headers
+          return $SetUserResponse | ConvertFrom-WebResponse
         }
       }
 
