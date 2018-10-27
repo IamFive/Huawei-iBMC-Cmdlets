@@ -37,13 +37,15 @@ function Export-iBMCBIOSSetting {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        $Logger.info("Submit export BIOS configurations task for: $($Session[$idx].Address), `
+         dest file path is: $($DestFilePath[$idx])")
         $Parameters = @($Session[$idx], $DestFilePath[$idx])
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
-      # TODO
       $RedfishTasks = Get-AsyncTaskResults $tasks
-      Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
+      $Logger.Info("Export configuration task: " + $RedfishTasks)
+      return Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
     } finally {
       $pool.close()
     }

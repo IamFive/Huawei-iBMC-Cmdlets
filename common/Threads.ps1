@@ -160,10 +160,12 @@ function Get-AsyncTaskResults {
       # waiting for powershell invoke finished and return result
       $AsyncTask.PowerShell.EndInvoke($AsyncTask.AsyncResult)
       if ($AsyncTask.PowerShell.Streams.Error) {
+        $Logger.Warn($AsyncTask.PowerShell.Streams.Error)
         $AsyncTask.PowerShell.Streams.Error
       }
     }
     catch {
+      $Logger.Warn($ex)
       $ex = $_.Exception
       while($null -ne $ex.InnerException) {
         $ex = $ex.InnerException

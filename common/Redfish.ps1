@@ -337,43 +337,48 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   process {
     function Write-TaskProgress($Task) {
       if ($ShowProgress) {
-        $TaskState = $Task.TaskState
-        if ($TaskState -eq 'Running') {
-          $TaskPercent = $Task.Oem.Huawei.TaskPercentage
-          if ($null -eq $TaskPercent) {
-            $TaskPercent = 0
-          } else {
-            $TaskPercent = [int]$TaskPercent.replace('%', '')
+        if ($Task -isnot [Exception]) {
+          $TaskState = $Task.TaskState
+          if ($TaskState -eq 'Running') {
+            $TaskPercent = $Task.Oem.Huawei.TaskPercentage
+            if ($null -eq $TaskPercent) {
+              $TaskPercent = 0
+            } else {
+              $TaskPercent = [int]$TaskPercent.replace('%', '')
+            }
+            Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -PercentComplete $TaskPercent `
+              -Status "$($TaskPercent)% $(Get-i18n MSG_PROGRESS_PERCENT)"
           }
-          Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -PercentComplete $TaskPercent `
-            -Status "$($TaskPercent)% $(Get-i18n MSG_PROGRESS_PERCENT)"
-        }
-        elseif ($TaskState -eq 'Completed') {
-          Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
-        }
-        elseif ($TaskState -eq 'Exception') {
-          Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_FAILED)
+          elseif ($TaskState -eq 'Completed') {
+            Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
+          }
+          elseif ($TaskState -eq 'Exception') {
+            Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_FAILED)
+          }
         }
       }
     }
 
-    $Logger.info("Waiting all redfish task done")
+    $Logger.info("Start wait for all redfish tasks done")
 
     $GuidPrefix = [string]$(Get-Random -Maximum 1000000)
     # initialize tasks
     for ($idx=0; $idx -lt $Tasks.Count; $idx++) {
       $Task = $Tasks[$idx]
       $Session = $Sessions[$idx]
-      $TaskGuid = [int]$($GuidPrefix + $idx)
-      $Task | Add-Member -MemberType NoteProperty 'index' $idx
-      $Task | Add-Member -MemberType NoteProperty 'Guid' $TaskGuid
-      $Task | Add-Member -MemberType NoteProperty 'ActivityName' "[$($Session.Address)] $($Task.Name)"
-      Write-TaskProgress $Task
+      if ($Task -isnot [Exception]) {
+        $TaskGuid = [int]$($GuidPrefix + $idx)
+        $Task | Add-Member -MemberType NoteProperty 'index' $idx
+        $Task | Add-Member -MemberType NoteProperty 'Guid' $TaskGuid
+        $Task | Add-Member -MemberType NoteProperty 'ActivityName' "[$($Session.Address)] $($Task.Name)"
+        Write-TaskProgress $Task
+      }
     }
 
     while ($true) {
-      $RunningTasks = @($($Tasks | Where-Object TaskState -eq 'Running'))
+      $RunningTasks = @($($Tasks | Where-Object {$_ -isnot [Exception]} | Where-Object TaskState -eq 'Running'))
       $Logger.info("Remain running task count: $($RunningTasks.Count)")
+      $Logger.info("Remain running tasks: $RunningTasks")
       if ($RunningTasks.Count -eq 0) {
         break
       }
@@ -382,7 +387,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       $AsyncTasks = New-Object System.Collections.ArrayList
       for ($idx=0; $idx -lt $RunningTasks.Count; $idx++) {
         $RunningTask = $RunningTasks[$idx]
-        $Parameters = @($Session[$RunningTask.index], $RunningTask)
+        $Parameters = @($Sessions[$RunningTask.index], $RunningTask)
         [Void] $AsyncTasks.Add($(Start-CommandThread $pool "Get-RedfishTask" $Parameters))
       }
       # new updated task list
@@ -394,6 +399,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       }
     }
 
+    $Logger.info("All redfish tasks done")
     return $Tasks
   }
 
@@ -671,7 +677,7 @@ function ConvertFrom-WebResponse {
     $stream = $response.GetResponseStream();
     $streamReader = New-Object System.IO.StreamReader($stream)
     $content = $streamReader.ReadToEnd();
-    $Logger.debug("Responsed Content: $content")
+    $Logger.debug("Redfish API Response: [$($response.StatusCode.value__)] $content")
     $json = $content | ConvertFrom-Json
     return $json
   }
