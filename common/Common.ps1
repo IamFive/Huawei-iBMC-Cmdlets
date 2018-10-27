@@ -196,3 +196,7 @@ function Get-PlainPassword {
   }
   return $SecurePassword
 }
+
+function Get-RandomIntGuid {
+  return $(Get-Random -Maximum 1000000)
+}

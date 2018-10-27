@@ -286,6 +286,32 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 }
 
 
+function Invoke-FileUpload {
+  [CmdletBinding()]
+  param (
+    [RedfishSession]
+    [parameter(Mandatory = $true, Position=0)]
+    $Session,
+
+    [string]
+    [parameter(Mandatory = $true, Position=1)]
+    $FilePath
+  )
+
+  begin {
+    Assert-NotNull $Session
+    Assert-NotNull $FilePath
+  }
+
+  process {
+
+  }
+
+  end {
+  }
+}
+
+
 function Wait-RedfishTasks {
 <#
 .SYNOPSIS
@@ -361,7 +387,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
     $Logger.info("Start wait for all redfish tasks done")
 
-    $GuidPrefix = [string]$(Get-Random -Maximum 1000000)
+    $GuidPrefix = [string] $(Get-RandomIntGuid)
     # initialize tasks
     for ($idx=0; $idx -lt $Tasks.Count; $idx++) {
       $Task = $Tasks[$idx]
@@ -521,6 +547,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 
 function Invoke-RedfishRequest {
+  [cmdletbinding(DefaultParameterSetName = 'Payload')]
   param (
     [RedfishSession]
     [parameter(Mandatory = $true, Position=0)]
@@ -536,8 +563,12 @@ function Invoke-RedfishRequest {
     $Method = 'Get',
 
     [System.Object]
-    [parameter(Mandatory = $false, Position=3)]
+    [parameter(ParameterSetName="Payload", Mandatory = $false, Position=3)]
     $Payload,
+
+    [string]
+    [parameter(ParameterSetName="File",Mandatory = $false, Position=3)]
+    $File,
 
     [System.Object]
     [parameter(Mandatory = $false, Position=4)]
@@ -547,8 +578,6 @@ function Invoke-RedfishRequest {
     [parameter(Mandatory = $false, Position=5)]
     $ContinueEvenFailed
   )
-
-
 
   if ($Path.StartsWith("https://", "CurrentCultureIgnoreCase")) {
     $OdataId = $Path
@@ -647,14 +676,24 @@ function Invoke-RedfishRequest {
         return $response
       }
 
-      $result = $response | ConvertFrom-WebResponse
-      $extendInfoList = $result.error.'@Message.ExtendedInfo'
-      if ($extendInfoList.Count -gt 0) {
-        $extendInfo0 = $extendInfoList[0]
-        throw "[$($extendInfo0.Severity)] $($extendInfo0.Message)"
+      $StatusCode = $response.StatusCode.value__
+      if ($StatusCode -eq 403){
+        throw $(Get-i18n "FAIL_NO_PRIVILEGE")
       }
-
-      throw $_.Exception
+      elseif ($StatusCode -eq 500) {
+        throw $(Get-i18n "FAIL_INTERNAL_SERVICE")
+      }
+      elseif ($StatusCode -eq 501) {
+        throw $(Get-i18n "FAIL_NOT_SUPPORT")
+      } else {
+        $result = $response | ConvertFrom-WebResponse
+        $extendInfoList = $result.error.'@Message.ExtendedInfo'
+        if ($extendInfoList.Count -gt 0) {
+          $extendInfo0 = $extendInfoList[0]
+          throw "Failure: [$($extendInfo0.Severity)] $($extendInfo0.Message)"
+        }
+        throw $_.Exception
+      }
     } else {
       throw $_.Exception
     }
