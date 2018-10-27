@@ -647,6 +647,7 @@ function Invoke-RedfishRequest {
   # $Logger.debug("Request header: $($request.Headers)")
 
   try {
+    $request.ContentType = 'application/json'
     if ($method -in @('Put', 'Post', 'Patch')) {
       if ($null -eq $Payload -or '' -eq $Payload) {
         $PayloadString = '{}'
@@ -677,6 +678,8 @@ function Invoke-RedfishRequest {
       }
 
       $StatusCode = $response.StatusCode.value__
+      $Content = Get-WebResponseContent $response
+      $Logger.warn("[$Method] $OdataId -> code: $StatusCode , content: $Content")
       if ($StatusCode -eq 403){
         throw $(Get-i18n "FAIL_NO_PRIVILEGE")
       }
@@ -685,15 +688,15 @@ function Invoke-RedfishRequest {
       }
       elseif ($StatusCode -eq 501) {
         throw $(Get-i18n "FAIL_NOT_SUPPORT")
-      } else {
-        $result = $response | ConvertFrom-WebResponse
-        $extendInfoList = $result.error.'@Message.ExtendedInfo'
-        if ($extendInfoList.Count -gt 0) {
-          $extendInfo0 = $extendInfoList[0]
-          throw "Failure: [$($extendInfo0.Severity)] $($extendInfo0.Message)"
-        }
-        throw $_.Exception
       }
+
+      $result = $Content | ConvertFrom-Json
+      $extendInfoList = $result.error.'@Message.ExtendedInfo'
+      if ($extendInfoList.Count -gt 0) {
+        $extendInfo0 = $extendInfoList[0]
+        throw "Failure: [$($extendInfo0.Severity)] $($extendInfo0.Message)"
+      }
+      throw $_.Exception
     } else {
       throw $_.Exception
     }
@@ -711,14 +714,21 @@ function ConvertFrom-WebResponse {
     [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $Response
   )
+  return Get-WebResponseContent $Response | ConvertFrom-Json
+}
 
+function Get-WebResponseContent {
+  param (
+    [System.Net.HttpWebResponse]
+    [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $Response
+  )
   try {
     $stream = $response.GetResponseStream();
     $streamReader = New-Object System.IO.StreamReader($stream)
     $content = $streamReader.ReadToEnd();
-    $Logger.debug("Redfish API Response: [$($response.StatusCode.value__)] $content")
-    $json = $content | ConvertFrom-Json
-    return $json
+    # $Logger.debug("Redfish API Response: [$($response.StatusCode.value__)] $content")
+    return $content
   }
   finally {
     $streamReader.close()

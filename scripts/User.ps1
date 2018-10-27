@@ -458,12 +458,15 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       $Users = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
       $success = $false
       for ($idx=0; $idx -lt $Users.Members.Count; $idx++) {
-        $member = $Users.Members[$idx]
-        $user = Invoke-RedfishRequest $session $member.'@odata.id' | ConvertFrom-WebResponse
-        if ($user.UserName -eq $Username) {
+        $Member = $Users.Members[$idx]
+        $User = Invoke-RedfishRequest $session $Member.'@odata.id' | ConvertFrom-WebResponse
+        if ($User.UserName -eq $Username) {
           # delete user with provided $Username
-          Invoke-RedfishRequest $Session $member.'@odata.id' 'Delete' | Out-null
+          $Logger.info("User found, Delete User $($User.UserName) now")
+          Invoke-RedfishRequest $Session $User.'@odata.id' 'Delete' | Out-null
+          $Logger.info("Delete User $($User.UserName) succeed")
           $success = $true
+          break
         }
       }
 
