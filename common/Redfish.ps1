@@ -579,6 +579,62 @@ function Invoke-RedfishRequest {
     $ContinueEvenFailed
   )
 
+  $Request = New-RedfishRequest $Session $Path $Method $Headers
+
+  try {
+    $Request.ContentType = 'application/json'
+    if ($method -in @('Put', 'Post', 'Patch')) {
+      if ($null -eq $Payload -or '' -eq $Payload) {
+        $PayloadString = '{}'
+      } else {
+        $PayloadString = $Payload | ConvertTo-Json
+      }
+      $Request.ContentType = 'application/json'
+      $Request.ContentLength = $PayloadString.length
+
+      $StreamWriter = New-Object System.IO.StreamWriter($Request.GetRequestStream(), [System.Text.Encoding]::ASCII)
+      $StreamWriter.Write($PayloadString)
+      $StreamWriter.Close()
+      $Logger.debug("Send request payload: $PayloadString")
+    }
+
+    # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
+    return $Request.GetResponse()
+  }
+  catch {
+    # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
+    # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
+    # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
+    Resolve-RedfishFailtureResponse $_ $ContinueEvenFailed
+  }
+  finally {
+    if ($null -ne $StreamWriter -and $StreamWriter -is [System.IDisposable]) {
+      $StreamWriter.Dispose()
+    }
+  }
+}
+
+function New-RedfishRequest {
+  [cmdletbinding()]
+  param (
+    [RedfishSession]
+    [parameter(Mandatory = $true, Position=0)]
+    $Session,
+
+    [System.String]
+    [parameter(Mandatory = $true, Position=1)]
+    $Path,
+
+    [System.String]
+    [parameter(Mandatory = $false, Position=2)]
+    [ValidateSet('Get', 'Delete', 'Put', 'Post', 'Patch')]
+    $Method = 'Get',
+
+    [System.Object]
+    [parameter(Mandatory = $false, Position=4)]
+    $Headers
+  )
+
   if ($Path.StartsWith("https://", "CurrentCultureIgnoreCase")) {
     $OdataId = $Path
   }
@@ -596,10 +652,10 @@ function Invoke-RedfishRequest {
     $Logger.info("Odata $OdataId 's etag is $etag")
   }
 
-  $Logger.info("Send new request: [$Method] $OdataId")
+  $Logger.info("Invoke redfish request: [$Method] $OdataId")
 
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
-  [System.Net.HttpWebRequest] $request = [System.Net.HttpWebRequest]::Create($OdataId)
+  [System.Net.HttpWebRequest] $Request = [System.Net.HttpWebRequest]::Create($OdataId)
   # $cert = Get-ChildItem -Path cert:\CurrentUser\My | where-object Thumbprint -eq B2536A31C7A7462BBA542B4A8B0C34E315D16AB9
   # Write-Host $cert
   # $Store = New-Object System.Security.Cryptography.X509Certificates.X509Store(
@@ -607,15 +663,15 @@ function Invoke-RedfishRequest {
   # $Store.Open("MaxAllowed")
   # $Certificate = $Store.Certificates |  Where-Object Thumbprint -Eq "B2536A31C7A7462BBA542B4A8B0C34E315D16AB9"
   # Write-Host $Certificate
-  # # $request.ClientCertificates.Add($Certificate)
-  # $request.ClientCertificates.AddRange($Certificate)
+  # # $Request.ClientCertificates.Add($Certificate)
+  # $Request.ClientCertificates.AddRange($Certificate)
 
-  $request.ServerCertificateValidationCallback = {
+  $Request.ServerCertificateValidationCallback = {
     param($sender, $certificate, $chain, $errors)
     if ($true -eq $session.TrustCert) {
       return $true
     }
-    if ($request -eq $sender) {
+    if ($Request -eq $sender) {
       $Certificates = $(Get-ChildItem -Path cert:\ -Recurse | where-object Thumbprint -eq $certificate.Thumbprint)
       if ($null -ne $Certificates -and $Certificates.count -gt 0) {
         return $true
@@ -626,85 +682,56 @@ function Invoke-RedfishRequest {
     return $($errors -eq 'None')
   }
 
-
-  $request.Method = $Method
-  $request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
+  $Request.Method = $Method
+  $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
   if ($null -ne $session.AuthToken) {
-    $request.Headers.Add('X-Auth-Token', $session.AuthToken)
+    $Request.Headers.Add('X-Auth-Token', $session.AuthToken)
   }
 
   if ($null -ne $Headers) {
     $Headers.Keys | ForEach-Object {
-      $request.Headers.Add($_, $Headers.Item($_))
+      $Request.Headers.Add($_, $Headers.Item($_))
     }
   }
 
   if ($null -ne $etag) {
-    $request.Headers.Add('If-Match', $etag)
+    $Request.Headers.Add('If-Match', $etag)
   }
 
-  # $Logger.debug("Request header: $($request.Headers)")
+  return $Request;
+}
 
-  try {
-    $request.ContentType = 'application/json'
-    if ($method -in @('Put', 'Post', 'Patch')) {
-      if ($null -eq $Payload -or '' -eq $Payload) {
-        $PayloadString = '{}'
-      } else {
-        $PayloadString = $Payload | ConvertTo-Json
-      }
-      $request.ContentType = 'application/json'
-      $request.ContentLength = $PayloadString.length
 
-      $reqWriter = New-Object System.IO.StreamWriter($request.GetRequestStream(), [System.Text.Encoding]::ASCII)
-      $reqWriter.Write($PayloadString)
-      $reqWriter.Close()
-
-      $Logger.debug("Send request payload: $PayloadString")
+function Resolve-RedfishFailtureResponse ($Ex, $ContinueEvenFailed) {
+  $response = $Ex.Exception.InnerException.Response
+  if ($null -ne $response) {
+    if ($ContinueEvenFailed) {
+      return $response
     }
 
-    # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
-    return $request.GetResponse()
-  }
-  catch {
-    # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
-    # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
-    # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
-    $response = $_.Exception.InnerException.Response
-    if ($null -ne $response) {
-      if ($ContinueEvenFailed) {
-        return $response
-      }
-
-      $StatusCode = $response.StatusCode.value__
-      $Content = Get-WebResponseContent $response
-      $Logger.warn("[$Method] $OdataId -> code: $StatusCode , content: $Content")
-      if ($StatusCode -eq 403){
-        throw $(Get-i18n "FAIL_NO_PRIVILEGE")
-      }
-      elseif ($StatusCode -eq 500) {
-        throw $(Get-i18n "FAIL_INTERNAL_SERVICE")
-      }
-      elseif ($StatusCode -eq 501) {
-        throw $(Get-i18n "FAIL_NOT_SUPPORT")
-      }
-
-      $result = $Content | ConvertFrom-Json
-      $extendInfoList = $result.error.'@Message.ExtendedInfo'
-      if ($extendInfoList.Count -gt 0) {
-        $extendInfo0 = $extendInfoList[0]
-        throw "Failure: [$($extendInfo0.Severity)] $($extendInfo0.Message)"
-      }
-      throw $_.Exception
-    } else {
-      throw $_.Exception
+    $StatusCode = $response.StatusCode.value__
+    $Content = Get-WebResponseContent $response
+    $Logger.warn("[$Method] $OdataId -> code: $StatusCode , content: $Content")
+    if ($StatusCode -eq 403){
+      throw $(Get-i18n "FAIL_NO_PRIVILEGE")
     }
-  }
-  finally {
-    if ($null -ne $reqWriter -and $reqWriter -is [System.IDisposable]) {
-      $reqWriter.Dispose()
+    elseif ($StatusCode -eq 500) {
+      throw $(Get-i18n "FAIL_INTERNAL_SERVICE")
     }
+    elseif ($StatusCode -eq 501) {
+      throw $(Get-i18n "FAIL_NOT_SUPPORT")
+    }
+
+    $result = $Content | ConvertFrom-Json
+    $extendInfoList = $result.error.'@Message.ExtendedInfo'
+    if ($extendInfoList.Count -gt 0) {
+      $extendInfo0 = $extendInfoList[0]
+      throw "Failure: [$($extendInfo0.Severity)] $($extendInfo0.Message)"
+    }
+    throw $Ex.Exception
+  } else {
+    throw $Ex.Exception
   }
 }
 
