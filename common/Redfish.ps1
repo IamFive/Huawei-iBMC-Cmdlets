@@ -545,9 +545,76 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   }
 }
 
+function Invoke-FirmwareUpload {
+  [cmdletbinding()]
+  param (
+    [RedfishSession]
+    [parameter(Mandatory = $true, Position=0)]
+    $Session,
+
+    [System.String]
+    [parameter(Mandatory = $true, Position=1)]
+    $FileName,
+
+    [System.String]
+    [parameter(Mandatory = $true, Position=2)]
+    $FilePath,
+
+    [Switch]
+    [parameter(Mandatory = $false, Position=3)]
+    $ContinueEvenFailed
+  )
+
+  $Logger.info("Uploading $FilePath as $FileName to ibmc");
+  $Request = New-RedfishRequest $Session '/UpdateService/FirmwareInventory' 'POST'
+  try {
+    # $ASCIIEncoder = [System.Text.Encoding]::ASCII
+    $UTF8Encoder = [System.Text.Encoding]::UTF8
+    $Boundary = "---------------------------$($(Get-Date).Ticks)"
+    $BoundaryAsBytes = $UTF8Encoder.GetBytes("`r`n--$Boundary`r`n")
+
+    $Request.ContentType = "multipart/form-data; boundary=$Boundary"
+    $Request.KeepAlive = $true
+
+    $RequestStream = $Request.GetRequestStream()
+    $RequestStream.Write($BoundaryAsBytes, 0, $BoundaryAsBytes.Length);
+
+    $Header = "Content-Disposition: form-data; name=`"imgfile`"; filename=`"$($FileName)`"`
+      \r\nContent-Type: application/octet-stream`r`n`r`n";
+    $HeaderAsBytes = $UTF8Encoder.GetBytes($Header);
+    $RequestStream.Write($HeaderAsBytes, 0, $HeaderAsBytes.Length);
+
+    $bytesRead = 0
+    $Buffer = New-Object byte[] 4096;
+    $FileStream = New-Object IO.FileStream $FilePath ,'Open','Read'
+    while (($bytesRead = $FileStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {
+      $RequestStream.Write($Buffer, 0, $bytesRead)
+    }
+    $FileStream.Close()
+
+    $Trailer = $UTF8Encoder.GetBytes("`r`n--$boundary--`r`n")
+    $RequestStream.Write($Trailer, 0, $Trailer.Length)
+    $RequestStream.Close()
+
+    # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
+    return $Request.GetResponse()
+  }
+  catch {
+    # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
+    # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
+    # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
+    Resolve-RedfishFailtureResponse $_ $ContinueEvenFailed
+  }
+  finally {
+    if ($null -ne $RequestStream -and $RequestStream -is [System.IDisposable]) {
+      $RequestStream.Dispose()
+    }
+  }
+}
+
 
 function Invoke-RedfishRequest {
-  [cmdletbinding(DefaultParameterSetName = 'Payload')]
+  [cmdletbinding()]
   param (
     [RedfishSession]
     [parameter(Mandatory = $true, Position=0)]
@@ -563,12 +630,8 @@ function Invoke-RedfishRequest {
     $Method = 'Get',
 
     [System.Object]
-    [parameter(ParameterSetName="Payload", Mandatory = $false, Position=3)]
+    [parameter(Mandatory = $false, Position=3)]
     $Payload,
-
-    [string]
-    [parameter(ParameterSetName="File",Mandatory = $false, Position=3)]
-    $File,
 
     [System.Object]
     [parameter(Mandatory = $false, Position=4)]
