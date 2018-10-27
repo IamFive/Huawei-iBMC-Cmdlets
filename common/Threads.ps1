@@ -70,10 +70,10 @@ function New-RunspacePool {
 
   $pool = [RunspaceFactory]::CreateRunspacePool(1, $PoolSize)
   If (!$MTA) {
-    $Logger.info("Thread pool apartment state: STA")
+    # $Logger.info("Thread pool apartment state: STA")
     $pool.ApartmentState = 'STA'
   } else {
-    $Logger.info("Thread pool apartment state: MTA")
+    # $Logger.info("Thread pool apartment state: MTA")
     $pool.ApartmentState = 'MTA'
   }
   $pool.Open()
