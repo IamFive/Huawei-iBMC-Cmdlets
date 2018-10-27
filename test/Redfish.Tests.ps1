@@ -15,34 +15,23 @@ Describe "Connect-iBMC" {
 Describe "New-iBMCRedfishSession" {
   It "new with account" {
     $session = New-iBMCRedfishSession -Address 112.93.129.9 -Username "chajian1" -Password "chajian12#$"
-    Write-Host "Session:"
-    Write-Host $($session | fl)
-
-    Write-Host "Close Session:"
-    Close-iBMCRedfishSession $Session
-    Write-Host $($session | fl)
-
-    Write-Host "Test Session:"
+    $Session.Alive | Should -Be $true
     Test-iBMCRedfishSession $session
-    Write-Host $($session | fl)
+    $Session.Alive | Should -Be $true
+
+    $session = Close-iBMCRedfishSession $Session
+    $Session.Alive | Should -Be $false
+    $session = Test-iBMCRedfishSession $session
+    $Session.Alive | Should -Be $false
   }
+}
 
-  # It "new with credential" {
-  #   $Username = "chajian1"
-  #   $Password = ConvertTo-SecureString -String "chajian12#$" -AsPlainText -Force
-  #   $Credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $Username, $Password
-  #   $session = New-iBMCRedfishSession 112.93.129.9 $Credential -TrustCert
-  #   Write-Host "Session:"
-  #   Write-Host $session
-
-  #   Write-Host "Close Session:"
-  #   Close-iBMCRedfishSession $session
-  #   Write-Host $session
-
-  #   Write-Host "Test Session:"
-  #   Test-iBMCRedfishSession $session
-  #   Write-Host $session
-  # }
+Describe "Invoke-FirmwareUpload" {
+  It "new with account" {
+    $session = New-iBMCRedfishSession -Address 112.93.129.9 -Username "chajian1" -Password "chajian12#$"
+    Invoke-FirmwareUpload $session "config.hpm" "C:\Users\Woo\Desktop\config2.xml"
+    Close-iBMCRedfishSession $Session
+  }
 }
 
 Describe "matches test" {

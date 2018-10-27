@@ -59,13 +59,56 @@ function Export-iBMCBIOSSetting {
 function Import-iBMCBIOSSetting {
   [CmdletBinding()]
   param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session,
 
+    [string[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=1)]
+    $ConfigFilePath
   )
 
   begin {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $DestFilePath 'ConfigFilePath'
+    $ConfigFilePath = Get-MatchedSizeArray $Session $ConfigFilePath 'Session' 'ConfigFilePath'
   }
 
   process {
+    $Logger.info("Import BIOS Configurations Now, batch size: $($Session.Count)")
+
+    $ScriptBlock = {
+      param($Session, $ConfigFilePath)
+      # TODO upload to bmc
+      $UploadFileName = "$(Get-RandomIntGuid).xml"
+
+
+      $payload = @{
+        'Type' = "URI";
+        'Content' = $ConfigFilePath;
+      }
+      $Path = "/redfish/v1/Managers/1/Actions/Oem/Huawei/Manager.ImportConfiguration"
+      $Response = Invoke-RedfishRequest $Session $Path 'Post' $payload
+      return $Response | ConvertFrom-WebResponse
+      # Wait-RedfishTask $Session $Task
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        $Logger.info("[$($Session[$idx].Address)] Submit import BIOS config task, `
+         config file path is: $($ConfigFilePath[$idx])")
+        $Parameters = @($Session[$idx], $ConfigFilePath[$idx])
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
+      }
+
+      $RedfishTasks = Get-AsyncTaskResults $tasks
+      $Logger.Info("Import configuration task: " + $RedfishTasks)
+      return Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
+    } finally {
+      $pool.close()
+    }
   }
 
   end {
