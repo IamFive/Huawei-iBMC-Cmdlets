@@ -9,6 +9,7 @@
 			<file value="${LogFileRoot}\huawei.ibmc.cmdlets.log"/>
 			<PreserveLogFileNameExtension value="true" />
 			<AppendToFile value="true"/>
+			<Encoding value="utf-8" />
 			<RollingStyle value="Date"/>
 			<MaxSizeRollBackups value="10"/>
 			<LockingModel type="log4net.Appender.FileAppender+MinimalLock" />

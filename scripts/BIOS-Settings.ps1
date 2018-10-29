@@ -63,14 +63,14 @@ function Import-iBMCBIOSSetting {
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
     $Session,
 
-    [System.IO.FileInfo[]]
+    [string[]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=1)]
     $ConfigFilePath
   )
 
   begin {
     Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $DestFilePath 'ConfigFilePath'
+    Assert-ArrayNotNull $ConfigFilePath 'ConfigFilePath'
     $ConfigFilePath = Get-MatchedSizeArray $Session $ConfigFilePath 'Session' 'ConfigFilePath'
   }
 
@@ -84,7 +84,7 @@ function Import-iBMCBIOSSetting {
 
       $payload = @{
         'Type' = "URI";
-        'Content' = '/tmp/web/$UploadFileName';
+        'Content' = "/tmp/web/$UploadFileName";
       }
       $Path = "/redfish/v1/Managers/1/Actions/Oem/Huawei/Manager.ImportConfiguration"
       $Response = Invoke-RedfishRequest $Session $Path 'Post' $payload
