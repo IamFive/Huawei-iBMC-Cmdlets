@@ -7,4 +7,4 @@ https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-windows-p
 http://www.microsoft.com/en-us/download/details.aspx?id=30653
 
 2. WMF 5.0
-https://www.microsoft.com/en-us/download/details.aspx?id=50395p
+https://www.microsoft.com/en-us/download/details.aspx?id=50395

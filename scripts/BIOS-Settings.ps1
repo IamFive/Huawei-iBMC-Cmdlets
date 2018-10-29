@@ -63,7 +63,7 @@ function Import-iBMCBIOSSetting {
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
     $Session,
 
-    [string[]]
+    [System.IO.FileInfo[]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=1)]
     $ConfigFilePath
   )
@@ -79,18 +79,16 @@ function Import-iBMCBIOSSetting {
 
     $ScriptBlock = {
       param($Session, $ConfigFilePath)
-      # TODO upload to bmc
-      $UploadFileName = "$(Get-RandomIntGuid).xml"
-
+      $UploadFileName = "$(Get-RandomIntGuid).hpm"
+      Invoke-RedfishFirmwareUpload $Session $UploadFileName $ConfigFilePath | Out-Null
 
       $payload = @{
         'Type' = "URI";
-        'Content' = $ConfigFilePath;
+        'Content' = '/tmp/web/$UploadFileName';
       }
       $Path = "/redfish/v1/Managers/1/Actions/Oem/Huawei/Manager.ImportConfiguration"
       $Response = Invoke-RedfishRequest $Session $Path 'Post' $payload
       return $Response | ConvertFrom-WebResponse
-      # Wait-RedfishTask $Session $Task
     }
 
     try {

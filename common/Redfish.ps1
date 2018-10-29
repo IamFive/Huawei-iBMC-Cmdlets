@@ -285,33 +285,6 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   return $session
 }
 
-
-function Invoke-FileUpload {
-  [CmdletBinding()]
-  param (
-    [RedfishSession]
-    [parameter(Mandatory = $true, Position=0)]
-    $Session,
-
-    [string]
-    [parameter(Mandatory = $true, Position=1)]
-    $FilePath
-  )
-
-  begin {
-    Assert-NotNull $Session
-    Assert-NotNull $FilePath
-  }
-
-  process {
-
-  }
-
-  end {
-  }
-}
-
-
 function Wait-RedfishTasks {
 <#
 .SYNOPSIS
@@ -545,7 +518,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   }
 }
 
-function Invoke-FirmwareUpload {
+function Invoke-RedfishFirmwareUpload {
   [cmdletbinding()]
   param (
     [RedfishSession]
@@ -597,7 +570,8 @@ function Invoke-FirmwareUpload {
     $RequestStream.Close()
 
     # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
-    return $Request.GetResponse()
+    $Response = $Request.GetResponse() | ConvertFrom-WebResponse
+    return $Response.success
   }
   catch {
     # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
