@@ -619,7 +619,6 @@ function Invoke-RedfishRequest {
   $Request = New-RedfishRequest $Session $Path $Method $Headers
 
   try {
-    $Request.ContentType = 'application/json'
     if ($method -in @('Put', 'Post', 'Patch')) {
       if ($null -eq $Payload -or '' -eq $Payload) {
         $PayloadString = '{}'
@@ -642,6 +641,9 @@ function Invoke-RedfishRequest {
     # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
     # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
     # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
+    $Logger.info($Request)
+    $Logger.info($Request.Headers)
+    $Logger.Error($_)
     Resolve-RedfishFailtureResponse $_ $ContinueEvenFailed
   }
   finally {
@@ -706,6 +708,7 @@ function New-RedfishRequest {
   $Request.ServerCertificateValidationCallback = {
     param($sender, $certificate, $chain, $errors)
     if ($true -eq $session.TrustCert) {
+      # $Logger.debug("TrustCert present, Ignore HTTPS certification")
       return $true
     }
     if ($Request -eq $sender) {
@@ -719,8 +722,11 @@ function New-RedfishRequest {
     return $($errors -eq 'None')
   }
 
+
   $Request.Method = $Method
-  $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
+  $Request.UserAgent = "PowerShell Huawei iBMC Cmdlet - by xmfive@qq.com"
+  $Request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+  # $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
   if ($null -ne $session.AuthToken) {
     $Request.Headers.Add('X-Auth-Token', $session.AuthToken)

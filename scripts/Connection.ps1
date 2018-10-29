@@ -119,26 +119,32 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   try {
     $tasks = New-Object System.Collections.ArrayList
     $pool = New-RunspacePool $ParametersArray.Count
-    # $ScriptBlock = {
-    #   param($p)
-    #   if ($p.Count -eq 3) {
-    #     New-iBMCRedfishSession -Address $($p[0]) -Credential $($p[1]) -TrustCert $($p[2])
-    #   } else {
-    #     New-iBMCRedfishSession -Address $($p[0]) -Username $($p[1]) -Password $($p[2]) -TrustCert $($p[3])
-    #   }
-    # }
-    # $ParametersArray | ForEach-Object {
-    #   [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $($_)))
-    # }
+    $ScriptBlock = {
+      param($p)
+      $Logger.info($p.Count)
+      if ($p.Count -eq 3) {
+        $Logger.info("receive parameter length 3")
+        New-iBMCRedfishSession -Address $($p[0]) -Credential $($p[1]) -TrustCert $($p[2])
+      } else {
+        $Logger.info("receive parameter length 4")
+        New-iBMCRedfishSession -Address $($p[0]) -Username $($p[1]) -Password $($p[2]) -TrustCert $($p[3])
+      }
+    }
+
+    if ($useCredential) {
+      $ScriptBlock = {
+        param($Address, $Credential, $TrustCert)
+          New-iBMCRedfishSession -Address $Address -Credential $Credential -TrustCert:$TrustCert
+      }
+    } else {
+      $ScriptBlock = {
+        param($Address, $Username, $Password, $TrustCert)
+          New-iBMCRedfishSession -Address $Address -Username $Username -Password $Password -TrustCert:$TrustCert
+      }
+    }
 
     $ParametersArray | ForEach-Object {
-      $TrustCertFlag = if ($_[-1]) {"-TrustCert"} else {""}
-      if ($useCredential) {
-        $Script = "New-iBMCRedfishSession -Address $($_[0]) -Credential $($_[1]) $($TrustCertFlag)"
-      } else {
-        $Script = "New-iBMCRedfishSession -Address $($_[0]) -Username $($_[1]) -Password $($_[2]) $($TrustCertFlag)"
-      }
-      [Void] $tasks.Add($(Start-ScriptBlockThread $pool $Script))
+      [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $_))
     }
 
     return Get-AsyncTaskResults -AsyncTasks $tasks
