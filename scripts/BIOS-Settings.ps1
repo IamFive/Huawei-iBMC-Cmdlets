@@ -117,13 +117,39 @@ function Import-iBMCBIOSSetting {
 function Reset-iBMCBIOS {
   [CmdletBinding()]
   param (
-
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session
   )
 
   begin {
+    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    $Logger.info("Invoke Reset BIOS configuration function")
+
+    $ScriptBlock = {
+      param($RedfishSession)
+      $Path = "/Systems/$($RedfishSession.Id)/Bios/Actions/Bios.ResetBios"
+      Invoke-RedfishRequest $RedfishSession $Path 'Post' | Out-Null
+      return $null
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Logger.info($(Trace-Session $RedfishSession "Submit Reset BIOS configuration task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
+      }
+
+      $Results = Get-AsyncTaskResults $tasks
+      return $Results
+    } finally {
+      $pool.close()
+    }
   }
 
   end {
@@ -133,13 +159,39 @@ function Reset-iBMCBIOS {
 function Restore-iBMCFactory {
   [CmdletBinding()]
   param (
-
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session
   )
 
   begin {
+    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    $Logger.info("Invoke Restore BIOS Factory function")
+
+    $ScriptBlock = {
+      param($RedfishSession)
+      $Path = "/Managers/$($RedfishSession.Id)/Actions/Oem/Huawei/Manager.RestoreFactory"
+      Invoke-RedfishRequest $RedfishSession $Path 'Post' | Out-Null
+      return None
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Logger.info($(Trace-Session $RedfishSession "Submit Restore BIOS Factory task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
+      }
+
+      $Results = Get-AsyncTaskResults $tasks
+      return $Results
+    } finally {
+      $pool.close()
+    }
   }
 
   end {

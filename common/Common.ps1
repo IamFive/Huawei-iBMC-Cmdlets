@@ -200,3 +200,7 @@ function Get-PlainPassword {
 function Get-RandomIntGuid {
   return $(Get-Random -Maximum 1000000)
 }
+
+function Trace-Session ($Session, $message) {
+  return "[$($Session.Address)] $message"
+}

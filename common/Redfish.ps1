@@ -23,7 +23,6 @@ Add-Type @'
     public System.Boolean Alive ;
     public System.String AuthToken ;
     public System.Boolean TrustCert ;
-    public System.String resourceId ;
   }
 '@
 }
@@ -164,7 +163,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   # get bmc resource Id (BladeN, SwiN, N)
   $managers = Invoke-RedfishRequest -Session $session -Path "/Managers" | ConvertFrom-WebResponse
   $managerOdataId = $managers.Members[0].'@odata.id'
-  $session.resourceId = $($managerOdataId -split '/')[-1]
+  # $session.resourceId = $($managerOdataId -split '/')[-1]
 
   # get bmc manager
   $manager = Invoke-RedfishRequest -Session $session -Path $managerOdataId | ConvertFrom-WebResponse
