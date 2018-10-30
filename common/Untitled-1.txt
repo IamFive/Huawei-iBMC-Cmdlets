@@ -1,0 +1,180 @@
+
+DEBUG : redfish_http.c(3048): is_free_of_authentication 3048: is_free_of_authentication verify /redfish/v1/AccountService/Accounts/10 fail
+
+DEBUG : redfish_http.c(4249): resource_path: /data/opt/pme/conf/redfish/v1/accountservice/accounts/template/index.json
+
+DEBUG : redfish_http.c(2995): find handler sucess, method is GET
+
+INFO  : redfish_http.c(4392): redfish process request: status code [200 OK], response body size [1554].
+
+DEBUG : redfish_redirect.c(682): [sms_parse_uri]: The regex match for uri /redfish/v1/accountservice/accounts/11 failed
+
+DEBUG : redfish_redirect.c(818): [sms_parse_request]: Get ipinfo of /redfish/v1/AccountService/Accounts/11 error
+
+DEBUG : redfish_redirect.c(1486): [sms_redirect]: NOT sms redirect
+
+DEBUG : redfish_redirect.c(1540): method_redirect_http_request: response_str=NULL.
+
+INFO  : redfish_http.c(4344): redfish process request: GET /redfish/v1/AccountService/Accounts/11, req size [325], body size [0].
+
+DEBUG : redfish_http.c(3348): parse_request_string 3348: RelativeUri /redfish/v1/AccountService/Accounts/11
+
+DEBUG : redfish_http.c(3367): parse_request_string 3367: RequestMethod GET
+
+DEBUG : redfish_http.c(3462): valid head is X-Auth-Token
+
+DEBUG : redfish_http.c(3468): valid head num is 1
+
+DEBUG : redfish_http.c(3048): is_free_of_authentication 3048: is_free_of_authentication verify /redfish/v1/AccountService/Accounts/11 fail
+
+DEBUG : redfish_http.c(4249): resource_path: /data/opt/pme/conf/redfish/v1/accountservice/accounts/template/index.json
+
+DEBUG : redfish_http.c(2995): find handler sucess, method is GET
+
+INFO  : redfish_http.c(4392): redfish process request: status code [200 OK], response body size [1555].
+
+DEBUG : redfish_redirect.c(682): [sms_parse_uri]: The regex match for uri /redfish/v1/accountservice/accounts/12 failed
+
+DEBUG : redfish_redirect.c(818): [sms_parse_request]: Get ipinfo of /redfish/v1/AccountService/Accounts/12 error
+
+DEBUG : redfish_redirect.c(1486): [sms_redirect]: NOT sms redirect
+
+DEBUG : redfish_redirect.c(1540): method_redirect_http_request: response_str=NULL.
+
+INFO  : redfish_http.c(4344): redfish process request: GET /redfish/v1/AccountService/Accounts/12, req size [325], body size [0].
+
+DEBUG : redfish_http.c(3348): parse_request_string 3348: RelativeUri /redfish/v1/AccountService/Accounts/12
+
+DEBUG : redfish_http.c(3367): parse_request_string 3367: RequestMethod GET
+
+DEBUG : redfish_http.c(3462): valid head is X-Auth-Token
+
+DEBUG : redfish_http.c(3468): valid head num is 1
+
+DEBUG : redfish_http.c(3048): is_free_of_authentication 3048: is_free_of_authentication verify /redfish/v1/AccountService/Accounts/12 fail
+
+DEBUG : redfish_http.c(4249): resource_path: /data/opt/pme/conf/redfish/v1/accountservice/accounts/template/index.json
+
+DEBUG : redfish_http.c(2995): find handler sucess, method is GET
+
+INFO  : redfish_http.c(4392): redfish process request: status code [200 OK], response body size [1547].
+
+DEBUG : redfish_redirect.c(682): [sms_parse_uri]: The regex match for uri /redfish/v1/updateservice/firmwareinventory/activebmc failed
+
+DEBUG : redfish_redirect.c(818): [sms_parse_request]: Get ipinfo of /redfish/v1/updateservice/firmwareinventory/activebmc error
+
+DEBUG : redfish_redirect.c(1486): [sms_redirect]: NOT sms redirect
+
+DEBUG : redfish_redirect.c(1540): method_redirect_http_request: response_str=NULL.
+
+INFO  : redfish_http.c(4344): redfish process request: GET /redfish/v1/updateservice/firmwareinventory/activebmc, req size [379], body size [0].
+
+DEBUG : redfish_http.c(3348): parse_request_string 3348: RelativeUri /redfish/v1/updateservice/firmwareinventory/activebmc
+
+DEBUG : redfish_http.c(3367): parse_request_string 3367: RequestMethod GET
+
+DEBUG : redfish_http.c(3462): valid head is Authorization
+P
+DEBUG : redfish_http.c(3462): valid head is Content-Type
+
+DEBUG : redfish_http.c(3468): valid head num is 2
+
+DEBUG : redfish_http.c(3048): is_free_of_authentication 3048: is_free_of_authentication verify /redfish/v1/updateservice/firmwareinventory/activebmc fail
+
+ERROR : redfish_session.c(366): verify_ldap_account_and_get_info dfl_call_class_method AuthUser ret value error, value 1
+
+ERROR : redfish_http.c(3673): verify_basic_auth_get_provider_param 3673:  fail, ret is 0x82
+
+DEBUG : redfish_message.c(936): generate_error_message_info : err message info: { "error": { "code": "Base.1.0.GeneralError", "message": "A general error has occurred. See ExtendedInfo for more information.", "@Message.ExtendedInfo": [ { "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry", "MessageId": "iBMC.1.0.AuthorizationFailed", "RelatedProperties": [ ], "Message": "Authorization failed because the user name or password is incorrect, or your account is locked.", "MessageArgs": [ ], "S
+
+INFO  : redfish_http.c(4392): redfish process request: status code [401 Unauthorized], response body size [570].
+
+DEBUG : redfish_redirect.c(682): [sms_parse_uri]: The regex match for uri /redfish/v1/updateservice/firmwareinventory/bios failed
+
+DEBUG : redfish_redirect.c(818): [sms_parse_request]: Get ipinfo of /redfish/v1/updateservice/firmwareinventory/bios error
+
+DEBUG : redfish_redirect.c(1486): [sms_redirect]: NOT sms redirect
+
+DEBUG : redfish_redirect.c(1540): method_redirect_http_request: response_str=NULL.
+
+INFO  : redfish_http.c(4344): redfish process request: GET /redfish/v1/updateservice/firmwareinventory/bios, req size [374], body size [0].
+
+DEBUG : redfish_http.c(3348): parse_request_string 3348: RelativeUri /redfish/v1/updateservice/firmwareinventory/bios
+
+DEBUG : redfish_http.c(3367): parse_request_string 3367: RequestMethod GET
+
+DEBUG : redfish_http.c(3462): valid head is Authorization
+
+DEBUG : redfish_http.c(3462): valid head is Content-Type
+
+DEBUG : redfish_http.c(3468): valid head num is 2
+
+DEBUG : redfish_http.c(3048): is_free_of_authentication 3048: is_free_of_authentication verify /redfish/v1/updateservice/firmwareinventory/bios fail
+
+ERROR : redfish_session.c(366): verify_ldap_account_and_get_info dfl_call_class_method AuthUser ret value error, value 1
+
+ERROR : redfish_http.c(3673): verify_basic_auth_get_provider_param 3673:  fail, ret is 0x82
+
+DEBUG : redfish_message.c(936): generate_error_message_info : err message info: { "error": { "code": "Base.1.0.GeneralError", "message": "A general error has occurred. See ExtendedInfo for more information.", "@Message.ExtendedInfo": [ { "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry", "MessageId": "iBMC.1.0.AuthorizationFailed", "RelatedProperties": [ ], "Message": "Authorization failed because the user name or password is incorrect, or your account is locked.", "MessageArgs": [ ], "S
+
+INFO  : redfish_http.c(4392): redfish process request: status code [401 Unauthorized], response body size [570].
+
+DEBUG : redfish_redirect.c(682): [sms_parse_uri]: The regex match for uri /redfish/v1/updateservice/firmwareinventory/mainboardcpld failed
+
+DEBUG : redfish_redirect.c(818): [sms_parse_request]: Get ipinfo of /redfish/v1/updateservice/firmwareinventory/mainboardcpld error
+
+DEBUG : redfish_redirect.c(1486): [sms_redirect]: NOT sms redirect
+
+DEBUG : redfish_redirect.c(1540): method_redirect_http_request: response_str=NULL.
+
+INFO  : redfish_http.c(4344): redfish process request: GET /redfish/v1/updateservice/firmwareinventory/mainboardcpld, req size [383], body size [0].
+
+DEBUG : redfish_http.c(3348): parse_request_string 3348: RelativeUri /redfish/v1/updateservice/firmwareinventory/mainboardcpld
+
+DEBUG : redfish_http.c(3367): parse_request_string 3367: RequestMethod GET
+
+DEBUG : redfish_http.c(3462): valid head is Authorization
+
+DEBUG : redfish_http.c(3462): valid head is Content-Type
+
+DEBUG : redfish_http.c(3468): valid head num is 2
+
+DEBUG : redfish_http.c(3048): is_free_of_authentication 3048: is_free_of_authentication verify /redfish/v1/updateservice/firmwareinventory/mainboardcpld fail
+
+ERROR : redfish_session.c(366): verify_ldap_account_and_get_info dfl_call_class_method AuthUser ret value error, value 1
+
+ERROR : redfish_http.c(3673): verify_basic_auth_get_provider_param 3673:  fail, ret is 0x82
+
+DEBUG : redfish_message.c(936): generate_error_message_info : err message info: { "error": { "code": "Base.1.0.GeneralError", "message": "A general error has occurred. See ExtendedInfo for more information.", "@Message.ExtendedInfo": [ { "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry", "MessageId": "iBMC.1.0.AuthorizationFailed", "RelatedProperties": [ ], "Message": "Authorization failed because the user name or password is incorrect, or your account is locked.", "MessageArgs": [ ], "S
+
+INFO  : redfish_http.c(4392): redfish process request: status code [401 Unauthorized], response body size [570].
+
+DEBUG : redfish_redirect.c(682): [sms_parse_uri]: The regex match for uri /redfish/v1/updateservice/firmwareinventory/chassisdiskbp1cpld failed
+
+DEBUG : redfish_redirect.c(818): [sms_parse_request]: Get ipinfo of /redfish/v1/updateservice/firmwareinventory/chassisdiskbp1cpld error
+
+DEBUG : redfish_redirect.c(1486): [sms_redirect]: NOT sms redirect
+
+DEBUG : redfish_redirect.c(1540): method_redirect_http_request: response_str=NULL.
+
+INFO  : redfish_http.c(4344): redfish process request: GET /redfish/v1/updateservice/firmwareinventory/chassisdiskbp1cpld, req size [388], body size [0].
+
+DEBUG : redfish_http.c(3348): parse_request_string 3348: RelativeUri /redfish/v1/updateservice/firmwareinventory/chassisdiskbp1cpld
+
+DEBUG : redfish_http.c(3367): parse_request_string 3367: RequestMethod GET
+
+DEBUG : redfish_http.c(3462): valid head is Authorization
+
+DEBUG : redfish_http.c(3462): valid head is Content-Type
+
+DEBUG : redfish_http.c(3468): valid head num is 2
+
+DEBUG : redfish_http.c(3048): is_free_of_authentication 3048: is_free_of_authentication verify /redfish/v1/updateservice/firmwareinventory/chassisdiskbp1cpld fail
+
+ERROR : redfish_session.c(366): verify_ldap_account_and_get_info dfl_call_class_method AuthUser ret value error, value 1
+
+ERROR : redfish_http.c(3673): verify_basic_auth_get_provider_param 3673:  fail, ret is 0x82
+
+DEBUG : redfish_message.c(936): generate_error_message_info : err message info: { "error": { "code": "Base.1.0.GeneralError", "message": "A general error has occurred. See ExtendedInfo for more information.", "@Message.ExtendedInfo": [ { "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry", "MessageId": "iBMC.1.0.AuthorizationFailed", "RelatedProperties": [ ], "Message": "Authorization failed because the user name or password is incorrect, or your account is locked.", "MessageArgs": [ ], "S
+
+INFO  : redfish_http.c(4392): redfish process request: status code [401 Unauthorized], response body size [570].

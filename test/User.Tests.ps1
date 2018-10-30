@@ -24,13 +24,13 @@ Describe "User features" {
       Write-Host "Set ibmc user now"
       Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2
 
-  } finally {
-      Start-Sleep -Seconds 5
-      Write-Host "Remove ibmc user now"
-      Remove-iBMCUser -Session $session -Username powershell2
-      Remove-iBMCUser -Session $session -Username powershell
-      Disconnect-iBMC $session
-  }
+    } finally {
+        Start-Sleep -Seconds 5
+        Write-Host "Remove ibmc user now"
+        Remove-iBMCUser -Session $session -Username powershell2
+        Remove-iBMCUser -Session $session -Username powershell
+        Disconnect-iBMC $session
+    }
   }
 }
 

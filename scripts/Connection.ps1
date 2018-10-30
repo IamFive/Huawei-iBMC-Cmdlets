@@ -1,7 +1,7 @@
 <# NOTE: iBMC Connect module Cmdlets #>
 
 function Connect-iBMC {
-  <#
+<#
 .SYNOPSIS
 Connect to iBMC Servers and initialize sessions used by other cmdlets.
 
@@ -212,7 +212,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 
 function Test-iBMCConnect {
-  <#
+<#
 .SYNOPSIS
 Test whether specified session[s] of iBMC Redfish Server is still alive
 

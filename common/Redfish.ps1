@@ -28,7 +28,7 @@ Add-Type @'
 }
 
 function New-iBMCRedfishSession {
-  <#
+<#
 .SYNOPSIS
 Create sessions for iBMC Redfish REST API.
 
@@ -183,7 +183,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 
 function Close-iBMCRedfishSession {
-  <#
+<#
 .SYNOPSIS
 Close a specified session of iBMC Redfish Server.
 
@@ -236,7 +236,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 
 function Test-iBMCRedfishSession {
-  <#
+<#
 .SYNOPSIS
 Test whether a specified session of iBMC Redfish Server is still alive
 
@@ -642,6 +642,10 @@ function Invoke-RedfishRequest {
     # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
     $Logger.info($Request)
     $Logger.info($Request.Headers)
+    $Request.Headers | ForEach-Object {
+      $value = $Request.Headers.Item($_)
+      $Logger.info("$_ : $value")
+    }
     $Logger.Error($_)
     Resolve-RedfishFailtureResponse $_ $ContinueEvenFailed
   }
@@ -721,10 +725,24 @@ function New-RedfishRequest {
     return $($errors -eq 'None')
   }
 
+  # PATCH /redfish/v1/AccountService/Accounts/13 HTTP/1.1
+  # User-Agent: PowerShell Huawei iBMC Cmdlet
+  # Accept-Language: en-US,en;q=0.9
+  # X-Auth-Token: 9fc14fb1177cafa765b094485be9c36a
+  # If-Match: W/"7bc2fd79"
+  # Content-Type: application/json
+  # Host: 112.93.129.9
+  # Content-Length: 36
+  # Expect: 100-continue
 
   $Request.Method = $Method
-  $Request.UserAgent = "PowerShell Huawei iBMC Cmdlet - by xmfive@qq.com"
-  $Request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+  $Request.UserAgent = "PowerShell Huawei iBMC Cmdlet"
+  # $Request.Accept = "text/html, application/xhtml+xml, application/pdf, */*"
+  # $Request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
+  $Request.Headers.Add("Cache-Control", "no-cache");
+  $Request.Headers.Add("Upgrade-Insecure-Requests", "1");
+  $Request.Headers.Add("Origin", $OdataId);
+  # $Request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
   # $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
   if ($null -ne $session.AuthToken) {
