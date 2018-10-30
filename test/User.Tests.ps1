@@ -1,4 +1,4 @@
-Import-Module Huawei.iBMC.Cmdlets -Force
+Import-Module Huawei-iBMC-Cmdlets -Force
 
 # Describe "User features" {
 #   It "add user " {
@@ -20,15 +20,25 @@ Describe "User features" {
       Write-Host "Add ibmc user now"
       Add-iBMCUser -Session $session -Username powershell -Password $pwd -Role Operator
 
-      Start-Sleep -Seconds 5
       Write-Host "Set ibmc user now"
       Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2
 
     } finally {
-        Start-Sleep -Seconds 5
-        Write-Host "Remove ibmc user now"
-        Remove-iBMCUser -Session $session -Username powershell2
-        Remove-iBMCUser -Session $session -Username powershell
+      Write-Host "Remove ibmc user now"
+      Remove-iBMCUser -Session $session -Username powershell2
+      Remove-iBMCUser -Session $session -Username powershell
+      Disconnect-iBMC $session
+    }
+  }
+}
+
+Describe "User Delete features" {
+  It "User Feature Workflow" {
+    try {
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      Remove-iBMCUser -Session $session -Username powershell
+    }
+    finally {
         Disconnect-iBMC $session
     }
   }

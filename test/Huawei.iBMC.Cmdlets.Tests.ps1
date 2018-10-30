@@ -1,4 +1,4 @@
-$ModuleManifestName = 'Huawei.iBMC.Cmdlets.psd1'
+$ModuleManifestName = 'Huawei-iBMC-Cmdlets.psd1'
 $ModuleManifestPath = "$PSScriptRoot\..\$ModuleManifestName"
 
 Describe 'Module Manifest Tests' {

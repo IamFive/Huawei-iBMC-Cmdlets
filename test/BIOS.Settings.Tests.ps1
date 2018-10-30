@@ -1,4 +1,4 @@
-Import-Module Huawei.iBMC.Cmdlets -Force
+Import-Module Huawei-iBMC-Cmdlets -Force
 
 Describe "BIOS settings features" {
   It "Export" {
