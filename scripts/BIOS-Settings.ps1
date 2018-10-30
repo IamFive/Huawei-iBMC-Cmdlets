@@ -1,6 +1,54 @@
 <# NOTE: iBMC BIOS Setting Module Cmdlets #>
 
 function Export-iBMCBIOSSetting {
+<#
+.SYNOPSIS
+Export iBMC BIOS and BMC Settings
+
+.DESCRIPTION
+Export iBMC BIOS and BMC Settings
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.PARAMETER DestFilePath
+The dest settings file path:
+
+Dest path examples:
+1. export to ibmc local temporary storage: /tmp/filename.xml
+2. export to remote storage: protocol://username:password@hostname/directory/filename.xml
+   support protocol list: sftp, https, nfs, cifs, scp
+
+.OUTPUTS
+PSObject[]
+Returns the export configuration task array if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+Export to remote NFS
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $Tasks = Export-iBMCBIOSSetting $session 'nfs://10.10.10.3/data/nfs/bios.xml'
+
+.EXAMPLE
+
+Export to iBMC local storage
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $Tasks = Export-iBMCBIOSSetting $session '/tmp/bios.xml'
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+Import-iBMCBIOSSetting
+Reset-iBMCBIOS
+Restore-iBMCFactory
+Connect-iBMC
+Disconnect-iBMC
+
+#>
   [CmdletBinding()]
   param (
     [RedfishSession[]]
@@ -57,6 +105,42 @@ function Export-iBMCBIOSSetting {
 }
 
 function Import-iBMCBIOSSetting {
+<#
+.SYNOPSIS
+Import iBMC BIOS and BMC configuration
+
+.DESCRIPTION
+Import iBMC BIOS and BMC configuration. The BIOS setup configuration takes effect upon the next restart of the system.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.PARAMETER ConfigFilePath
+The local bios&bmc configuration file path
+
+.OUTPUTS
+PSObject[]
+Returns the import configuration task array if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+Import local configuration file
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $Tasks = Import-iBMCBIOSSetting $session 'C:\10.10.10.2.xml'
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+Export-iBMCBIOSSetting
+Reset-iBMCBIOS
+Restore-iBMCFactory
+Connect-iBMC
+Disconnect-iBMC
+
+#>
   [CmdletBinding()]
   param (
     [RedfishSession[]]
@@ -115,6 +199,40 @@ function Import-iBMCBIOSSetting {
 
 
 function Reset-iBMCBIOS {
+<#
+.SYNOPSIS
+Restore BIOS default settings.
+
+.DESCRIPTION
+Restore BIOS default settings. The BIOS setup configuration takes effect upon the next restart of the system.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.OUTPUTS
+None
+Returns none if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+Restore BIOS default settings
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Reset-iBMCBIOS $session
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+Export-iBMCBIOSSetting
+Import-iBMCBIOSSetting
+Restore-iBMCFactory
+Connect-iBMC
+Disconnect-iBMC
+
+#>
+
   [CmdletBinding()]
   param (
     [RedfishSession[]]
@@ -157,6 +275,40 @@ function Reset-iBMCBIOS {
 }
 
 function Restore-iBMCFactory {
+<#
+.SYNOPSIS
+Restore the factory settings.
+
+.DESCRIPTION
+Restore the factory settings.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.OUTPUTS
+None
+Returns None if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+Restore factory settings
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Restore-iBMCFactory $session
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Export-iBMCBIOSSetting
+Import-iBMCBIOSSetting
+Reset-iBMCBIOS
+Connect-iBMC
+Disconnect-iBMC
+
+#>
   [CmdletBinding()]
   param (
     [RedfishSession[]]
