@@ -327,7 +327,7 @@ Disconnect-iBMC
       param($RedfishSession)
       $Path = "/Managers/$($RedfishSession.Id)/Actions/Oem/Huawei/Manager.RestoreFactory"
       Invoke-RedfishRequest $RedfishSession $Path 'Post' | Out-Null
-      return None
+      return $null
     }
 
     try {

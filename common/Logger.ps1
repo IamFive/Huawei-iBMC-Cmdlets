@@ -22,6 +22,14 @@ function Get-Logger ($name) {
   return [log4net.LogManager]::GetLogger($name)
 }
 
+function Set-LoggerNDC ($session) {
+  if ($null -eq $session) {
+    [log4net.ThreadContext]::Stacks["NDC"].Push("[Main]")
+  } else {
+    [log4net.ThreadContext]::Stacks["NDC"].Push("[$($Session.Address)]")
+  }
+}
+
 # to null to avoid output
 $Null = @(
   Enable-Log4Net
