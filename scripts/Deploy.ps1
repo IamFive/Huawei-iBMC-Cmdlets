@@ -412,7 +412,15 @@ Disconnect-iBMC
     $BootSequence = Get-MatchedSizeArray $Session $BootSequence 'Session' 'BootSequence'
     # validate boot sequence input
 
-
+    $BootSequence | ForEach-Object {
+      if ($null -ne $_ -or $_.Count -eq 4) {
+        $diff = Compare-Object $_ $BMC.V32V5Mapping.Keys -PassThru
+        if ($null -eq $diff) {
+          return
+        }
+      }
+      throw [String]::format($(Get-i18n "ERROR_ILLEGAL_BOOT_SEQ"), $_ -join ",")
+    }
   }
 
   process {
@@ -421,13 +429,21 @@ Disconnect-iBMC
     $ScriptBlock = {
       param($RedfishSession, $BootSequence)
       $Path = "/redfish/v1/Systems/$($RedfishSession.Id)"
-      $Response = $(Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse)
+      $Response = Invoke-RedfishRequest $RedfishSession $Path
+      $System = $Response | ConvertFrom-WebResponse
 
-      # V3
-      if ($null -ne $Response.Oem.Huawei.BootupSequence) {
-        # TODO
+      if ($null -ne $System.Oem.Huawei.BootupSequence) { # V3
         $Logger.info($(Trace-Session $RedfishSession "[V3] Will set boot sequence using System resource"))
-        return $Response.Oem.Huawei.BootupSequence
+        $Payload = @{
+          "Oem"=@{
+            "Huawei"=@{
+              "BootupSequence"=$BootSequence;
+            };
+          };
+        }
+        $Headers = @{'If-Match'=$Response.Headers.get('ETag');}
+        Invoke-RedfishRequest $RedfishSession $Path 'PATCH' $Payload $Headers | Out-Null
+        return $null
       } else { # V5
         $Logger.info($(Trace-Session $RedfishSession "[V5] Will set boot sequence using BIOS settings resource"))
         $SetBiosPath = "$Path/Bios/Settings"
