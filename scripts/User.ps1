@@ -343,9 +343,9 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         if ($User.UserName -eq $Username) {
           $found = $true
           # Update user with provided $Username
-          $Logger.info("User $($User.UserName) found, will patch user now")
+          $Logger.info($(Trace-Session $Session "User $($User.UserName) found, will patch user now"))
           $Headers = @{'If-Match'=$UserResponse.Headers['Etag'];}
-          $Logger.info("User Etag is $($UserResponse.Headers['Etag'])")
+          $Logger.info($(Trace-Session $Session "User Etag is $($UserResponse.Headers['Etag'])"))
           if ('Password' -in $Payload) {
             $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.Password)
             $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
@@ -463,9 +463,9 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         $User = Invoke-RedfishRequest $session $Member.'@odata.id' | ConvertFrom-WebResponse
         if ($User.UserName -eq $Username) {
           # delete user with provided $Username
-          $Logger.info("User found, Delete User $($User.UserName) now")
+          $Logger.info($(Trace-Session $Session "User found, Delete User $($User.UserName) now"))
           Invoke-RedfishRequest $Session $User.'@odata.id' 'Delete' | Out-null
-          $Logger.info("Delete User $($User.UserName) succeed")
+          $Logger.info($(Trace-Session $Session "Delete User $($User.UserName) succeed"))
           $success = $true
           break
         }

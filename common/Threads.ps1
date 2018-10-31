@@ -66,7 +66,7 @@ function New-RunspacePool {
   )
 
   $PoolSize = Get-RunspacePoolSize $ExpectPoolSize
-  $Logger.info("Create thread pool, expect pool size: $ExpectPoolSize, real pool size: $PoolSize")
+  $Logger.info("Create thread pool, Expect size: $ExpectPoolSize, Real size: $PoolSize")
 
   $pool = [RunspaceFactory]::CreateRunspacePool(1, $PoolSize)
   If (!$MTA) {
@@ -89,7 +89,7 @@ function Start-ScriptBlockThread {
     [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
-  $Logger.info("Invoke Script block in new thread")
+  # $Logger.info("Invoke Script block in new thread")
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
@@ -101,7 +101,7 @@ function Start-ScriptBlockThread {
     # }
   }
 
-  $Logger.debug("Start script block thread")
+  # $Logger.debug("Start script block thread")
   $AsyncResult = $PowerShell.BeginInvoke()
 
   $Task = New-Object AsyncTask
