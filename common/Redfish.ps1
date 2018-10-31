@@ -576,7 +576,7 @@ function Invoke-RedfishFirmwareUpload {
     # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
     # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
     # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
-    Resolve-RedfishFailtureResponse $_ $ContinueEvenFailed
+    Resolve-RedfishFailtureResponse $Session $Request $_ $ContinueEvenFailed
   }
   finally {
     if ($null -ne $RequestStream -and $RequestStream -is [System.IDisposable]) {
@@ -630,7 +630,7 @@ function Invoke-RedfishRequest {
       $StreamWriter = New-Object System.IO.StreamWriter($Request.GetRequestStream(), [System.Text.Encoding]::ASCII)
       $StreamWriter.Write($PayloadString)
       $StreamWriter.Close()
-      $Logger.debug("Send request payload: $PayloadString")
+      $Logger.debug($(Trace-Session $Session "Send request payload: $PayloadString"))
     }
 
     # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class
@@ -640,14 +640,12 @@ function Invoke-RedfishRequest {
     # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
     # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
     # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
-    $Logger.info($Request)
-    $Logger.info($Request.Headers)
-    $Request.Headers | ForEach-Object {
-      $value = $Request.Headers.Item($_)
-      $Logger.info("$_ : $value")
-    }
-    $Logger.Error($_)
-    Resolve-RedfishFailtureResponse $_ $ContinueEvenFailed
+    # $Logger.info($Request)
+    # $Request.Headers | ForEach-Object {
+    #   $value = $Request.Headers.Item($_)
+    #   $Logger.info("$_ : $value")
+    # }
+    Resolve-RedfishFailtureResponse $Session $Request $_ $ContinueEvenFailed
   }
   finally {
     if ($null -ne $StreamWriter -and $StreamWriter -is [System.IDisposable]) {
@@ -673,7 +671,7 @@ function New-RedfishRequest {
     $Method = 'Get',
 
     [System.Object]
-    [parameter(Mandatory = $false, Position=4)]
+    [parameter(Mandatory = $false, Position=3)]
     $Headers
   )
 
@@ -687,14 +685,16 @@ function New-RedfishRequest {
     $OdataId = "$($session.BaseUri)/redfish/v1$($Path)"
   }
 
-  if ('If-Match' -notin $Headers.Keys -and $method -in @('Put', 'Patch')) {
+  $IfMatchMissing = ($null -eq $Headers -or 'If-Match' -notin $Headers.Keys)
+  if ($IfMatchMissing -and $method -in @('Put', 'Patch')) {
+    $Logger.Info($(Trace-Session $Session "No if-match present, will auto load etag now"))
     $Response = Invoke-RedfishRequest -Session $Session -Path $Path
     $Response.close()
-    $etag = $Response.Headers.ETag
-    $Logger.info("Odata $OdataId 's etag is $etag")
+    $etag = $Response.Headers.get('ETag')
+    $Logger.info($(Trace-Session $Session "Etag of Odata $Path -> $etag"))
   }
 
-  $Logger.info("Invoke redfish request: [$Method] $OdataId")
+  $Logger.info($(Trace-Session $Session "Invoke [$Method] $Path"))
 
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
   [System.Net.HttpWebRequest] $Request = [System.Net.HttpWebRequest]::Create($OdataId)
@@ -742,8 +742,8 @@ function New-RedfishRequest {
   $Request.Headers.Add("Cache-Control", "no-cache");
   $Request.Headers.Add("Upgrade-Insecure-Requests", "1");
   $Request.Headers.Add("Origin", $OdataId);
-  # $Request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
-  # $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
+  $Request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+  $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
   if ($null -ne $session.AuthToken) {
     $Request.Headers.Add('X-Auth-Token', $session.AuthToken)
@@ -763,7 +763,8 @@ function New-RedfishRequest {
 }
 
 
-function Resolve-RedfishFailtureResponse ($Ex, $ContinueEvenFailed) {
+function Resolve-RedfishFailtureResponse ($Session, $Request, $Ex, $ContinueEvenFailed) {
+  $Logger.Error($(Trace-Session $Session $_))
   $response = $Ex.Exception.InnerException.Response
   if ($null -ne $response) {
     if ($ContinueEvenFailed) {
@@ -772,7 +773,7 @@ function Resolve-RedfishFailtureResponse ($Ex, $ContinueEvenFailed) {
 
     $StatusCode = $response.StatusCode.value__
     $Content = Get-WebResponseContent $response
-    $Logger.warn("[$Method] $OdataId -> code: $StatusCode , content: $Content")
+    $Logger.warn($(Trace-Session $Session "[$Method] $response.ResponseUri -> code: $StatusCode; content: $Content"))
     if ($StatusCode -eq 403){
       throw $(Get-i18n "FAIL_NO_PRIVILEGE")
     }
