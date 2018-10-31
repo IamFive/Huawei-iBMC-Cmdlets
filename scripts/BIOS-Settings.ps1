@@ -67,7 +67,7 @@ Disconnect-iBMC
   }
 
   process {
-    $Logger.info("Export BIOS Configurations Now")
+    $Logger.info("Invoke Export BIOS Configurations function")
 
     $ScriptBlock = {
       param($Session, $DestFilePath)
@@ -85,9 +85,9 @@ Disconnect-iBMC
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
-        $Logger.info("Submit export BIOS configurations task for: $($Session[$idx].Address), `
-         dest file path is: $($DestFilePath[$idx])")
-        $Parameters = @($Session[$idx], $DestFilePath[$idx])
+        $RedfishSession = $Session[$idx]
+        $Logger.info($(Trace-Session $RedfishSession "Submit export BIOS configs to $DestFilePath[$idx] task"))
+        $Parameters = @($RedfishSession, $DestFilePath[$idx])
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
@@ -159,7 +159,7 @@ Disconnect-iBMC
   }
 
   process {
-    $Logger.info("Import BIOS Configurations Now, batch size: $($Session.Count)")
+    $Logger.info("Invoke Import BIOS Configurations function, batch size: $($Session.Count)")
 
     $ScriptBlock = {
       param($Session, $ConfigFilePath)
@@ -179,9 +179,9 @@ Disconnect-iBMC
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
-        $Logger.info("[$($Session[$idx].Address)] Submit import BIOS config task, `
-         config file path is: $($ConfigFilePath[$idx])")
-        $Parameters = @($Session[$idx], $ConfigFilePath[$idx])
+        $RedfishSession = $Session[$idx]
+        $Logger.info($(Trace-Session $RedfishSession "Submit import BIOS config from $ConfigFilePath[$idx] task"))
+        $Parameters = @($RedfishSession, $ConfigFilePath[$idx])
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
