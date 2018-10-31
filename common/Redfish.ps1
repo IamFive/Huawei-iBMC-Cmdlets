@@ -621,8 +621,10 @@ function Invoke-RedfishRequest {
     if ($method -in @('Put', 'Post', 'Patch')) {
       if ($null -eq $Payload -or '' -eq $Payload) {
         $PayloadString = '{}'
+      } elseif ($Payload -is [string]) {
+        $PayloadString = $Payload
       } else {
-        $PayloadString = $Payload | ConvertTo-Json
+        $PayloadString = $Payload | ConvertTo-Json -Depth 5
       }
       $Request.ContentType = 'application/json'
       $Request.ContentLength = $PayloadString.length
