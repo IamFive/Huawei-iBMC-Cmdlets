@@ -1,13 +1,5 @@
 <# NOTE: iBMC deploy module Cmdlets #>
 
-# Get-iBMCVirtualMedia
-# Set-iBMCVirtualMediaConnect
-# Set-iBMCVirtualMediaDisconnect
-# Get-iBMCBootupSequence
-# Set-iBMCBootupSequence
-# Get-iBMCBootSourceOverride
-# Set-iBMCBootSourceOverride
-
 function Get-iBMCVirtualMedia {
 <#
 .SYNOPSIS
@@ -33,7 +25,8 @@ PS C:\> Restore-iBMCFactory $session
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
-Get-iBMCVirtualMedia
+Connect-iBMCVirtualMedia
+Disconnect-iBMCVirtualMedia
 Connect-iBMC
 Disconnect-iBMC
 
@@ -41,7 +34,7 @@ Disconnect-iBMC
   [CmdletBinding()]
   param (
     [RedfishSession[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session
   )
 
@@ -62,7 +55,7 @@ Disconnect-iBMC
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
-      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
         $Logger.info($(Trace-Session $RedfishSession "Submit Get Virtual Media task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
@@ -70,7 +63,8 @@ Disconnect-iBMC
 
       $Results = Get-AsyncTaskResults $tasks
       return $Results
-    } finally {
+    }
+    finally {
       $pool.close()
     }
   }
@@ -81,71 +75,392 @@ Disconnect-iBMC
 
 
 function Connect-iBMCVirtualMedia {
-  <#
-  .SYNOPSIS
-  Query information about a specified virtual media resource.
+<#
+.SYNOPSIS
+Connect to virtual media.
 
-  .DESCRIPTION
-  Query information about a specified virtual media resource.
+.DESCRIPTION
+Connect to virtual media.
 
-  .PARAMETER Session
-  iBMC redfish session object which is created by Connect-iBMC cmdlet.
-  A session object identifies an iBMC server to which this cmdlet will be executed.
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
 
-  .OUTPUTS
-  PSObject[]
-  Returns PSObject which identifies VirtualMedia if cmdlet executes successfully.
-  In case of an error or warning, exception will be returned.
+.PARAMETER ImageFilePath
+VRI of the virtual media image
+Only the URI connections using the Network File System (NFS), Common Internet File System (CIFS) or HTTPS protocols are supported.
 
-  .EXAMPLE
+.OUTPUTS
+PSObject[]
+Returns the Connect Virtual Media task details if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
 
-  PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-  PS C:\> Restore-iBMCFactory $session
+.EXAMPLE
 
-  .LINK
-  http://www.huawei.com/huawei-ibmc-cmdlets-document
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Connect-iBMCVirtualMedia $session 'nfs://10.10.10.10/usr/SLE-12-Server-DVD-x86_64-GM-DVD1.ISO'
 
-  Connect-iBMC
-  Disconnect-iBMC
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
 
-  #>
-    [CmdletBinding()]
-    param (
-      [RedfishSession[]]
-      [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
-      $Session
-    )
+Get-iBMCVirtualMedia
+Disconnect-iBMCVirtualMedia
+Connect-iBMC
+Disconnect-iBMC
 
-    begin {
-      Assert-ArrayNotNull $Session 'Session'
+#>
+  [CmdletBinding()]
+  param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+    $Session,
+
+    [string[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    $ImageFilePath
+  )
+
+  begin {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $ImageFilePath 'ImageFilePath'
+    $ImageFilePath = Get-MatchedSizeArray $Session $ImageFilePath 'Session' 'ImageFilePath'
+  }
+
+  process {
+    $Logger.info("Invoke Connect Virtual Media function")
+
+    $ScriptBlock = {
+      param($RedfishSession, $ImageFilePath)
+      $Payload = @{
+        "VmmControlType" = "Connect";
+        "Image"          = $ImageFilePath;
+      }
+      $Path = "/Managers/$($RedfishSession.Id)/VirtualMedia/CD/Oem/Huawei/Actions/VirtualMedia.VmmControl"
+      $Response = Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload
+      return $Response | ConvertFrom-WebResponse
     }
 
-    process {
-      $Logger.info("Invoke Get Virtual Media infomation function")
-
-      $ScriptBlock = {
-        param($RedfishSession)
-        $Path = "/Managers/$($RedfishSession.Id)/VirtualMedia/CD"
-        $Response = Invoke-RedfishRequest $RedfishSession $Path
-        return $Response | ConvertFrom-WebResponse
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Parameters = @($RedfishSession, $ImageFilePath[$idx])
+        $Logger.info($(Trace-Session $RedfishSession "Submit Connect Virtual Media task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
-      try {
-        $tasks = New-Object System.Collections.ArrayList
-        $pool = New-RunspacePool $Session.Count
-        for ($idx=0; $idx -lt $Session.Count; $idx++) {
-          $RedfishSession = $Session[$idx]
-          $Logger.info($(Trace-Session $RedfishSession "Submit Get Virtual Media task"))
-          [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
-        }
-
-        $Results = Get-AsyncTaskResults $tasks
-        return $Results
-      } finally {
-        $pool.close()
-      }
+      $RedfishTasks = Get-AsyncTaskResults $tasks
+      $Results = Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
+      return $Results
     }
-
-    end {
+    finally {
+      $pool.close()
     }
   }
+
+  end {
+  }
+}
+
+
+function Disconnect-iBMCVirtualMedia {
+<#
+.SYNOPSIS
+Disconnect virtual media.
+
+.DESCRIPTION
+Disconnect virtual media.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.OUTPUTS
+PSObject[]
+Returns the Disconnect Virtual Media task details if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Disconnect-iBMCVirtualMedia $session
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Get-iBMCVirtualMedia
+Connect-iBMCVirtualMedia
+Connect-iBMC
+Disconnect-iBMC
+
+#>
+  [CmdletBinding()]
+  param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+    $Session
+  )
+
+  begin {
+    Assert-ArrayNotNull $Session 'Session'
+  }
+
+  process {
+    $Logger.info("Invoke Disconnect Virtual Media function")
+
+    $ScriptBlock = {
+      param($RedfishSession)
+      $Payload = @{
+        "VmmControlType" = "Disconnect";
+      }
+      $Path = "/Managers/$($RedfishSession.Id)/VirtualMedia/CD/Oem/Huawei/Actions/VirtualMedia.VmmControl"
+      $Response = Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload
+      return $Response | ConvertFrom-WebResponse
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Parameters = @($RedfishSession)
+        $Logger.info($(Trace-Session $RedfishSession "Submit Disconnect Virtual Media task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
+      }
+
+      $RedfishTasks = Get-AsyncTaskResults $tasks
+      $Results = Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
+      return $Results
+    }
+    finally {
+      $pool.close()
+    }
+  }
+
+  end {
+  }
+}
+
+# Get-iBMCBootSourceOverride
+# Set-iBMCBootSourceOverride
+
+# GET https://10.10.10.10/redfish/v1/Systems/1
+# PATCH https://10.10.10.10/redfish/v1/Systems/1
+# GET https://10.10.10.10/redfish/v1/Systems/1
+# PATCH https://10.10.10.10/redfish/v1/Systems/1
+
+function Get-iBMCBootupSequence {
+<#
+.SYNOPSIS
+Query bios boot up device sequence.
+
+.DESCRIPTION
+Query bios boot up device sequence. Boot up device contains: Hdd, Cd, Pxe, Others.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.OUTPUTS
+Array[String[]]
+Returns string array identifies boot up device in order if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Get-iBMCBootupSequence $session
+
+Hdd
+Cd
+Pxe
+Others
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Set-iBMCBootupSequence
+Get-iBMCBootSourceOverride
+Set-iBMCBootSourceOverride
+Connect-iBMC
+Disconnect-iBMC
+
+#>
+  [CmdletBinding()]
+  param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+    $Session
+  )
+
+  begin {
+    Assert-ArrayNotNull $Session 'Session'
+  }
+
+  process {
+    $Logger.info("Invoke Get Bootup Sequence function")
+
+    $ScriptBlock = {
+      param($RedfishSession)
+      $Path = "/redfish/v1/Systems/$($RedfishSession.Id)"
+      $Response = $(Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse)
+      # V3
+      if ($null -ne $Response.Oem.Huawei.BootupSequence) {
+        $Logger.info($(Trace-Session $RedfishSession "Find System.Oem.Huawei.BootupSequence, return directly"))
+        return $Response.Oem.Huawei.BootupSequence
+      } else { # V5
+        $Logger.info($(Trace-Session $RedfishSession "V5 BMC, will try get sequence from BIOS API"))
+        $BiosPath = "$Path/Bios"
+        $BiosResponse = $(Invoke-RedfishRequest $RedfishSession $BiosPath | ConvertFrom-WebResponse)
+        $Attrs = $BiosResponse.Attributes
+        $seq = New-Object System.Collections.ArrayList
+        0..3 | ForEach-Object {
+          $BootType = $Attrs."BootTypeOrder$_"
+          [Void] $seq.Add($BMC.V52V3Mapping[$BootType])
+        }
+        return $seq
+      }
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Logger.info($(Trace-Session $RedfishSession "Submit Get Bootup Sequence task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
+      }
+
+      $Results = Get-AsyncTaskResults $tasks
+      return $Results
+    }
+    finally {
+      $pool.close()
+    }
+  }
+
+  end {
+  }
+}
+
+
+function Set-iBMCBootupSequence {
+<#
+.SYNOPSIS
+Set bios boot up device sequence.
+
+.DESCRIPTION
+Set bios boot up device sequence.
+Boot up device contains: Hdd, Cd, Pxe, Others.
+New boot up sequence settings take effect upon the next restart of the system.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.PARAMETER BootSequence
+A array set of boot device in order, should contains all available boot devices.
+example: @(@('Hdd', 'Cd', 'Pxe', 'Others'))
+
+.OUTPUTS
+None
+Returns None if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $BootUpSequence = ,@('Pxe', 'Hdd', 'Cd', 'Others')
+PS C:\> Set-iBMCBootupSequence $session $BootUpSequence
+
+Set boot up device sequence for single iBMC server
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2,10.10.10.3 -Username username -Password password -TrustCert
+PS C:\> $BootUpSequence = @(@('Pxe', 'Hdd', 'Cd', 'Others'), @('Cd', 'Pxe', 'Hdd', 'Others'))
+PS C:\> Set-iBMCBootupSequence $session $BootUpSequence
+
+Set boot up device sequence for multiple iBMC server
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Get-iBMCBootupSequence
+Get-iBMCBootSourceOverride
+Set-iBMCBootSourceOverride
+Connect-iBMC
+Disconnect-iBMC
+
+#>
+  [CmdletBinding()]
+  param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+    $Session,
+
+    [string[][]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    $BootSequence
+  )
+
+  begin {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $BootSequence 'BootSequence'
+    $BootSequence = Get-MatchedSizeArray $Session $BootSequence 'Session' 'BootSequence'
+    # validate boot sequence input
+
+
+  }
+
+  process {
+    $Logger.info("Invoke Set Bootup Sequence function")
+
+    $ScriptBlock = {
+      param($RedfishSession, $BootSequence)
+      $Path = "/redfish/v1/Systems/$($RedfishSession.Id)"
+      $Response = $(Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse)
+
+      # V3
+      if ($null -ne $Response.Oem.Huawei.BootupSequence) {
+        # TODO
+        $Logger.info($(Trace-Session $RedfishSession "[V3] Will set boot sequence using System resource"))
+        return $Response.Oem.Huawei.BootupSequence
+      } else { # V5
+        $Logger.info($(Trace-Session $RedfishSession "[V5] Will set boot sequence using BIOS settings resource"))
+        $SetBiosPath = "$Path/Bios/Settings"
+        $V5BootSequence = @{}
+        for ($idx = 0; $idx -lt $BootSequence.Count; $idx++) {
+          $BootType = $BMC.V32V5Mapping[$BootSequence[$idx]]
+          $V5BootSequence."BootTypeOrder$idx" = $BootType
+        }
+        $Logger.info($(Trace-Session $RedfishSession "[V5] Boot device sequence: $V5BootSequence"))
+        $Payload = @{"Attributes"=$V5BootSequence;}
+        Invoke-RedfishRequest $RedfishSession $SetBiosPath 'PATCH' $Payload | Out-Null
+        return $null
+      }
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Parameters = @($RedfishSession, $BootSequence[$idx])
+        $Logger.info($(Trace-Session $RedfishSession "Submit Get Bootup Sequence task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
+      }
+
+      $Results = Get-AsyncTaskResults $tasks
+      return $Results
+    }
+    finally {
+      $pool.close()
+    }
+  }
+
+  end {
+  }
+}
