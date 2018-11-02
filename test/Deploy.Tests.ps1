@@ -35,15 +35,15 @@ Describe "Virtual Media features" {
 
 
 Describe "Boot Sequence" {
-  # It "Get" {
-  #   try {
-  #     $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
-  #     Get-iBMCBootupSequence $session
-  #   }
-  #   finally {
-  #     Disconnect-iBMC $session
-  #   }
-  # }
+  It "Get" {
+    try {
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      Get-iBMCBootupSequence $session
+    }
+    finally {
+      Disconnect-iBMC $session
+    }
+  }
 
   It "Set" {
     try {
@@ -56,5 +56,27 @@ Describe "Boot Sequence" {
     }
   }
 
+}
+
+Describe "Boot Override" {
+  # It "Get" {
+  #   try {
+  #     $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+  #     Get-iBMCBootSourceOverride $session
+  #   }
+  #   finally {
+  #     Disconnect-iBMC $session
+  #   }
+  # }
+
+  It "Set" {
+    try {
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      Set-iBMCBootSourceOverride $session 'Pxe'
+    }
+    finally {
+      Disconnect-iBMC $session
+    }
+  }
 }
 

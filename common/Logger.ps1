@@ -14,21 +14,24 @@ function Enable-Log4Net() {
   [log4net.Config.XmlConfigurator]::Configure($LogConfigFileInfo)
 
   $Global:Logger = [log4net.LogManager]::GetLogger("root")
-  # $Logger.info("Log4Net initialized.")
-  return $Logger
+  $Global:Logger.info("Log4Net initialized.")
+  return $Global:Logger
 }
 
 function Get-Logger ($name) {
+  if ($null -eq $name) {
+    return $Global:Logger
+  }
   return [log4net.LogManager]::GetLogger($name)
 }
 
-function Set-LoggerNDC ($session) {
-  if ($null -eq $session) {
-    [log4net.ThreadContext]::Stacks["NDC"].Push("[Main]")
-  } else {
-    [log4net.ThreadContext]::Stacks["NDC"].Push("[$($Session.Address)]")
-  }
-}
+# function Set-LoggerNDC ($session) {
+#   if ($null -eq $session) {
+#     [log4net.ThreadContext]::Stacks["NDC"].Push("[Main]")
+#   } else {
+#     [log4net.ThreadContext]::Stacks["NDC"].Push("[$($Session.Address)]")
+#   }
+# }
 
 # to null to avoid output
 $Null = @(
