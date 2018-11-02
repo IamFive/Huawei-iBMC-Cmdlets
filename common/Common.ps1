@@ -204,3 +204,11 @@ function Get-RandomIntGuid {
 function Trace-Session ($Session, $message) {
   return "[$($Session.Address)] $message"
 }
+
+function Copy-ObjectProperties ($Source, $Properties) {
+  $Clone = New-Object PSObject
+  $Properties | ForEach-Object {
+    $Clone | Add-Member -MemberType NoteProperty "$_" $Source."$_"
+  }
+  return $Clone
+}

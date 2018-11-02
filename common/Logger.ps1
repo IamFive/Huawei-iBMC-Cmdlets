@@ -14,7 +14,7 @@ function Enable-Log4Net() {
   [log4net.Config.XmlConfigurator]::Configure($LogConfigFileInfo)
 
   $Global:Logger = [log4net.LogManager]::GetLogger("root")
-  $Global:Logger.info("Log4Net initialized.")
+  # $Global:Logger.info("Log4Net initialized.")
   return $Global:Logger
 }
 
