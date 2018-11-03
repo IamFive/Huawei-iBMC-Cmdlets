@@ -626,12 +626,23 @@ function Invoke-RedfishRequest {
       } else {
         $PayloadString = $Payload | ConvertTo-Json -Depth 5
       }
-      $Request.ContentType = 'application/json'
-      $Request.ContentLength = $PayloadString.length
 
-      $StreamWriter = New-Object System.IO.StreamWriter($Request.GetRequestStream(), [System.Text.Encoding]::ASCII)
-      $StreamWriter.Write($PayloadString)
-      $StreamWriter.Close()
+      $Encoder = [System.Text.Encoding]::ASCII
+      $PayloadAsBytes = $Encoder.GetBytes($PayloadString)
+
+      $Request.ContentType = 'application/json'
+      $Request.ContentLength = $PayloadAsBytes.length
+
+      $RequestStream = $Request.GetRequestStream()
+      $RequestStream.Write($PayloadAsBytes, 0, $PayloadAsBytes.length)
+      $RequestStream.Flush()
+      $RequestStream.close()
+
+      # $StreamWriter = New-Object System.IO.StreamWriter($RequestStream, [System.Text.Encoding]::ASCII)
+      # $StreamWriter.Write($PayloadString)
+      # $StreamWriter.Flush()
+      # $StreamWriter.Close()
+      # $RequestStream.close()
       $Logger.debug($(Trace-Session $Session "Send request payload: $PayloadString"))
     }
 
@@ -650,9 +661,9 @@ function Invoke-RedfishRequest {
     Resolve-RedfishFailtureResponse $Session $Request $_ $ContinueEvenFailed
   }
   finally {
-    if ($null -ne $StreamWriter -and $StreamWriter -is [System.IDisposable]) {
-      $StreamWriter.Dispose()
-    }
+    # if ($null -ne $StreamWriter -and $StreamWriter -is [System.IDisposable]) {
+    #   $StreamWriter.Dispose()
+    # }
   }
 }
 
@@ -691,15 +702,16 @@ function New-RedfishRequest {
   if ($IfMatchMissing -and $method -in @('Put', 'Patch')) {
     $Logger.Info($(Trace-Session $Session "No if-match present, will auto load etag now"))
     $Response = Invoke-RedfishRequest -Session $Session -Path $Path
+    $OdataEtag = $Response.Headers.get('ETag')
+    $Logger.info($(Trace-Session $Session "Etag of Odata $Path -> $OdataEtag"))
     $Response.close()
-    $etag = $Response.Headers.get('ETag')
-    $Logger.info($(Trace-Session $Session "Etag of Odata $Path -> $etag"))
   }
 
   $Logger.info($(Trace-Session $Session "Invoke [$Method] $Path"))
 
-  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
-  [System.Net.HttpWebRequest] $Request = [System.Net.HttpWebRequest]::Create($OdataId)
+  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+  [System.Net.HttpWebRequest] $Request = [System.Net.WebRequest]::Create($OdataId)
+
   # $cert = Get-ChildItem -Path cert:\CurrentUser\My | where-object Thumbprint -eq B2536A31C7A7462BBA542B4A8B0C34E315D16AB9
   # Write-Host $cert
   # $Store = New-Object System.Security.Cryptography.X509Certificates.X509Store(
@@ -727,23 +739,16 @@ function New-RedfishRequest {
     return $($errors -eq 'None')
   }
 
-  # PATCH /redfish/v1/AccountService/Accounts/13 HTTP/1.1
-  # User-Agent: PowerShell Huawei iBMC Cmdlet
-  # Accept-Language: en-US,en;q=0.9
-  # X-Auth-Token: 9fc14fb1177cafa765b094485be9c36a
-  # If-Match: W/"7bc2fd79"
-  # Content-Type: application/json
-  # Host: 112.93.129.9
-  # Content-Length: 36
-  # Expect: 100-continue
-
-  $Request.Method = $Method
+  # $Logger.info("The 'ProtocolVersion' of the protocol used is $($Request.ProtocolVersion)")
+  $Request.Method = $Method.ToUpper()
   $Request.UserAgent = "PowerShell Huawei iBMC Cmdlet"
+  # $Request.KeepAlive = $true
   # $Request.Accept = "text/html, application/xhtml+xml, application/pdf, */*"
   # $Request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
-  $Request.Headers.Add("Cache-Control", "no-cache");
-  $Request.Headers.Add("Upgrade-Insecure-Requests", "1");
-  $Request.Headers.Add("Origin", $OdataId);
+  # $Request.Headers.Add("Cache-Control", "no-cache");
+  # $Request.Headers.Add("Upgrade-Insecure-Requests", "1");
+  # $Request.Headers.Add("Origin", $OdataId);
+  # $Request.ServicePoint.Expect100Continue = $false
   $Request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
   $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
 
@@ -757,8 +762,8 @@ function New-RedfishRequest {
     }
   }
 
-  if ($null -ne $etag) {
-    $Request.Headers.Add('If-Match', $etag)
+  if ($null -ne $OdataEtag) {
+    $Request.Headers.Add('If-Match', $OdataEtag)
   }
 
   return $Request;
@@ -766,7 +771,7 @@ function New-RedfishRequest {
 
 
 function Resolve-RedfishFailtureResponse ($Session, $Request, $Ex, $ContinueEvenFailed) {
-  $Logger.Error($(Trace-Session $Session $_))
+  $Logger.Error($(Trace-Session $Session $Ex))
   $response = $Ex.Exception.InnerException.Response
   if ($null -ne $response) {
     if ($ContinueEvenFailed) {
