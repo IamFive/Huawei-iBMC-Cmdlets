@@ -11,6 +11,7 @@ $bundle = Data {
   FAIL_NO_PRIVILEGE = Failure: you do not have the required permissions to perform this operation
   FAIL_INTERNAL_SERVICE = Failure: the request failed due to an internal service error
   FAIL_NOT_SUPPORT = Failure: the server did not support the functionality required
+  FAIL_TO_MODIFY_ALL = Failure: Fail to apply all submit settings, got failures:
 
   ERROR_INVALID_CREDENTIALS = Error: Invalid credentials
   ERROR_PARAMETER_EMPTY = Error: parameter "{0}" should not be null or empty
@@ -18,6 +19,7 @@ $bundle = Data {
   ERROR_PARAMETER_COUNT_DIFFERERNT = Error: The array size of parameter "{1}" should be one or the same as parameter "{0}"
   ERROR_PARAMETER_ARRAY_EMPTY = Error: Array parameter "{0}" should not be null or empty or contains null element.
   ERROR_ILLEGAL_BOOT_SEQ = Error: BootSequence parameter {0} is illegal, it should exactly contains four Boot devices (HDD, Cd, Pxe, Others)
+  ERROR_NO_UPDATE_PAYLOAD = Error: nothing to update, at least one update property must be specified
 '@
 }
 

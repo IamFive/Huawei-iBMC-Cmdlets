@@ -186,6 +186,23 @@ function Remove-EmptyValues {
   return $null
 }
 
+function Remove-NoneValues {
+  [CmdletBinding()]
+  param ($Target)
+
+  if ($null -ne $Target) {
+    $hash = @{}
+    foreach ($key in $Target.Keys) {
+      $value = $Target.Item($key)
+      if ($null -ne $value) {
+        [Void]$hash.Add($key, $value)
+      }
+    }
+    return $hash
+  }
+  return $null
+}
+
 function Get-PlainPassword {
   [CmdletBinding()]
   param ($SecurePassword)
