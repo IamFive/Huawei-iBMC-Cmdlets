@@ -14,8 +14,8 @@ iBMC redfish session object which is created by Connect-iBMC cmdlet.
 A session object identifies an iBMC server to which this cmdlet will be executed.
 
 .OUTPUTS
-PSObject[]
-Returns PSObject which contains all support services infomation if cmdlet executes successfully.
+PSObject[][]
+Returns PSObject Array which contains all support services infomation if cmdlet executes successfully.
 In case of an error or warning, exception will be returned.
 
 .EXAMPLE
