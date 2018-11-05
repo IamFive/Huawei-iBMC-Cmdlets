@@ -576,7 +576,7 @@ function Invoke-RedfishFirmwareUpload {
     # .Net HttpWebRequest will throw Exception if response is not success (status code is great than 400)
     # https://stackoverflow.com/questions/10081726/why-does-httpwebrequest-throw-an-exception-instead-returning-httpstatuscode-notf
     # [System.Net.HttpWebResponse] $response = $_.Exception.InnerException.Response
-    Resolve-RedfishFailtureResponse $Session $Request $_ $ContinueEvenFailed
+    Resolve-RedfishFailureResponse $Session $Request $_ $ContinueEvenFailed
   }
   finally {
     if ($null -ne $RequestStream -and $RequestStream -is [System.IDisposable]) {
@@ -658,7 +658,7 @@ function Invoke-RedfishRequest {
     #   $value = $Request.Headers.Item($_)
     #   $Logger.info("$_ : $value")
     # }
-    Resolve-RedfishFailtureResponse $Session $Request $_ $ContinueEvenFailed
+    Resolve-RedfishFailureResponse $Session $Request $_ $ContinueEvenFailed
   }
   finally {
     # if ($null -ne $StreamWriter -and $StreamWriter -is [System.IDisposable]) {
@@ -770,7 +770,7 @@ function New-RedfishRequest {
 }
 
 
-function Resolve-RedfishFailtureResponse ($Session, $Request, $Ex, $ContinueEvenFailed) {
+function Resolve-RedfishFailureResponse ($Session, $Request, $Ex, $ContinueEvenFailed) {
   $Logger.Error($(Trace-Session $Session $Ex))
   $response = $Ex.Exception.InnerException.Response
   if ($null -ne $response) {
@@ -780,7 +780,8 @@ function Resolve-RedfishFailtureResponse ($Session, $Request, $Ex, $ContinueEven
 
     $StatusCode = $response.StatusCode.value__
     $Content = Get-WebResponseContent $response
-    $Logger.warn($(Trace-Session $Session "[$Method] $response.ResponseUri -> code: $StatusCode; content: $Content"))
+    $Message = "[$Method] $($response.ResponseUri) -> code: $StatusCode; content: $Content"
+    $Logger.warn($(Trace-Session $Session $Message))
     if ($StatusCode -eq 403){
       throw $(Get-i18n "FAIL_NO_PRIVILEGE")
     }
@@ -791,17 +792,32 @@ function Resolve-RedfishFailtureResponse ($Session, $Request, $Ex, $ContinueEven
       throw $(Get-i18n "FAIL_NOT_SUPPORT")
     }
 
-    $result = $Content | ConvertFrom-Json
-    $extendInfoList = $result.error.'@Message.ExtendedInfo'
-    if ($extendInfoList.Count -gt 0) {
-      $extendInfo0 = $extendInfoList[0]
-      throw "Failure: [$($extendInfo0.Severity)] $($extendInfo0.Message)"
+    $Failures = Get-RedfishResponseFailures $Content
+    if ($null -ne $Failures -and $Failures.Count -gt 0) {
+      throw $($Failures -join "`n")
     }
+
     throw $Ex.Exception
   } else {
     throw $Ex.Exception
   }
 }
+
+
+function Resolve-RedfishPartialSuccessResponse($RedfishSession, $Response) {
+  $Uri = $Response.ResponseUri
+  $StatusCode = $Response.StatusCode.value__
+  $ResponseContent = Get-WebResponseContent $Response
+  $Failures = Get-RedfishResponseFailures $ResponseContent
+  if ($null -ne $Failures -and $Failures.Count -gt 0) {
+    $Message = "[$($Response.Method)] $Uri -> code: $StatusCode; content: $ResponseContent"
+    $Logger.warn($(Trace-Session $RedfishSession $Message))
+    throw $($Failures -join "`n")
+  } else {
+    return $ResponseContent | ConvertFrom-Json
+  }
+}
+
 
 function ConvertFrom-WebResponse {
   param (
@@ -831,3 +847,42 @@ function Get-WebResponseContent {
     $response.close()
   }
 }
+
+function Get-RedfishResponseFailures {
+  param (
+    [String]
+    $ResponseContent
+  )
+  $result = $ResponseContent | ConvertFrom-Json
+
+  $Partial = $false
+  $ExtendedInfo = $result.error.'@Message.ExtendedInfo'
+  if ($ExtendedInfo.Count -eq 0) {
+    $Partial = $true
+    $ExtendedInfo = $result.'@Message.ExtendedInfo'
+  }
+
+  if ($ExtendedInfo.Count -gt 0) {
+    $Prefix = "Failure:"
+    $indent = " " * $Prefix.Length
+    $Failures = New-Object System.Collections.ArrayList
+
+    if ($Partial) {
+      [Void] $Failures.Add($(Get-i18n FAIL_TO_MODIFY_ALL))
+    }
+
+    for ($idx = 0; $idx -lt $ExtendedInfo.Count; $idx++) {
+      $Failure = $ExtendedInfo[$idx]
+      if ($idx -eq 0 -and -not $Partial) {
+        [Void] $Failures.Add("$Prefix [$($Failure.Severity)] $($Failure.Message)")
+      } else {
+        [Void] $Failures.Add("$indent [$($Failure.Severity)] $($Failure.Message)")
+      }
+    }
+
+    return $Failures
+  }
+
+  return $null
+}
+
