@@ -166,7 +166,6 @@ Disconnect-iBMC
           "Port"=$Port;
         }
       }
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Update Service info: $Payload"))
       if ($ServiceName -eq 'VNC') {
         $Payload = @{
           'Oem'=@{
@@ -175,6 +174,7 @@ Disconnect-iBMC
         };
       }
 
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Update Service info: $Payload"))
       Invoke-RedfishRequest $RedfishSession $Path 'Patch' $Payload | Out-Null
       return $null
     }

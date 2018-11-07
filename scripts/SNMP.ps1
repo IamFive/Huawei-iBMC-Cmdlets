@@ -411,6 +411,10 @@ A character string that meets the following requirements:
 - Contain 1 to 18 password complexity check is disabled.
 - Have at least two new characters when compared with the previous community name.
 
+.PARAMETER AlarmSeverity
+Indicates which severity level alarm should be notified
+Available Value Set: Critical, Major, Minor, Normal
+
 .OUTPUTS
 Null
 Returns Null if cmdlet executes successfully.

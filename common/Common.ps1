@@ -111,6 +111,41 @@ function Get-OptionalMatchedSizeArray {
   }
 }
 
+
+function Get-OptionalMatchedSizeMatrix {
+  [CmdletBinding()]
+  param($Source, $Target, $ValidSet, $SourceName, $TargetName)
+
+  if ($null -eq $Target -or $Target.Count -eq 0) {
+    $empty = @($null) * $Source.Count
+    return ,$empty
+  } else {
+    # every element in the matrix should be an array
+    if ($Target -isnot [array]) {
+      throw [String]::Format($(Get-i18n ERROR_MUST_BE_MATRIX), $TargetName)
+    }
+
+    for ($idx=0; $idx -lt $Target.Count; $idx++) {
+      $element = $Target[$idx]
+      if ($element -isnot [array]) {
+        throw [String]::Format($(Get-i18n ERROR_ELEMENT_NOT_ARRAY), $TargetName)
+      }
+
+      if ($null -ne $ValidSet) {
+        $diff = Compare-Object $ValidSet $element | ? {$_.sideindicator -eq "=>"} | % {$_.inputobject}
+        if ($null -ne $diff -and $diff.Count -gt 0) {
+          $ValidSetString = $ValidSet -join ","
+          $DiffString = $diff -join ","
+          throw [String]::Format($(Get-i18n ERROR_ELEMENT_ILLEGAL), $TargetName, $DiffString, $ValidSetString)
+        }
+      }
+    }
+
+    $matched = Get-MatchedSizeArray $Source $Target $SourceName $TargetName
+    return ,$matched
+  }
+}
+
 function Assert-NotNull($Parameter, $ParameterName) {
   if ($null -eq $Parameter) {
     throw $([string]::Format($(Get-i18n ERROR_PARAMETER_EMPTY), $ParameterName))

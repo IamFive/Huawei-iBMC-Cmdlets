@@ -20,6 +20,9 @@ $bundle = Data {
   ERROR_PARAMETER_ARRAY_EMPTY = Error: Array parameter "{0}" should not be null or empty or contains null element.
   ERROR_ILLEGAL_BOOT_SEQ = Error: BootSequence parameter {0} is illegal, it should exactly contains four Boot devices (HDD, Cd, Pxe, Others)
   ERROR_NO_UPDATE_PAYLOAD = Error: nothing to update, at least one update property must be specified
+  ERROR_MUST_BE_MATRIX = Error: Parameter "{0}" must be a matrix-array
+  ERROR_ELEMENT_NOT_ARRAY = Error: All element of Parameter "{0}" must be an array
+  ERROR_ELEMENT_ILLEGAL = Error: Cannot validate argument on parameter '{0}'. The argument "{1}" does not belong to the set "{2}".
 '@
 }
 
