@@ -160,10 +160,13 @@ function Assert-ArrayNotNull($Parameter, $ParameterName) {
 
 function Remove-EmptyValues {
   [CmdletBinding()]
-  param ($Target)
+  param (
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $Target
+  )
 
+  $hash = @{}
   if ($null -ne $Target) {
-    $hash = @{}
     # foreach ($pair in $Target.GetEnumerator()) {
     #   $key = $pair.Name
     #   $value = $pair.Value
@@ -216,26 +219,27 @@ function Remove-EmptyValues {
     #     [Void]$hash.Add($_, $value)
     #   }
     # }
-    return $hash
   }
-  return $null
+  return $hash
 }
 
 function Remove-NoneValues {
   [CmdletBinding()]
-  param ($Target)
+  param (
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $Source
+  )
 
-  if ($null -ne $Target) {
-    $hash = @{}
-    foreach ($key in $Target.Keys) {
-      $value = $Target.Item($key)
+  $hash = @{}
+  if ($null -ne $Source) {
+    foreach ($key in $Source.Keys) {
+      $value = $Source.Item($key)
       if ($null -ne $value) {
         [Void]$hash.Add($key, $value)
       }
     }
-    return $hash
   }
-  return $null
+  return $hash
 }
 
 function Get-PlainPassword {
@@ -263,4 +267,25 @@ function Copy-ObjectProperties ($Source, $Properties) {
     $Clone | Add-Member -MemberType NoteProperty "$_" $Source."$_"
   }
   return $Clone
+}
+
+
+function Resolve-EnumValues {
+  [CmdletBinding()]
+  param (
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $Source
+  )
+  $hash = @{}
+  if ($null -ne $Source) {
+    foreach ($key in $Source.Keys) {
+      $value = $Source.Item($key)
+      if ($value -is [Enum]) {
+        [Void]$hash.Add($key, $value.toString())
+      } else {
+        [Void]$hash.Add($key, $value)
+      }
+    }
+  }
+  return $hash
 }

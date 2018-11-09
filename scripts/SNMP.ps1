@@ -1,13 +1,5 @@
 <# NOTE: iBMC SNMP module Cmdlets #>
 
-# Get-iBMCSNMPSetting
-# Set-iBMCSNMPSetting
-# Get-iBMCSNMPTrapSetting
-# Set-iBMCSNMPTrapSetting
-# Get-iBMCSNMPTrapServer
-# Set-iBMCSNMPTrapSetting
-
-
 function Get-iBMCSNMPSetting {
 <#
 .SYNOPSIS

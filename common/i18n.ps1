@@ -23,6 +23,7 @@ $bundle = Data {
   ERROR_MUST_BE_MATRIX = Error: Parameter "{0}" must be a matrix-array
   ERROR_ELEMENT_NOT_ARRAY = Error: All element of Parameter "{0}" must be an array
   ERROR_ELEMENT_ILLEGAL = Error: Cannot validate argument on parameter '{0}'. The argument "{1}" does not belong to the set "{2}".
+  ERROR_NTP_MIN_GT_MAX = Error: Parameter "MaxPollingInterval" must be greater than or equal to "MinPollingInterval"
 '@
 }
 
