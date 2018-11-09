@@ -30,10 +30,11 @@ CompanyName = 'Unknown'
 Copyright = '(c) 2018 Woo. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Huawei iBMC cmdlets provide cmdlets to quick access iBMC Redfish devices.
+These cmdlets contains operation used most such as: bois setting, syslog, snmp, network, power and etc.'
 
 # Minimum version of the Windows PowerShell engine required by this module
-# PowerShellVersion = ''
+PowerShellVersion = '5.0'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''
@@ -42,10 +43,10 @@ Copyright = '(c) 2018 Woo. All rights reserved.'
 # PowerShellHostVersion = ''
 
 # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-# DotNetFrameworkVersion = ''
+DotNetFrameworkVersion = '4.5'
 
 # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-# CLRVersion = ''
+CLRVersion = '4.0'
 
 # Processor architecture (None, X86, Amd64) required by this module
 # ProcessorArchitecture = ''
