@@ -99,8 +99,8 @@ function Start-ScriptBlockThread {
   $PowerShell.RunspacePool = $ThreadPool
 
   $CommonFiles = @(Get-ChildItem -Path $PSScriptRoot\..\common -Recurse -Filter *.ps1)
-  $ScriptFiles = @(Get-ChildItem -Path $PSScriptRoot\..\scripts -Recurse -Filter *.ps1)
-  @($CommonFiles + $ScriptFiles) | ForEach-Object {
+  # $ScriptFiles = @(Get-ChildItem -Path $PSScriptRoot\..\scripts -Recurse -Filter *.ps1)
+  $CommonFiles | ForEach-Object {
     try {
       $FileFullPath = $_.FullName
       [Void] $PowerShell.AddScript(". `"$FileFullPath`"")
@@ -140,6 +140,17 @@ function Start-CommandThread {
   # $Logger.info("Invoke Command: $Command , parameters: $Parameters in new thread")
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
+
+  $CommonFiles = @(Get-ChildItem -Path $PSScriptRoot\..\common -Recurse -Filter *.ps1)
+  # $ScriptFiles = @(Get-ChildItem -Path $PSScriptRoot\..\scripts -Recurse -Filter *.ps1)
+  $CommonFiles | ForEach-Object {
+    try {
+      $FileFullPath = $_.FullName
+      [Void] $PowerShell.AddScript(". `"$FileFullPath`"")
+    } catch {
+        Write-Error -Message "Failed to import file $FileFullPath"
+    }
+  }
 
   [Void] $PowerShell.AddCommand($Command)
   if ($null -ne $Parameters -and $Parameters.Count -gt 0) {

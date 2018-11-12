@@ -386,7 +386,11 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       for ($idx=0; $idx -lt $RunningTasks.Count; $idx++) {
         $RunningTask = $RunningTasks[$idx]
         $Parameters = @($Sessions[$RunningTask.index], $RunningTask)
-        [Void] $AsyncTasks.Add($(Start-CommandThread $pool "Get-RedfishTask" $Parameters))
+        $ScriptBlock = {
+          param($RedfishSession, $RunningTask)
+          return $(Get-RedfishTask $RedfishSession $RunningTask)
+        }
+        [Void] $AsyncTasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
       # new updated task list
       $ProcessedTasks = @($(Get-AsyncTaskResults $AsyncTasks))

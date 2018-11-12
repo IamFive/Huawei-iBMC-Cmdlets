@@ -92,7 +92,7 @@ Disconnect-iBMC
       }
 
       $RedfishTasks = Get-AsyncTaskResults $tasks
-      $Logger.Info("Export configuration task: " + $RedfishTasks)
+      $Logger.Info("Export configuration task: $RedfishTasks")
       return Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
     } finally {
       $pool.close()

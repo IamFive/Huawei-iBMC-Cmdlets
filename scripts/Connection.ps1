@@ -200,9 +200,12 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   try {
     $tasks = New-Object System.Collections.ArrayList
     $pool = New-RunspacePool $Session.Count
+    $ScriptBlock = {
+      param($RedfishSession)
+      return $(Close-iBMCRedfishSession $RedfishSession)
+    }
     $Session | ForEach-Object {
-      $Command = "Close-iBMCRedfishSession"
-      [Void] $tasks.Add($(Start-CommandThread $pool $Command @($_)))
+      [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($_)))
     }
     return Get-AsyncTaskResults -AsyncTasks $tasks
   } finally {
@@ -262,9 +265,12 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   try {
     $tasks = New-Object System.Collections.ArrayList
     $pool = New-RunspacePool $Session.Count
+    $ScriptBlock = {
+      param($RedfishSession)
+      return $(Test-iBMCRedfishSession $RedfishSession)
+    }
     $Session | ForEach-Object {
-      $Command = "Test-iBMCRedfishSession"
-      [Void] $tasks.Add($(Start-CommandThread $pool $Command @($_)))
+      [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($_)))
     }
     return Get-AsyncTaskResults -AsyncTasks $tasks
   } finally {
