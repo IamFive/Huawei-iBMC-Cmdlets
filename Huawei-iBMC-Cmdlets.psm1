@@ -4,14 +4,23 @@
 # . $PSScriptRoot/common/Redfish.ps1
 
 # Import all functional scripts
-Get-ChildItem -Path $PSScriptRoot\common\ -Recurse -Filter *.ps1 | foreach {
-  . $_.FullName
+$CommonFunctions = @(Get-ChildItem -Path $PSScriptRoot\common\ -Recurse -Filter *.ps1)
+$CommonFunctions | ForEach-Object {
+  try {
+    . $_.FullName
+  } catch {
+      Write-Error -Message "Failed to import file $($_.fullname)"
+  }
 }
 
-
-# Import all functional scripts
-Get-ChildItem -Path $PSScriptRoot\scripts\ -Recurse -Filter *.ps1 | foreach {
-  . $_.FullName
+# Import all User scripts
+$UserFunctions = @(Get-ChildItem -Path $PSScriptRoot\scripts\ -Recurse -Filter *.ps1)
+$UserFunctions | ForEach-Object {
+  try {
+    . $_.FullName
+  } catch {
+      Write-Error -Message "Failed to import file $($_.fullname)"
+  }
 }
 
 
@@ -57,9 +66,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     return $versionObject
 }
 
-
-
 # Export only the functions using PowerShell standard verb-noun naming.
 # Be sure to list each exported functions in the FunctionsToExport field of the module manifest file.
 # This improves performance of command discovery in PowerShell.
-Export-ModuleMember -Function *-*
+# Export-ModuleMember -Function *-*
+Export-ModuleMember -Function *-iBMC*

@@ -119,27 +119,27 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   try {
     $tasks = New-Object System.Collections.ArrayList
     $pool = New-RunspacePool $ParametersArray.Count
-    $ScriptBlock = {
-      param($p)
-      $Logger.info($p.Count)
-      if ($p.Count -eq 3) {
-        $Logger.info("receive parameter length 3")
-        New-iBMCRedfishSession -Address $($p[0]) -Credential $($p[1]) -TrustCert $($p[2])
-      } else {
-        $Logger.info("receive parameter length 4")
-        New-iBMCRedfishSession -Address $($p[0]) -Username $($p[1]) -Password $($p[2]) -TrustCert $($p[3])
-      }
-    }
+    # $ScriptBlock = {
+    #   param($p)
+    #   $Logger.info($p.Count)
+    #   if ($p.Count -eq 3) {
+    #     $Logger.info("receive parameter length 3")
+    #     New-iBMCRedfishSession -Address $($p[0]) -Credential $($p[1]) -TrustCert $($p[2])
+    #   } else {
+    #     $Logger.info("receive parameter length 4")
+    #     New-iBMCRedfishSession -Address $($p[0]) -Username $($p[1]) -Password $($p[2]) -TrustCert $($p[3])
+    #   }
+    # }
 
     if ($useCredential) {
       $ScriptBlock = {
         param($Address, $Credential, $TrustCert)
-          New-iBMCRedfishSession -Address $Address -Credential $Credential -TrustCert:$TrustCert
+        New-iBMCRedfishSession -Address $Address -Credential $Credential -TrustCert:$TrustCert
       }
     } else {
       $ScriptBlock = {
         param($Address, $Username, $Password, $TrustCert)
-          New-iBMCRedfishSession -Address $Address -Username $Username -Password $Password -TrustCert:$TrustCert
+        New-iBMCRedfishSession -Address $Address -Username $Username -Password $Password -TrustCert:$TrustCert
       }
     }
 

@@ -89,11 +89,27 @@ function Start-ScriptBlockThread {
     [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
+  # $InitialSessionState = [InitialSessionState]::CreateDefault()
+  # $InitialSessionState.ExecutionPolicy = 'RemoteSigned'
+  # $InitialSessionState.ImportPSModule("Huawei-iBMC-Cmdlets")
+
   # $Logger.info("Invoke Script block in new thread")
+  # $PowerShell = [System.Management.Automation.PowerShell]::Create($InitialSessionState)
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
-  [Void] $PowerShell.AddScript($ScriptBlock)
+  $CommonFiles = @(Get-ChildItem -Path $PSScriptRoot\..\common -Recurse -Filter *.ps1)
+  $ScriptFiles = @(Get-ChildItem -Path $PSScriptRoot\..\scripts -Recurse -Filter *.ps1)
+  @($CommonFiles + $ScriptFiles) | ForEach-Object {
+    try {
+      $FileFullPath = $_.FullName
+      [Void] $PowerShell.AddScript(". `"$FileFullPath`"")
+    } catch {
+        Write-Error -Message "Failed to import file $FileFullPath"
+    }
+  }
+
+  [Void] $PowerShell.AddScript($ScriptBlock, $false)
   if ($null -ne $Parameters -and $Parameters.Count -gt 0) {
     [Void] $PowerShell.AddParameters($Parameters)
     # Foreach ($Arg in $Parameters) {
@@ -121,7 +137,7 @@ function Start-CommandThread {
     [Parameter(Position = 2, Mandatory = $False)]$Parameters
   )
 
-  $Logger.info("Invoke Command: $Command , parameters: $Parameters in new thread")
+  # $Logger.info("Invoke Command: $Command , parameters: $Parameters in new thread")
   $PowerShell = [System.Management.Automation.PowerShell]::Create()
   $PowerShell.RunspacePool = $ThreadPool
 
@@ -130,7 +146,7 @@ function Start-CommandThread {
     [Void] $PowerShell.AddParameters($Parameters)
   }
 
-  $Logger.debug("Start script block thread")
+  # $Logger.debug("Start script block thread")
   $AsyncResult = $PowerShell.BeginInvoke()
 
   $Task = New-Object AsyncTask
