@@ -1,4 +1,5 @@
 <# NOTE: iBMC Power Control module Cmdlets #>
+
 try { [PowerControlType] | Out-Null } catch {
 Add-Type -TypeDefinition @'
     public enum PowerControlType {
