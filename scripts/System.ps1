@@ -121,8 +121,8 @@ iBMC redfish session object which is created by Connect-iBMC cmdlet.
 A session object identifies an iBMC server to which this cmdlet will be executed.
 
 .OUTPUTS
-String
-Returns iBMC Asset Tag if cmdlet executes successfully.
+PSObject[][]
+Returns iBMC System LinkUp Ethernet Interfaces if cmdlet executes successfully.
 In case of an error or warning, exception will be returned.
 
 .EXAMPLE
