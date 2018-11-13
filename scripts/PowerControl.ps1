@@ -1,4 +1,5 @@
 <# NOTE: iBMC Power Control module Cmdlets #>
+
 try { [PowerControlType] | Out-Null } catch {
 Add-Type -TypeDefinition @'
     public enum PowerControlType {
@@ -11,33 +12,26 @@ Add-Type -TypeDefinition @'
 '@
 }
 
-function Set-iBMCSystemPower {
+function Set-iBMCServerPower {
 <#
 .SYNOPSIS
-Control iBMC Operation System Power.
+Control iBMC Server Power.
 
 .DESCRIPTION
-Control iBMC Operation System Power.
-
-- On：上电
-- GracefulShutdown：正常下电
-- ForceRestart：强制重启
-- Nmi：触发不可屏蔽中断
-- ForcePowerCycle：强制下电再上电
-
+Control iBMC Server Power.
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
 A session object identifies an iBMC server to which this cmdlet will be executed.
 
 .PARAMETER PowerControlType
-Indicates the Operation System Power type.
+Indicates the Server Power type.
 Available Value Set:  On, GracefulShutdown, ForceRestart, Nmi, ForcePowerCycle.
-- On: power on the OS.
-- GracefulShutdown: gracefully shut down the OS.
-- ForceRestart: forcibly restart the OS.
+- On: power on the Server.
+- GracefulShutdown: gracefully shut down the Server.
+- ForceRestart: forcibly restart the Server.
 - Nmi: triggers a non-maskable interrupt (NMI).
-- ForcePowerCycle: forcibly power off and then power on the OS.
+- ForcePowerCycle: forcibly power off and then power on the Server.
 
 .OUTPUTS
 None
@@ -47,7 +41,7 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Set-iBMCSystemPower -Session $session
+PS C:\> Set-iBMCServerPower -Session $session
 
 
 .LINK
@@ -75,11 +69,11 @@ Disconnect-iBMC
   }
 
   process {
-    $Logger.info("Invoke Control iBMC OS Power function")
+    $Logger.info("Invoke Control iBMC Server Power function")
 
     $ScriptBlock = {
       param($RedfishSession, $Payload)
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Control iBMC OS Power now"))
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Control iBMC Server Power now"))
       $Path = "/Systems/$($RedfishSession.Id)/Actions/Oem/Huawei/ComputerSystem.FruControl"
       Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload | Out-Null
       return $null
@@ -96,7 +90,7 @@ Disconnect-iBMC
         } | Resolve-EnumValues
 
         $Parameters = @($RedfishSession, $Payload)
-        $Logger.info($(Trace-Session $RedfishSession "Submit Control iBMC OS Power task"))
+        $Logger.info($(Trace-Session $RedfishSession "Submit Control iBMC Server Power task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
