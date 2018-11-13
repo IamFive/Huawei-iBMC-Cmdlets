@@ -612,7 +612,7 @@ Disconnect-iBMC
       $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Get iBMC SNMP Trap Servers now"))
       $Path = "/Managers/$($RedfishSession.Id)/SnmpService"
       $Response = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
-      return $Response.SnmpTrapNotification.TrapServer
+      return ,$Response.SnmpTrapNotification.TrapServer
     }
 
     try {

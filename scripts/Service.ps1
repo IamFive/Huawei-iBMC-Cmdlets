@@ -54,7 +54,7 @@ Disconnect-iBMC
       $Properties = @("HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP")
       $Services = Copy-ObjectProperties $Response $Properties
       $Services | Add-Member -MemberType NoteProperty "VNC" $Response.Oem.Huawei.VNC
-      return $Services
+      return ,$Services
     }
 
     try {

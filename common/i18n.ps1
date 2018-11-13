@@ -12,6 +12,7 @@ $bundle = Data {
   FAIL_INTERNAL_SERVICE = Failure: the request failed due to an internal service error
   FAIL_NOT_SUPPORT = Failure: the server did not support the functionality required
   FAIL_TO_MODIFY_ALL = Failure: Fail to apply all submit settings, got failures:
+  FAIL_NO_LINKUP_INTERFACE = Failure: No LinkUp state Ethernet Interfaces found.
 
   ERROR_INVALID_CREDENTIALS = Error: Invalid credentials
   ERROR_PARAMETER_EMPTY = Error: parameter "{0}" should not be null or empty

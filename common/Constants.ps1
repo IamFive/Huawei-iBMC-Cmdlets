@@ -18,6 +18,11 @@ $global:BMC = @{
     OK='OK';
   };
 
+  LinkStatus = @{
+    NoLink='NoLink';
+    LinkUp='LinkUp';
+  }
+
   FRUOperationSystem = 0;
 
 }
