@@ -866,6 +866,13 @@ function Get-RedfishResponseFailures {
     $ExtendedInfo = $result.'@Message.ExtendedInfo'
   }
 
+  if ($ExtendedInfo.Count -eq 1) {
+    $Severity = $ExtendedInfo[0].Severity
+    if ($Severity -eq $BMC.Severity.OK) {
+      return $null
+    }
+  }
+
   if ($ExtendedInfo.Count -gt 0) {
     $Prefix = "Failure:"
     $indent = " " * $Prefix.Length

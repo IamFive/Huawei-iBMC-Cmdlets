@@ -1,4 +1,4 @@
-<# NOTE: iBMC AssetTag module Cmdlets #>
+<# NOTE: iBMC Power module Cmdlets #>
 
 function Get-iBMCPowerInfo {
 <#

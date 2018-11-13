@@ -1,14 +1,13 @@
 Import-Module Huawei-iBMC-Cmdlets -Force
 
-Describe "Power" {
-  It "get" {
+Describe "PowerControl" {
+  It "set os" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
-      Get-iBMCPowerInfo $session
+      Set-iBMCSystemPower $session On
     }
     finally {
       Disconnect-iBMC $session
     }
   }
-
 }

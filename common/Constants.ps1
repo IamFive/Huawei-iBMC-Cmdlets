@@ -12,6 +12,12 @@ $global:BMC = @{
     'Cd'='DVDROMDrive';
     'Pxe'='PXE';
     'Others'='Others';
-  }
+  };
+
+  Severity = @{
+    OK='OK';
+  };
+
+  FRUOperationSystem = 0;
 
 }
