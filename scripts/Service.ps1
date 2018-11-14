@@ -1,7 +1,7 @@
 <# NOTE: iBMC Service module Cmdlets #>
 
 function Get-iBMCService {
-<#
+  <#
 .SYNOPSIS
 Query information about the services and ports supported by the iBMC.
 
@@ -54,7 +54,7 @@ Disconnect-iBMC
       $Properties = @("HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP")
       $Services = Copy-ObjectProperties $Response $Properties
       $Services | Add-Member -MemberType NoteProperty "VNC" $Response.Oem.Huawei.VNC
-      return ,$Services
+      return , $Services
     }
 
     try {
@@ -111,7 +111,7 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Set-iBMCService -Session $session -ServiceName 'VNC' -Enabled $true -Port 5900
+PS C:\> Set-iBMCService -Session $session -ServiceName VNC -Enabled $true -Port 5900
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -127,9 +127,8 @@ Disconnect-iBMC
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
-    [string[]]
+    [ServiceName[]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
-    [ValidateSet("HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP", "VNC")]
     $ServiceName,
 
     [Boolean[]]
@@ -148,9 +147,9 @@ Disconnect-iBMC
     Assert-ArrayNotNull $Enabled 'Enabled'
     Assert-ArrayNotNull $Port 'Port'
 
-    $ServiceName = Get-MatchedSizeArray $Session $ServiceName 'Session' 'ServiceName'
-    $Enabled = Get-MatchedSizeArray $Session $Enabled 'Session' 'Enabled'
-    $Port = Get-MatchedSizeArray $Session $Port 'Session' 'Port'
+    $ServiceNameList = Get-MatchedSizeArray $Session $ServiceName 'Session' 'ServiceName'
+    $EnabledList = Get-MatchedSizeArray $Session $Enabled 'Session' 'Enabled'
+    $PortList = Get-MatchedSizeArray $Session $Port 'Session' 'Port'
   }
 
   process {
@@ -161,15 +160,15 @@ Disconnect-iBMC
       $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Set BMC Service now"))
       $Path = "/Managers/$($RedfishSession.Id)/NetworkProtocol"
       $Payload = @{
-        $ServiceName=@{
-          "ProtocolEnabled"=$Enabled;
-          "Port"=$Port;
+        "$($ServiceName.toString())" = @{
+          "ProtocolEnabled" = $Enabled;
+          "Port"            = $Port;
         }
       }
-      if ($ServiceName -eq 'VNC') {
+      if ($ServiceName -eq [ServiceName]::VNC) {
         $Payload = @{
-          'Oem'=@{
-            'Huawei'=$Payload;
+          'Oem' = @{
+            'Huawei' = $Payload;
           };
         };
       }
@@ -184,7 +183,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Parameters = @($RedfishSession, $ServiceName[$idx], $Enabled[$idx], $Port[$idx])
+        $Parameters = @($RedfishSession, $ServiceNameList[$idx], $EnabledList[$idx], $PortList[$idx])
         $Logger.info($(Trace-Session $RedfishSession "Submit Set BMC Service task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }

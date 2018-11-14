@@ -1,17 +1,7 @@
 <# NOTE: iBMC Syslog Module Cmdlets #>
 
-try { [LogType] | Out-Null } catch {
-Add-Type -TypeDefinition @'
-    public enum LogType {
-      OperationLog,
-      SecurityLog,
-      EventLog
-    }
-'@
-}
-
 function Get-iBMCSyslogSetting {
-<#
+  <#
 .SYNOPSIS
 Query information about the services and ports supported by the iBMC.
 
@@ -130,7 +120,7 @@ Disconnect-iBMC
 }
 
 function Set-iBMCSyslogSetting {
-<#
+  <#
 .SYNOPSIS
 Modify iBMC Syslog Notification Settings.
 
@@ -187,29 +177,26 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $ServiceEnabled,
 
-    [String[]]
+    [ServerIdentity[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
-    [ValidateSet('BoardSN', 'ProductAssetTag', 'HostName', $null)]
     $ServerIdentitySource,
 
-    [String[]]
+    [AlarmSeverity[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 3)]
-    [ValidateSet('Critical', 'Major', 'Minor', 'Normal', $null)]
     $AlarmSeverity,
 
-    [String[]]
+    [TransmissionProtocol[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 4)]
-    [ValidateSet('UDP', 'TCP', 'TLS', $null)]
     $TransmissionProtocol
   )
 
   begin {
     Assert-ArrayNotNull $Session 'Session'
 
-    $ServiceEnabled = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
-    $ServerIdentitySource = Get-OptionalMatchedSizeArray $Session $ServerIdentitySource
-    $AlarmSeverity = Get-OptionalMatchedSizeArray $Session $AlarmSeverity
-    $TransmissionProtocol = Get-OptionalMatchedSizeArray $Session $TransmissionProtocol
+    $ServiceEnabledList = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
+    $ServerIdentitySourceList = Get-OptionalMatchedSizeArray $Session $ServerIdentitySource
+    $AlarmSeverityList = Get-OptionalMatchedSizeArray $Session $AlarmSeverity
+    $TransmissionProtocolList = Get-OptionalMatchedSizeArray $Session $TransmissionProtocol
   }
 
   process {
@@ -229,12 +216,12 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Payload = Remove-EmptyValues @{
-          ServiceEnabled=$ServiceEnabled[$idx];
-          ServerIdentitySource=$ServerIdentitySource[$idx];
-          AlarmSeverity=$AlarmSeverity[$idx];
-          TransmissionProtocol=$TransmissionProtocol[$idx];
-        }
+        $Payload = @{
+          ServiceEnabled       = $ServiceEnabledList[$idx];
+          ServerIdentitySource = $ServerIdentitySourceList[$idx];
+          AlarmSeverity        = $AlarmSeverityList[$idx];
+          TransmissionProtocol = $TransmissionProtocolList[$idx];
+        } | Remove-EmptyValues | Resolve-EnumValues
 
         if ($Payload.Count -eq 0) {
           throw $(Get-i18n ERROR_NO_UPDATE_PAYLOAD)
@@ -259,7 +246,7 @@ Disconnect-iBMC
 
 
 function Set-iBMCSyslogServer {
-<#
+  <#
 .SYNOPSIS
 Modify iBMC Syslog Notification Server.
 
@@ -336,7 +323,7 @@ Disconnect-iBMC
     [ValidateRange(1, 65535)]
     $Port,
 
-    [String[][]]
+    [LogType[][]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     [AllowEmptyCollection()]
     $LogType
@@ -351,7 +338,7 @@ Disconnect-iBMC
     $Addresses = Get-OptionalMatchedSizeArray $Session $Address
     $Ports = Get-OptionalMatchedSizeArray $Session $Port
 
-    $ValidLogTypes = @("OperationLog", "SecurityLog", "EventLog")
+    $ValidLogTypes = Get-EnumNames "LogType"
     $LogTypes = Get-OptionalMatchedSizeMatrix $Session $LogType $ValidLogTypes 'Session' 'LogType'
   }
 
@@ -367,13 +354,14 @@ Disconnect-iBMC
       for ($idx = 0; $idx -lt 4; $idx++) {
         if ($MemberId -eq $idx) {
           [Void] $Members.Add($Payload)
-        } else {
+        }
+        else {
           [Void] $Members.Add(@{})
         }
       }
 
       $CompletePlayload = @{
-        "SyslogServers"=$Members;
+        "SyslogServers" = $Members;
       }
       $Response = Invoke-RedfishRequest $RedfishSession $Path 'Patch' $CompletePlayload
       Resolve-RedfishPartialSuccessResponse $RedfishSession $Response | Out-Null
@@ -385,13 +373,13 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $MemberId=$MemberIds[$idx];
-        $Payload = Remove-NoneValues @{
-          Enabled=$Enableds[$idx];
-          Address=$Addresses[$idx];
-          Port=$Ports[$idx];
-          LogType=$LogTypes[$idx];
-        }
+        $MemberId = $MemberIds[$idx];
+        $Payload = @{
+          Enabled = $Enableds[$idx];
+          Address = $Addresses[$idx];
+          Port    = $Ports[$idx];
+          LogType = $LogTypes[$idx];
+        } | Remove-NoneValues | Resolve-EnumValues
 
         if ($Payload.Count -eq 0) {
           throw $(Get-i18n ERROR_NO_UPDATE_PAYLOAD)

@@ -82,9 +82,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     [parameter(Mandatory = $true, Position=2)]
     $Password,
 
-    [String[]]
+    [UserRole[]]
     [parameter(Mandatory = $true, Position=3)]
-    [ValidateSet("Administrator", "Operator", "Commonuser", "Noaccess", "CustomRole1", "CustomRole2", "CustomRole3", "CustomRole4")]
     $Role
   )
 
@@ -94,9 +93,9 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     Assert-ArrayNotNull $Password 'Password'
     Assert-ArrayNotNull $Role 'Role'
 
-    $Username = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
-    $Password = Get-MatchedSizeArray $Session $Password 'Session' 'Password'
-    $Role = Get-MatchedSizeArray $Session $Role 'Session' 'Role'
+    $UsernameList = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
+    $PasswordList = Get-MatchedSizeArray $Session $Password 'Session' 'Password'
+    $RoleList = Get-MatchedSizeArray $Session $Role 'Session' 'Role'
   }
 
   process {
@@ -107,8 +106,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       $payload = @{
         'UserName' = "$Username";
         'Password' = "$PlainPasswd";
-        'RoleId' = "$Role";
-      }
+        'RoleId' = $Role;
+      } | Resolve-EnumValues
       $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload
       # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
       return $response | ConvertFrom-WebResponse
@@ -117,7 +116,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
-        $Parameters = @($Session[$idx], $Username[$idx], $Password[$idx], $Role[$idx])
+        $Parameters = @($Session[$idx], $UsernameList[$idx], $PasswordList[$idx], $RoleList[$idx])
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $AddUserBlock $Parameters))
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
@@ -305,9 +304,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     [parameter(Mandatory = $false)]
     $NewPassword,
 
-    [string[]]
+    [UserRole[]]
     [parameter(Mandatory = $false)]
-    [ValidateSet("Administrator", "Operator", "Commonuser", "Noaccess", "CustomRole1", "CustomRole2", "CustomRole3", "CustomRole4")]
     $NewRole,
 
     [Boolean[]]
@@ -322,7 +320,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   begin {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $Username 'Username'
-    $Username = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
+    $Usernames = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
     $NewUsernames = Get-OptionalMatchedSizeArray $Session $NewUsername
     $NewPasswords = Get-OptionalMatchedSizeArray $Session $NewPassword
     $NewRoles = Get-OptionalMatchedSizeArray $Session $NewRole
@@ -370,7 +368,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
           "Password"= $NewPasswords[$idx];
           "RoleId"= $NewRoles[$idx];
           "Enabled"= $Enableds[$idx];
-        }
+        } | Resolve-EnumValues
 
         $Playload_ = Remove-EmptyValues $Payload
         if ($Unlockeds[$idx] -eq $true) {
@@ -380,7 +378,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         if ($null -eq $Playload_ -or $Playload_.Keys.Count -eq 0) {
           throw $(Get-i18n FAIL_NO_UPDATE_PARAMETER)
         } else {
-          $Parameters = @($Session[$idx], $Username[$idx], $Playload_)
+          $Parameters = @($Session[$idx], $Usernames[$idx], $Playload_)
           [Void] $tasks.Add($(Start-ScriptBlockThread $pool $SetUserBlock $Parameters))
         }
       }
@@ -449,7 +447,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   begin {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $Username 'Username'
-    $Username = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
+    $UsernameList = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
   }
 
   process {
@@ -480,7 +478,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
       for ($idx=0; $idx -lt $Session.Count; $idx++) {
-        $parameter = @($Session[$idx], $Username[$idx])
+        $parameter = @($Session[$idx], $UsernameList[$idx])
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $DeleteUserBlock $parameter))
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks

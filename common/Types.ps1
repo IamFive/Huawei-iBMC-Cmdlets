@@ -56,3 +56,78 @@ try { [AlarmSeverity] | Out-Null } catch {
     }
 '@
 }
+
+try { [TransmissionProtocol] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum TransmissionProtocol {
+      UDP,
+      TCP,
+      TLS
+    }
+'@
+}
+
+try { [BootSourceOverrideTarget] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum BootSourceOverrideTarget {
+      None,
+      Pxe,
+      Floppy,
+      Cd,
+      Hdd,
+      BiosSetup
+    }
+'@
+}
+
+try { [ServiceName] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum ServiceName {
+      HTTP,
+      HTTPS,
+      SNMP,
+      VirtualMedia,
+      IPMI,
+      SSH,
+      KVMIP,
+      VNC
+    }
+'@
+}
+
+try { [UserRole] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum UserRole {
+      Administrator,
+      Operator,
+      Commonuser,
+      Noaccess,
+      CustomRole1,
+      CustomRole2,
+      CustomRole3,
+      CustomRole4
+    }
+'@
+}
+
+try { [LogType] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum LogType {
+      OperationLog,
+      SecurityLog,
+      EventLog
+    }
+'@
+}
+
+try { [BootSequence] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum BootSequence {
+      Pxe,
+      Hdd,
+      Cd,
+      Others
+    }
+'@
+}
+

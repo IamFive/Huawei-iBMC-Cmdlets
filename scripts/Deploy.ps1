@@ -355,7 +355,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER BootSequence
 A array set of boot device in order, should contains all available boot devices.
-example: @(@('Hdd', 'Cd', 'Pxe', 'Others'))
+example: ,@('Hdd', 'Cd', 'Pxe', 'Others')
 
 .OUTPUTS
 None
@@ -395,7 +395,7 @@ Disconnect-iBMC
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
-    [string[][]]
+    [BootSequence[][]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $BootSequence
   )
@@ -403,11 +403,12 @@ Disconnect-iBMC
   begin {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $BootSequence 'BootSequence'
-    $BootSequence = Get-MatchedSizeArray $Session $BootSequence 'Session' 'BootSequence'
+    $BootSequenceList = Get-MatchedSizeArray $Session $BootSequence 'Session' 'BootSequence'
     # validate boot sequence input
-    $BootSequence | ForEach-Object {
+    $BootSequenceList | ForEach-Object {
       if ($null -ne $_ -or $_.Count -eq 4) {
-        $diff = Compare-Object $_ $BMC.V32V5Mapping.Keys -PassThru
+        $ValidSet = Get-EnumNames "BootSequence"
+        $diff = Compare-Object $_ $ValidSet -PassThru
         if ($null -eq $diff) {
           return
         }
@@ -432,7 +433,7 @@ Disconnect-iBMC
           "Oem" = @{
             "Huawei" = @{
               "BootupSequence" = $BootSequence;
-            };
+            } | Resolve-EnumValues;
           };
         }
         $Headers = @{'If-Match' = $Response.Headers.get('ETag'); }
@@ -445,7 +446,7 @@ Disconnect-iBMC
         $SetBiosPath = "$Path/Bios/Settings"
         $V5BootSequence = @{}
         for ($idx = 0; $idx -lt $BootSequence.Count; $idx++) {
-          $BootType = $BMC.V32V5Mapping[$BootSequence[$idx]]
+          $BootType = $BMC.V32V5Mapping[$BootSequence[$idx].toString()]
           $V5BootSequence."BootTypeOrder$idx" = $BootType
         }
         $Logger.info($(Trace-Session $RedfishSession "[V5] Boot device sequence: $V5BootSequence"))
@@ -460,7 +461,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Parameters = @($RedfishSession, $BootSequence[$idx])
+        $Parameters = @($RedfishSession, $BootSequenceList[$idx])
         $Logger.info($(Trace-Session $RedfishSession "Submit Get Bootup Sequence task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
@@ -609,16 +610,15 @@ Disconnect-iBMC
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
-    [String[]]
+    [BootSourceOverrideTarget[]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
-    [ValidateSet('None', 'Pxe', 'Floppy', 'Cd', 'Hdd', 'BiosSetup')]
     $BootSourceOverrideTarget
   )
 
   begin {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $BootSourceOverrideTarget 'BootSourceOverrideTarget'
-    $BootSourceOverrideTarget = Get-MatchedSizeArray $Session $BootSourceOverrideTarget 'Session' 'BootSourceOverrideTarget'
+    $BootSourceOverrideTargetList = Get-MatchedSizeArray $Session $BootSourceOverrideTarget 'Session' 'BootSourceOverrideTarget'
   }
 
   process {
@@ -630,7 +630,7 @@ Disconnect-iBMC
       $Path = "/redfish/v1/Systems/$($RedfishSession.Id)"
       $Payload = @{
         "Boot" = @{
-          "BootSourceOverrideTarget" = $BootSourceOverrideTarget;
+          "BootSourceOverrideTarget" = $BootSourceOverrideTarget.toString();
         };
       }
 
@@ -643,7 +643,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Parameters = @($RedfishSession, $BootSourceOverrideTarget[$idx])
+        $Parameters = @($RedfishSession, $BootSourceOverrideTargetList[$idx])
         $Logger.info($(Trace-Session $RedfishSession "Submit Set Boot source override target task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
