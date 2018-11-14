@@ -1,26 +1,6 @@
 <# NOTE: iBMC SMTP module Cmdlets #>
 
-try { [ServerIdentifier] | Out-Null } catch {
-  Add-Type -TypeDefinition @'
-  public enum ServerIdentifier {
-    HostName,
-    BoardSN,
-    ProductAssetTag
-  }
-'@
-}
-
-try { [AlarmSeverity] | Out-Null } catch {
-  Add-Type -TypeDefinition @'
-  public enum AlarmSeverity {
-    Critical,
-    Major,
-    Minor,
-    Normal
-  }
-'@
-}
-
+. $PSScriptRoot/../common/Types.ps1
 
 function Get-iBMCSMTPSetting {
 <#
@@ -152,7 +132,7 @@ Indicates the User password of the email sender.
 Indicates the subject of the email to be sent.
 
 .PARAMETER EmailSubjectContains
-Indicates the server identifier injected in the email subject.
+Indicates the server identity injected in the email subject.
 The subject can contain one or more of the following:
 - HostName: Host name
 - BoardSN: Board serial number
@@ -160,6 +140,7 @@ The subject can contain one or more of the following:
 
 .PARAMETER AlarmSeverity
 Indicates the severity levels of the alarm to be sent
+Available Value Set: Critical, Major, Minor, Normal
 - Critical (critical)
 - Major (major and higher)
 - Minor (minor and higher)
@@ -230,7 +211,7 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $EmailSubject,
 
-    [ServerIdentifier[][]]
+    [ServerIdentity[][]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $EmailSubjectContains,
 
@@ -250,7 +231,7 @@ Disconnect-iBMC
     $SenderPasswordList = Get-OptionalMatchedSizeArray $Session $SenderPassword
     $EmailSubjectList = Get-OptionalMatchedSizeArray $Session $EmailSubject
 
-    $ValidSet = Get-EnumNames "ServerIdentifier"
+    $ValidSet = Get-EnumNames "ServerIdentity"
     $EmailSubjectContainsList = Get-OptionalMatchedSizeMatrix $Session $EmailSubjectContains `
       $ValidSet 'Session' 'EmailSubjectContains'
     $AlarmSeverityList = Get-OptionalMatchedSizeArray $Session $AlarmSeverity

@@ -1,22 +1,6 @@
 <# NOTE: iBMC SNMP module Cmdlets #>
 
-try { [SnmpV3PrivProtocol] | Out-Null } catch {
-  Add-Type -TypeDefinition @'
-  public enum SnmpV3PrivProtocol {
-    DES,
-    AES
-  }
-'@
-}
-
-try { [SnmpV3AuthProtocol] | Out-Null } catch {
-  Add-Type -TypeDefinition @'
-  public enum SnmpV3AuthProtocol {
-    MD5,
-    SHA1
-  }
-'@
-}
+. $PSScriptRoot/../common/Types.ps1
 
 function Get-iBMCSNMPSetting {
 <#
@@ -379,7 +363,6 @@ Disconnect-iBMC
   }
 }
 
-
 function Set-iBMCSNMPTrapSetting {
 <#
 .SYNOPSIS
@@ -411,6 +394,8 @@ Available Value Set: OID, EventCode, PreciseAlarm.
 Indicates the trap server host identifier.
 Available Value Set: BoardSN, ProductAssetTag, HostName.
 
+This parameter is valid only when TrapMode is OID or PreciseAlarm.
+
 .PARAMETER CommunityName
 Indicates the Community name. Community name is invalid if SNMPv3 trap is used.
 A character string that meets the following requirements:
@@ -422,6 +407,10 @@ A character string that meets the following requirements:
 .PARAMETER AlarmSeverity
 Indicates which severity level alarm should be notified
 Available Value Set: Critical, Major, Minor, Normal
+- Critical (critical)
+- Major (major and higher)
+- Minor (minor and higher)
+- Normal (normal and higher)
 
 .OUTPUTS
 Null
@@ -449,10 +438,10 @@ Connect-iBMC
 Disconnect-iBMC
 
 #>
+
   [CmdletBinding()]
   param (
     [RedfishSession[]]
-    [ValidateNotNull()]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
@@ -460,44 +449,40 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $ServiceEnabled,
 
-    [String[]]
+    [TrapVersion[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet('V1', 'V2C', 'V3', $null)]
     $TrapVersion,
 
     [String[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $TrapV3User,
 
-    [String[]]
+    [TrapMode[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet('OID', 'EventCode', 'PreciseAlarm', $null)]
     $TrapMode,
 
-    [String[]]
+    [ServerIdentity[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet('BoardSN', 'ProductAssetTag', 'HostName', $null)]
     $TrapServerIdentity,
 
     [String[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $CommunityName,
 
-    [String[]]
+    [AlarmSeverity[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet('Critical', 'Major', 'Minor', 'Normal', $null)]
     $AlarmSeverity
   )
 
   begin {
     Assert-ArrayNotNull $Session 'Session'
-    $ServiceEnabled = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
-    $TrapVersion = Get-OptionalMatchedSizeArray $Session $TrapVersion
-    $TrapV3User = Get-OptionalMatchedSizeArray $Session $TrapV3User
-    $TrapMode = Get-OptionalMatchedSizeArray $Session $TrapMode
-    $TrapServerIdentity = Get-OptionalMatchedSizeArray $Session $TrapServerIdentity
-    $CommunityName = Get-OptionalMatchedSizeArray $Session $CommunityName
-    $AlarmSeverity = Get-OptionalMatchedSizeArray $Session $AlarmSeverity
+    $ServiceEnabledList = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
+    $TrapVersionList = Get-OptionalMatchedSizeArray $Session $TrapVersion
+    $TrapV3UserList = Get-OptionalMatchedSizeArray $Session $TrapV3User
+    $TrapModeList = Get-OptionalMatchedSizeArray $Session $TrapMode
+    $TrapServerIdentityList = Get-OptionalMatchedSizeArray $Session $TrapServerIdentity
+    $CommunityNameList = Get-OptionalMatchedSizeArray $Session $CommunityName
+    $AlarmSeverityList = Get-OptionalMatchedSizeArray $Session $AlarmSeverity
   }
 
   process {
@@ -519,15 +504,15 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Payload = Remove-EmptyValues @{
-          ServiceEnabled=$ServiceEnabled[$idx];
-          TrapVersion=$TrapVersion[$idx];
-          TrapV3User=$TrapV3User[$idx];
-          TrapMode=$TrapMode[$idx];
-          TrapServerIdentity=$TrapServerIdentity[$idx];
-          CommunityName=$CommunityName[$idx];
-          AlarmSeverity=$AlarmSeverity[$idx];
-        }
+        $Payload = @{
+          ServiceEnabled=$ServiceEnabledList[$idx];
+          TrapVersion=$TrapVersionList[$idx];
+          TrapV3User=$TrapV3UserList[$idx];
+          TrapMode=$TrapModeList[$idx];
+          TrapServerIdentity=$TrapServerIdentityList[$idx];
+          CommunityName=$CommunityNameList[$idx];
+          AlarmSeverity=$AlarmSeverityList[$idx];
+        } | Remove-EmptyValues | Resolve-EnumValues
 
         if ($Payload.Count -eq 0) {
           throw $(Get-i18n ERROR_NO_UPDATE_PAYLOAD)

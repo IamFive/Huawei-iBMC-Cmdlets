@@ -15,11 +15,11 @@ Describe "SNMP-Settings" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       $pwd = ConvertTo-SecureString -String "pwd12#$%^" -AsPlainText -Force
-      $ServerIdentifer = ,@('HostName', 'BoardSN')
+      $ServerIdentity = ,@('HostName', 'BoardSN')
       Set-iBMCSMTPSetting $session -ServiceEnabled $false -ServerAddress smtp.huawei.com `
           -TLSEnabled $false -AnonymousLoginEnabled $false `
           -SenderUserName 'Huawei-iBMC' -SenderAddress "powershell@huawei.com"  -SenderPassword $pwd `
-          -EmailSubject 'iBMC Alarm Notification' -EmailSubjectContains $ServerIdentifer `
+          -EmailSubject 'iBMC Alarm Notification' -EmailSubjectContains $ServerIdentity `
           -AlarmSeverity Critical
     }
     finally {
