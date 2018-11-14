@@ -45,7 +45,16 @@ Create a new user with name "new-user" for a single iBMC server
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
 PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
-PS C:\> Add-iBMCUser -Session $session -Username new-user -Password $pwd -Role Operator
+PS C:\> $User = Add-iBMCUser -Session $session -Username new-user -Password $pwd -Role Operator
+PS C:\> $User
+
+Id       : 12
+Name     : User Account
+UserName : new-user
+RoleId   : Operator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
 
 .EXAMPLE
 
@@ -55,6 +64,14 @@ PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Passwo
 PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> ,$session | Add-iBMCUser -Username new-user -Password $pwd -Role Operator
 
+Id       : 12
+Name     : User Account
+UserName : new-user
+RoleId   : Operator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
+
 .EXAMPLE
 
 Create a new user with name "new-user" for multiple iBMC servers with pipelined session
@@ -63,6 +80,13 @@ PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Passwo
 PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> ,$session | Add-iBMCUser -Username new-user,new-user2 -Password $pwd,$pwd -Role Operator,Administrator
 
+Id       : 12
+Name     : User Account
+UserName : new-user
+RoleId   : Operator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -108,9 +132,12 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         'Password' = "$PlainPasswd";
         'RoleId' = $Role;
       } | Resolve-EnumValues
-      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload
+      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload | ConvertFrom-WebResponse
       # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
-      return $response | ConvertFrom-WebResponse
+
+      $Properties = @("Id", "Name", "UserName", "RoleId", "Locked", "Enabled", "Oem")
+      $User = Copy-ObjectProperties $Response $Properties
+      return $User
     }
     try {
       $tasks = New-Object System.Collections.ArrayList
@@ -153,7 +180,33 @@ In case of an error or warning, exception will be returned.
 Get all user account infomation for multiple iBMC servers
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2-10 -Username username -Password password -TrustCert
-PS C:\> Get-iBMCUser -Session $session
+PS C:\> $Users = Get-iBMCUser -Session $session
+PS C:\> $Users
+
+Id       : 2
+Name     : User Account
+UserName : Administrator
+RoleId   : Administrator
+Locked   : False
+Enabled  : True
+Oem      : @{Huawei=}
+
+Id       : 3
+Name     : User Account
+UserName : root
+RoleId   : Administrator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
+
+Id       : 4
+Name     : User Account
+UserName : zxh
+RoleId   : Administrator
+Locked   : False
+Enabled  : True
+Oem      : @{Huawei=}
+
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -172,13 +225,17 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
   process {
     $GetUserBlock = {
       param($Session)
-      $users = New-Object System.Collections.ArrayList
+      $Users = New-Object System.Collections.ArrayList
       $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' | ConvertFrom-WebResponse
+      $Properties = @("Id", "Name", "UserName", "RoleId", "Locked", "Enabled", "Oem")
       $response.Members | ForEach-Object {
-        $userResponse = Invoke-RedfishRequest $session $_.'@odata.id'
-        [Void] $users.Add($($userResponse | ConvertFrom-WebResponse))
+        $UserResponse = Invoke-RedfishRequest $session $_.'@odata.id' | ConvertFrom-WebResponse
+        $User = Copy-ObjectProperties $UserResponse $Properties
+        [Void] $Users.Add($User)
       }
-      return $users
+
+
+      return $Users
     }
     try {
       $tasks = New-Object System.Collections.ArrayList
@@ -261,7 +318,16 @@ PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password
 PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
 PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
-PS C:\> Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator -Enabled $true -Unlocked
+PS C:\> $User = Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator -Enabled $true -Unlocked
+PS C:\> $User
+
+Id       : 12
+Name     : User Account
+UserName : powershell
+RoleId   : Operator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
 
 .EXAMPLE
 
@@ -273,6 +339,14 @@ PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator
 
+Id       : 12
+Name     : User Account
+UserName : powershell
+RoleId   : Operator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
+
 .EXAMPLE
 
 Modify "username", "password", "role" properties of a user with name "username" for multiple iBMC servers
@@ -281,6 +355,13 @@ PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Passwo
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> ,$session | Set-iBMCUser -Username username -NewUsername new-user2 -NewPassword $newPwd -NewRole Administrator
 
+Id       : 12
+Name     : User Account
+UserName : powershell
+RoleId   : Operator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -349,8 +430,12 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
             $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
             $Payload.Password = $PlainPasswd
           }
-          $SetUserResponse = Invoke-RedfishRequest $Session $User.'@odata.id' 'Patch' $Payload $Headers
-          return $SetUserResponse | ConvertFrom-WebResponse
+          $Response = Invoke-RedfishRequest $Session $User.'@odata.id' 'Patch' $Payload $Headers | ConvertFrom-WebResponse
+          # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
+
+          $Properties = @("Id", "Name", "UserName", "RoleId", "Locked", "Enabled", "Oem")
+          $User = Copy-ObjectProperties $Response $Properties
+          return $User
         }
       }
 

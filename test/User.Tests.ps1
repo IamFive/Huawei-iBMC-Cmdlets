@@ -26,20 +26,7 @@ Describe "User features" {
     } finally {
       Write-Host "Remove ibmc user now"
       Remove-iBMCUser -Session $session -Username powershell2
-      Remove-iBMCUser -Session $session -Username powershell
       Disconnect-iBMC $session
-    }
-  }
-}
-
-Describe "User Delete features" {
-  It "User Feature Workflow" {
-    try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
-      Remove-iBMCUser -Session $session -Username powershell
-    }
-    finally {
-        Disconnect-iBMC $session
     }
   }
 }
