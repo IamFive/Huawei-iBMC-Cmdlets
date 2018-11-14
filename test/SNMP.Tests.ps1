@@ -15,8 +15,8 @@ Describe "SNMP-Settings" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       Set-iBMCSNMPSetting $session -SnmpV1Enabled $false -SnmpV2CEnabled $false `
-        -LongPasswordEnabled $true -RWCommunityEnabled $true `
-        -ReadOnlyCommunity 'chajian12#$' -ReadWriteCommunity 'chajian12#$' `
+        -LongPasswordEnabled $false -RWCommunityEnabled $true `
+        -ReadOnlyCommunity 'chajian12#$' -ReadWriteCommunity 'chajian12#$12' `
         -SnmpV3AuthProtocol MD5 -SnmpV3PrivProtocol DES
     }
     finally {

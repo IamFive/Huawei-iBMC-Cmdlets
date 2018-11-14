@@ -1,5 +1,23 @@
 <# NOTE: iBMC SNMP module Cmdlets #>
 
+try { [SnmpV3PrivProtocol] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+  public enum SnmpV3PrivProtocol {
+    DES,
+    AES
+  }
+'@
+}
+
+try { [SnmpV3AuthProtocol] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+  public enum SnmpV3AuthProtocol {
+    MD5,
+    SHA1
+  }
+'@
+}
+
 function Get-iBMCSNMPSetting {
 <#
 .SYNOPSIS
@@ -200,14 +218,12 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $ReadWriteCommunity,
 
-    [string[]]
+    [SnmpV3AuthProtocol[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet($null, 'MD5', 'SHA1')]
     $SnmpV3AuthProtocol,
 
-    [string[]]
+    [SnmpV3PrivProtocol[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet($null, 'DES', 'AES')]
     $SnmpV3PrivProtocol
   )
 
@@ -240,7 +256,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Payload = Remove-EmptyValues @{
+        $Payload = @{
           SnmpV1Enabled=$SnmpV1EnabledList[$idx];
           SnmpV2CEnabled=$SnmpV2CEnabledList[$idx];
           LongPasswordEnabled=$LongPasswordEnabledList[$idx];
@@ -249,7 +265,7 @@ Disconnect-iBMC
           ReadWriteCommunity=$ReadWriteCommunityList[$idx];
           SnmpV3AuthProtocol=$SnmpV3AuthProtocolList[$idx];
           SnmpV3PrivProtocol=$SnmpV3PrivProtocolList[$idx];
-        }
+        } | Remove-EmptyValues | Resolve-EnumValues
 
         if ($Payload.Count -eq 0) {
           throw $(Get-i18n ERROR_NO_UPDATE_PAYLOAD)
