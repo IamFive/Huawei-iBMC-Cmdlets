@@ -21,7 +21,17 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Get-iBMCService $session
+PS C:\> $Services = Get-iBMCService $session
+PS C:\> $Services
+
+HTTP         : @{ProtocolEnabled=False; Port=80}
+HTTPS        : @{ProtocolEnabled=True; Port=443}
+SNMP         : @{ProtocolEnabled=True; Port=161}
+VirtualMedia : @{ProtocolEnabled=True; Port=8208}
+IPMI         : @{ProtocolEnabled=True; Port=623}
+SSH          : @{ProtocolEnabled=True; Port=22}
+KVMIP        : @{ProtocolEnabled=True; Port=2198}
+VNC          : @{ProtocolEnabled=False; Port=5900}
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -79,7 +89,7 @@ Disconnect-iBMC
 }
 
 function Set-iBMCService {
-<#
+  <#
 .SYNOPSIS
 Modify iBMC service information, including the enablement state and port number.
 

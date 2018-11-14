@@ -1,7 +1,7 @@
 <# NOTE: iBMC BIOS Setting Module Cmdlets #>
 
 function Export-iBMCBIOSSetting {
-<#
+  <#
 .SYNOPSIS
 Export iBMC BIOS and BMC Settings
 
@@ -62,11 +62,11 @@ Disconnect-iBMC
   [CmdletBinding()]
   param (
     [RedfishSession[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
     [string[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=1)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $DestFilePath
   )
 
@@ -82,7 +82,7 @@ Disconnect-iBMC
     $ScriptBlock = {
       param($Session, $DestFilePath)
       $payload = @{
-        'Type' = "URI";
+        'Type'    = "URI";
         'Content' = $DestFilePath;
       }
       $Path = "/redfish/v1/Managers/1/Actions/Oem/Huawei/Manager.ExportConfiguration"
@@ -94,7 +94,7 @@ Disconnect-iBMC
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
-      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
         $Logger.info($(Trace-Session $RedfishSession "Submit export BIOS configs to $DestFilePath[$idx] task"))
         $Parameters = @($RedfishSession, $DestFilePath[$idx])
@@ -104,7 +104,8 @@ Disconnect-iBMC
       $RedfishTasks = Get-AsyncTaskResults $tasks
       $Logger.Info("Export configuration task: $RedfishTasks")
       return Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
-    } finally {
+    }
+    finally {
       $pool.close()
     }
   }
@@ -115,7 +116,7 @@ Disconnect-iBMC
 }
 
 function Import-iBMCBIOSSetting {
-<#
+  <#
 .SYNOPSIS
 Import iBMC BIOS and BMC configuration
 
@@ -165,11 +166,11 @@ Disconnect-iBMC
   [CmdletBinding()]
   param (
     [RedfishSession[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
     [string[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=1)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $ConfigFilePath
   )
 
@@ -188,7 +189,7 @@ Disconnect-iBMC
       Invoke-RedfishFirmwareUpload $Session $UploadFileName $ConfigFilePath | Out-Null
 
       $payload = @{
-        'Type' = "URI";
+        'Type'    = "URI";
         'Content' = "/tmp/web/$UploadFileName";
       }
       $Path = "/redfish/v1/Managers/1/Actions/Oem/Huawei/Manager.ImportConfiguration"
@@ -199,7 +200,7 @@ Disconnect-iBMC
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
-      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
         $Logger.info($(Trace-Session $RedfishSession "Submit import BIOS config from $ConfigFilePath[$idx] task"))
         $Parameters = @($RedfishSession, $ConfigFilePath[$idx])
@@ -209,7 +210,8 @@ Disconnect-iBMC
       $RedfishTasks = Get-AsyncTaskResults $tasks
       $Logger.Info("Import configuration task: " + $RedfishTasks)
       return Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
-    } finally {
+    }
+    finally {
       $pool.close()
     }
   }
@@ -220,7 +222,7 @@ Disconnect-iBMC
 
 
 function Reset-iBMCBIOS {
-<#
+  <#
 .SYNOPSIS
 Restore BIOS default settings.
 
@@ -257,7 +259,7 @@ Disconnect-iBMC
   [CmdletBinding()]
   param (
     [RedfishSession[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session
   )
 
@@ -278,7 +280,7 @@ Disconnect-iBMC
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
-      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
         $Logger.info($(Trace-Session $RedfishSession "Submit Reset BIOS configuration task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
@@ -286,7 +288,8 @@ Disconnect-iBMC
 
       $Results = Get-AsyncTaskResults $tasks
       return $Results
-    } finally {
+    }
+    finally {
       $pool.close()
     }
   }
@@ -296,7 +299,7 @@ Disconnect-iBMC
 }
 
 function Restore-iBMCFactory {
-<#
+  <#
 .SYNOPSIS
 Restore the factory settings.
 
@@ -333,7 +336,7 @@ Disconnect-iBMC
   [CmdletBinding()]
   param (
     [RedfishSession[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session
   )
 
@@ -354,7 +357,7 @@ Disconnect-iBMC
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
-      for ($idx=0; $idx -lt $Session.Count; $idx++) {
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
         $Logger.info($(Trace-Session $RedfishSession "Submit Restore BIOS Factory task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
@@ -362,7 +365,8 @@ Disconnect-iBMC
 
       $Results = Get-AsyncTaskResults $tasks
       return $Results
-    } finally {
+    }
+    finally {
       $pool.close()
     }
   }
