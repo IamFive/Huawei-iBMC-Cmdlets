@@ -20,7 +20,16 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Restore-iBMCFactory $session
+PS C:\> $VirtualMedia = Get-iBMCVirtualMedia $session
+PS C:\> $VirtualMedia
+
+Id             : CD
+Name           : VirtualMedia
+MediaTypes     : {}
+Image          :
+ImageName      :
+ConnectedVia   : NotConnected
+Inserted       : False
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -48,8 +57,13 @@ Disconnect-iBMC
     $ScriptBlock = {
       param($RedfishSession)
       $Path = "/Managers/$($RedfishSession.Id)/VirtualMedia/CD"
-      $Response = Invoke-RedfishRequest $RedfishSession $Path
-      return $Response | ConvertFrom-WebResponse
+      $Response = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
+      $Properties = @(
+        "Id", "Name", "MediaTypes", "Image", "ImageName",
+        "ConnectedVia", "Inserted"
+      )
+      $VirtualMedia = Copy-ObjectProperties $Response $Properties
+      return $VirtualMedia
     }
 
     try {
@@ -98,7 +112,20 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Connect-iBMCVirtualMedia $session 'nfs://10.10.10.10/usr/SLE-12-Server-DVD-x86_64-GM-DVD1.ISO'
+PS C:\> $Tasks = Connect-iBMCVirtualMedia $session 'nfs://10.10.10.10/usr/SLE-12-Server-DVD-x86_64-GM-DVD1.ISO'
+PS C:\> $Tasks
+
+Id           : 1
+Name         : vmm connect task
+ActivityName : [112.93.129.9] vmm connect task
+TaskState    : Exception
+StartTime    : 2018-11-14T18:04:07+08:00
+EndTime      : 2018-11-14T18:04:08+08:00
+TaskStatus   : Warning
+TaskPercent  :
+Messages     : @{@odata.type=/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry; MessageId=iBMC.1.0.ConnectionFa
+               iled; RelatedProperties=System.Object[]; Message=Failed to connect to virtual media.; MessageArgs=System.O
+               bject[]; Severity=Warning; Resolution=Please try again.}
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -184,7 +211,17 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Disconnect-iBMCVirtualMedia $session
+PS C:\> $Tasks = Disconnect-iBMCVirtualMedia $session
+PS C:\> $Tasks
+
+Id           : 4
+Name         : vmm disconnect status task
+ActivityName : [112.93.129.9] vmm disconnect status task
+TaskState    : Completed
+StartTime    : 2018-11-14T18:05:20+08:00
+EndTime      : 2018-11-14T18:05:20+08:00
+TaskStatus   : OK
+TaskPercent  :
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
