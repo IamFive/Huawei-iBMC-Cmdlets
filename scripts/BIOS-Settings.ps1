@@ -38,6 +38,16 @@ Export to iBMC local storage
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
 PS C:\> $Tasks = Export-iBMCBIOSSetting $session '/tmp/bios.xml'
+PS C:\> $Tasks
+
+Id           : 4
+Name         : Export Config File Task
+ActivityName : [112.93.129.9] Export Config File Task
+TaskState    : Completed
+StartTime    : 2018-11-14T17:52:01+08:00
+EndTime      : 2018-11-14T17:53:20+08:00
+TaskStatus   : OK
+TaskPercent  : 100%
 
 
 .LINK
@@ -130,10 +140,21 @@ Import local configuration file
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
 PS C:\> $Tasks = Import-iBMCBIOSSetting $session 'C:\10.10.10.2.xml'
+PS C:\> $Tasks
+
+Id           : 2
+Name         : Import Config File Task
+ActivityName : [112.93.129.9] Import Config File Task
+TaskState    : Completed
+StartTime    : 2018-11-14T17:54:54+08:00
+EndTime      : 2018-11-14T17:56:06+08:00
+TaskStatus   : OK
+TaskPercent  : 100%
 
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
+
 Export-iBMCBIOSSetting
 Reset-iBMCBIOS
 Restore-iBMCFactory

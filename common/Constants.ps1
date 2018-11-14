@@ -21,7 +21,11 @@ $global:BMC = @{
   LinkStatus = @{
     NoLink='NoLink';
     LinkUp='LinkUp';
-  }
+  };
+
+  TaskState = @{
+    Completed='Completed';
+  };
 
   FRUOperationSystem = 0;
 

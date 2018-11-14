@@ -401,6 +401,23 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       }
     }
 
+    $FinishedTasks = @($($Tasks | Where-Object {$_ -isnot [Exception]}))
+    for ($idx=0; $idx -lt $FinishedTasks.Count; $idx++) {
+      $FinishedTask = $FinishedTasks[$idx]
+      $Properties = @(
+        "Id", "Name", "ActivityName", "TaskState",
+        "StartTime", "EndTime", "TaskStatus"
+      )
+
+      $CleanTask = Copy-ObjectProperties $FinishedTask $Properties
+      $CleanTask | Add-Member -MemberType NoteProperty "TaskPercent" $FinishedTask.Oem.Huawei.TaskPercentage
+      if ($FinishedTask.TaskState -ne $BMC.TaskState.Completed) {
+        $CleanTask | Add-Member -MemberType NoteProperty "Messages" $FinishedTask.Messages
+      }
+
+      $Tasks[$FinishedTask.index] = $CleanTask # update task
+    }
+
     $Logger.info("All redfish tasks done")
     return $Tasks
   }
