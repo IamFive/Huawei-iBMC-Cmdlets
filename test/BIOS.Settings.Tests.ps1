@@ -23,8 +23,9 @@ Describe "BIOS settings features" {
 
   It "Reset" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       Reset-iBMCBIOS $session
+    }
     finally {
       Disconnect-iBMC $session
     }
@@ -34,6 +35,7 @@ Describe "BIOS settings features" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
       Restore-iBMCFactory $session
+    }
     finally {
       Disconnect-iBMC $session
     }

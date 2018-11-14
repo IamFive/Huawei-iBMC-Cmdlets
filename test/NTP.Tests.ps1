@@ -39,7 +39,7 @@ Describe "NTP Settings" {
       BAMCAoQwDQYJKoZIhvcNAQEEBQADQQAJ2BavvBu2KYvfn62m5cZeyriMVGVVcYXr
       vk0gQDh6rOBR7Ba7tjm+38Cxmdf3shL1yE6IUkNbYqc/PiGUy8Li
       -----END CERTIFICATE-----"
-      Upload-iBMCNTPGroupKey $session -KeyValueType Text -KeyValue $KeyValue
+      Import-iBMCNTPGroupKey $session -KeyValueType Text -KeyValue $KeyValue
     }
     finally {
         Disconnect-iBMC $session

@@ -1,9 +1,9 @@
 Describe "Certification" {
   It "get current user cert" {
-    $certs = Get-ChildItem -Path cert:\CurrentUser\My -SSLServerAuthentication
-    foreach ($cert in $certs) {
-      Write-Host $cert
-    }
+    $certs = Get-ChildItem -Path cert:\CurrentUser\My
+    # foreach ($cert in $certs) {
+    #   Write-Host $cert
+    # }
 
 
     # [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}

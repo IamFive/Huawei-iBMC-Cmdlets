@@ -1,5 +1,15 @@
 Import-Module Huawei-iBMC-Cmdlets -Force
 
+$CommonFiles = @(Get-ChildItem -Path $PSScriptRoot\..\common -Recurse -Filter *.ps1)
+# $ScriptFiles = @(Get-ChildItem -Path $PSScriptRoot\..\scripts -Recurse -Filter *.ps1)
+$CommonFiles | ForEach-Object {
+  try {
+    . $_.FullName
+  } catch {
+      Write-Error -Message "Failed to import file $FileFullPath"
+  }
+}
+
 Describe "Common Utils" {
   It "Get-OptionalMatchedSizeArray with null" {
     $Source = @(1)

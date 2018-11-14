@@ -48,7 +48,7 @@ Describe "Boot Sequence" {
   It "Set" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
-      $sequence = ,@('Pxe', 'Hdd', 'Cd', 'Others')
+      $sequence = ,@('Pxe', 'HDD', 'Cd', 'Others')
       Set-iBMCBootupSequence $session $sequence
     }
     finally {
@@ -59,15 +59,15 @@ Describe "Boot Sequence" {
 }
 
 Describe "Boot Override" {
-  # It "Get" {
-  #   try {
-  #     $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
-  #     Get-iBMCBootSourceOverride $session
-  #   }
-  #   finally {
-  #     Disconnect-iBMC $session
-  #   }
-  # }
+  It "Get" {
+    try {
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      Get-iBMCBootSourceOverride $session
+    }
+    finally {
+      Disconnect-iBMC $session
+    }
+  }
 
   It "Set" {
     try {
