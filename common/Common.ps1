@@ -29,7 +29,7 @@ PS C:\> 3 4 5 10
 
 function ConvertFrom-IPRangeString {
   param (
-    [System.String[]][parameter(Mandatory=$false)] $IPRangeString
+    [System.String[]][parameter(Mandatory = $false)] $IPRangeString
   )
 
   $port_regex = ':([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])'
@@ -95,7 +95,7 @@ function Get-MatchedSizeArray {
     throw $([string]::Format($(Get-i18n ERROR_PARAMETER_COUNT_DIFFERERNT), $SourceName, $TargetName))
   }
 
-  return ,$Target
+  return , $Target
 }
 
 function Get-OptionalMatchedSizeArray {
@@ -104,10 +104,11 @@ function Get-OptionalMatchedSizeArray {
 
   if ($null -eq $Target -or $Target.Count -eq 0) {
     $empty = @($null) * $Source.Count
-    return ,$empty
-  } else {
+    return , $empty
+  }
+  else {
     $matched = Get-MatchedSizeArray $Source $Target 'source' 'target'
-    return ,$matched
+    return , $matched
   }
 }
 
@@ -118,14 +119,15 @@ function Get-OptionalMatchedSizeMatrix {
 
   if ($null -eq $Target -or $Target.Count -eq 0) {
     $empty = @($null) * $Source.Count
-    return ,$empty
-  } else {
+    return , $empty
+  }
+  else {
     # every element in the matrix should be an array
     if ($Target -isnot [array]) {
       throw [String]::Format($(Get-i18n ERROR_MUST_BE_MATRIX), $TargetName)
     }
 
-    for ($idx=0; $idx -lt $Target.Count; $idx++) {
+    for ($idx = 0; $idx -lt $Target.Count; $idx++) {
       $element = $Target[$idx]
       if ($element -isnot [array]) {
         throw [String]::Format($(Get-i18n ERROR_ELEMENT_NOT_ARRAY), $TargetName)
@@ -134,15 +136,15 @@ function Get-OptionalMatchedSizeMatrix {
       if ($null -ne $ValidSet) {
         $diff = Compare-Object $ValidSet $element | ? {$_.sideindicator -eq "=>"} | % {$_.inputobject}
         if ($null -ne $diff -and $diff.Count -gt 0) {
-          $ValidSetString = $ValidSet -join ","
-          $DiffString = $diff -join ","
+          $ValidSetString = $ValidSet -join ", "
+          $DiffString = $diff -join ", "
           throw [String]::Format($(Get-i18n ERROR_ELEMENT_ILLEGAL), $TargetName, $DiffString, $ValidSetString)
         }
       }
     }
 
     $matched = Get-MatchedSizeArray $Source $Target $SourceName $TargetName
-    return ,$matched
+    return , $matched
   }
 }
 
@@ -281,11 +283,32 @@ function Resolve-EnumValues {
     foreach ($key in $Source.Keys) {
       $value = $Source.Item($key)
       if ($value -is [Enum]) {
-        [Void]$hash.Add($key, $value.toString())
-      } else {
+        [Void] $hash.Add($key, $value.toString())
+      }
+      elseif ($value -is [Array]) {
+        $Converted = New-Object System.Collections.ArrayList
+        $value | ForEach-Object {
+          [Void] $Converted.Add($_.toString())
+        }
+        [Void] $hash.Add($key, $Converted)
+      }
+      else {
         [Void]$hash.Add($key, $value)
       }
     }
   }
   return $hash
+}
+
+
+function Get-EnumNames {
+  param(
+    [string]$enum
+  )
+
+  $Names = New-Object System.Collections.ArrayList
+  [enum]::getvalues([type]$enum) | ForEach-Object {
+    [Void] $Names.add($_.toString())
+  }
+  return $Names.ToArray()
 }

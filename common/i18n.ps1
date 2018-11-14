@@ -23,7 +23,7 @@ $bundle = Data {
   ERROR_NO_UPDATE_PAYLOAD = Error: nothing to update, at least one update property must be specified
   ERROR_MUST_BE_MATRIX = Error: Parameter "{0}" must be a matrix-array
   ERROR_ELEMENT_NOT_ARRAY = Error: All element of Parameter "{0}" must be an array
-  ERROR_ELEMENT_ILLEGAL = Error: Cannot validate argument on parameter '{0}'. The argument "{1}" does not belong to the set "{2}".
+  ERROR_ELEMENT_ILLEGAL = Error: Cannot validate argument on parameter '{0}'. The argument "{1}" is duplicate or not belong to the set "{2}".
   ERROR_NTP_MIN_GT_MAX = Error: Parameter "MaxPollingInterval" must be greater than or equal to "MinPollingInterval"
 '@
 }
