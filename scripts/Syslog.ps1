@@ -1,7 +1,7 @@
 <# NOTE: iBMC Syslog Module Cmdlets #>
 
 function Get-iBMCSyslogSetting {
-  <#
+<#
 .SYNOPSIS
 Query information about the services and ports supported by the iBMC.
 
@@ -120,7 +120,7 @@ Disconnect-iBMC
 }
 
 function Set-iBMCSyslogSetting {
-  <#
+<#
 .SYNOPSIS
 Modify iBMC Syslog Notification Settings.
 
@@ -246,7 +246,7 @@ Disconnect-iBMC
 
 
 function Set-iBMCSyslogServer {
-  <#
+<#
 .SYNOPSIS
 Modify iBMC Syslog Notification Server.
 

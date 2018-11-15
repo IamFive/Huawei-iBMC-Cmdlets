@@ -1,7 +1,7 @@
 <# NOTE: iBMC Service module Cmdlets #>
 
 function Get-iBMCService {
-  <#
+<#
 .SYNOPSIS
 Query information about the services and ports supported by the iBMC.
 
@@ -89,7 +89,7 @@ Disconnect-iBMC
 }
 
 function Set-iBMCService {
-  <#
+<#
 .SYNOPSIS
 Modify iBMC service information, including the enablement state and port number.
 

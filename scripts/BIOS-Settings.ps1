@@ -1,7 +1,7 @@
 <# NOTE: iBMC BIOS Setting Module Cmdlets #>
 
 function Export-iBMCBIOSSetting {
-  <#
+<#
 .SYNOPSIS
 Export iBMC BIOS and BMC Settings
 
@@ -116,7 +116,7 @@ Disconnect-iBMC
 }
 
 function Import-iBMCBIOSSetting {
-  <#
+<#
 .SYNOPSIS
 Import iBMC BIOS and BMC configuration
 
@@ -222,7 +222,7 @@ Disconnect-iBMC
 
 
 function Reset-iBMCBIOS {
-  <#
+<#
 .SYNOPSIS
 Restore BIOS default settings.
 
@@ -299,7 +299,7 @@ Disconnect-iBMC
 }
 
 function Restore-iBMCFactory {
-  <#
+<#
 .SYNOPSIS
 Restore the factory settings.
 
