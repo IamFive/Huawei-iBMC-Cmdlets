@@ -91,6 +91,11 @@ Oem      : @{Huawei=}
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
+Get-iBMCUser
+Set-iBMCUser
+Remove-iBMCUser
+Connect-iBMC
+Disconnect-iBMC
 #>
   [CmdletBinding()]
   param (
@@ -210,6 +215,12 @@ Oem      : @{Huawei=}
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Add-iBMCUser
+Set-iBMCUser
+Remove-iBMCUser
+Connect-iBMC
+Disconnect-iBMC
 
 #>
   param (
@@ -366,6 +377,12 @@ Oem      : @{Huawei=}
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
+Add-iBMCUser
+Get-iBMCUser
+Remove-iBMCUser
+Connect-iBMC
+Disconnect-iBMC
+
 #>
   [CmdletBinding()]
   param (
@@ -516,6 +533,12 @@ PS C:\> $session | Remove-iBMCUser -Username user1
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Add-iBMCUser
+Get-iBMCUser
+Set-iBMCUser
+Connect-iBMC
+Disconnect-iBMC
 
 #>
   [CmdletBinding()]
