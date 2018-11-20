@@ -52,6 +52,7 @@ TaskPercent  : 100%
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
+
 Import-iBMCBIOSSetting
 Reset-iBMCBIOS
 Restore-iBMCFactory
