@@ -14,8 +14,8 @@ iBMC redfish session object which is created by Connect-iBMC cmdlet.
 A session object identifies an iBMC server to which this cmdlet will be executed.
 
 .OUTPUTS
-PSObject[][]
-Returns PSObject Array which contains all support services infomation if cmdlet executes successfully.
+PSObject[]
+Returns PSObject which contains all support services infomation if cmdlet executes successfully.
 In case of an error or warning, exception will be returned.
 
 .EXAMPLE
@@ -64,7 +64,7 @@ Disconnect-iBMC
       $Properties = @("HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP")
       $Services = Copy-ObjectProperties $Response $Properties
       $Services | Add-Member -MemberType NoteProperty "VNC" $Response.Oem.Huawei.VNC
-      return , $Services
+      return $Services
     }
 
     try {
