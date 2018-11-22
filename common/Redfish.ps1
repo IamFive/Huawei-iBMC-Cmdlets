@@ -560,6 +560,8 @@ function Invoke-RedfishFirmwareUpload {
 
   $Logger.info("Uploading $FilePath as $FileName to ibmc");
   $Request = New-RedfishRequest $Session '/UpdateService/FirmwareInventory' 'POST'
+  $Request.Timeout = 300 * 1000
+  $Request.ReadWriteTimeout = 300 * 1000
   try {
     # $ASCIIEncoder = [System.Text.Encoding]::ASCII
     $UTF8Encoder = [System.Text.Encoding]::UTF8
@@ -732,6 +734,8 @@ function New-RedfishRequest {
 
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
   [System.Net.HttpWebRequest] $Request = [System.Net.WebRequest]::Create($OdataId)
+  $Request.Timeout = 120 * 1000
+  $Request.ReadWriteTimeout = 90 * 1000
 
   # $cert = Get-ChildItem -Path cert:\CurrentUser\My | where-object Thumbprint -eq B2536A31C7A7462BBA542B4A8B0C34E315D16AB9
   # Write-Host $cert
@@ -801,7 +805,7 @@ function Resolve-RedfishFailureResponse ($Session, $Request, $Ex, $ContinueEvenF
 
     $StatusCode = $response.StatusCode.value__
     $Content = Get-WebResponseContent $response
-    $Message = "[$Method] $($response.ResponseUri) -> code: $StatusCode; content: $Content"
+    $Message = "[$($Request.Method)] $($response.ResponseUri) -> code: $StatusCode; content: $Content"
     $Logger.warn($(Trace-Session $Session $Message))
     if ($StatusCode -eq 403){
       throw $(Get-i18n "FAIL_NO_PRIVILEGE")

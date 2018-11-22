@@ -25,6 +25,7 @@ $bundle = Data {
   ERROR_ELEMENT_NOT_ARRAY = Error: All element of Parameter "{0}" must be an array
   ERROR_ELEMENT_ILLEGAL = Error: Cannot validate argument on parameter '{0}'. The argument "{1}" is duplicate or not belong to the set "{2}".
   ERROR_NTP_MIN_GT_MAX = Error: Parameter "MaxPollingInterval" must be greater than or equal to "MinPollingInterval"
+  ERROR_FILE_PATH_NOT_SUPPORT = Error: Parameter "{0}" has an unsupported file path: "{1}"
 '@
 }
 

@@ -29,4 +29,22 @@ $global:BMC = @{
 
   FRUOperationSystem = 0;
 
+  OutBandFirmwares = @(
+    "ActiveBMC", "BackupBMC", "Bios", "MainBoardCPLD", "chassisDiskBP1CPLD"
+  );
+
+  InBandFirmwares = @(
+    "PCIeCards"
+  );
+
+  SupportImageFileSchema = @(
+    "https",
+    "scp",
+    "sftp",
+    "cifs",
+    "tftp",
+    "nfs"
+  )
+
+
 }
