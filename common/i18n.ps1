@@ -13,6 +13,8 @@ $bundle = Data {
   FAIL_NOT_SUPPORT = Failure: the server did not support the functionality required
   FAIL_TO_MODIFY_ALL = Failure: Fail to apply all submit settings, got failures:
   FAIL_NO_LINKUP_INTERFACE = Failure: No LinkUp state Ethernet Interfaces found.
+  FAIL_SP_NOT_SUPPORT = Failure: SP Service is not supported on this server.
+  FAIL_SP_FILE_TRANSFER = Failure: Transfer update firmware file to SP timeout.
 
   ERROR_INVALID_CREDENTIALS = Error: Invalid credentials
   ERROR_PARAMETER_EMPTY = Error: parameter "{0}" should not be null or empty
@@ -25,7 +27,8 @@ $bundle = Data {
   ERROR_ELEMENT_NOT_ARRAY = Error: All element of Parameter "{0}" must be an array
   ERROR_ELEMENT_ILLEGAL = Error: Cannot validate argument on parameter '{0}'. The argument "{1}" is duplicate or not belong to the set "{2}".
   ERROR_NTP_MIN_GT_MAX = Error: Parameter "MaxPollingInterval" must be greater than or equal to "MinPollingInterval"
-  ERROR_FILE_PATH_NOT_SUPPORT = Error: Parameter "{0}" has an unsupported file path: "{1}"
+  ERROR_FILE_URI_NOT_SUPPORT = Error: File Uri "{0}" is not supported, file transfer protocols should be one of "{1}".
+  ERROR_SIGNAL_FILE_EMPTY = Error: parameter "SignalFileUri" should not be null or empty.
 '@
 }
 

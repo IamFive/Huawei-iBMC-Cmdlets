@@ -376,7 +376,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
     while ($true) {
       $RunningTasks = @($($Tasks | Where-Object {$_ -isnot [Exception]} | Where-Object TaskState -eq 'Running'))
       $Logger.info("Remain running task count: $($RunningTasks.Count)")
-      $Logger.info("Remain running tasks: $RunningTasks")
+      # $Logger.info("Remain running tasks: $RunningTasks")
       if ($RunningTasks.Count -eq 0) {
         break
       }
@@ -558,7 +558,7 @@ function Invoke-RedfishFirmwareUpload {
     $ContinueEvenFailed
   )
 
-  $Logger.info("Uploading $FilePath as $FileName to ibmc");
+  $Logger.info($(Trace-Session $Session "Uploading $FilePath as $FileName to ibmc"));
   $Request = New-RedfishRequest $Session '/UpdateService/FirmwareInventory' 'POST'
   $Request.Timeout = 300 * 1000
   $Request.ReadWriteTimeout = 300 * 1000
@@ -606,6 +606,31 @@ function Invoke-RedfishFirmwareUpload {
       $RequestStream.Dispose()
     }
   }
+}
+
+function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $SupportSchema) {
+  $ImageFileUri = New-Object System.Uri($ImageFilePath)
+  if ($ImageFileUri.Scheme -notin $SupportSchema) {
+    throw $([string]::Format($(Get-i18n ERROR_FILE_URI_NOT_SUPPORT), $ImageFileUri, $SupportSchema.join(", ")))
+  }
+
+  $ImageFileUri = New-Object System.Uri($ImageFilePath)
+  if ($ImageFileUri.Scheme -eq 'file') {
+    $Ext = [System.IO.Path]::GetExtension($ImageFilePath)
+    if ($null -eq $Ext -or $Ext -eq '') {
+      $UploadFileName = "$(Get-RandomIntGuid).hpm"
+    } else {
+      $UploadFileName = $ImageFileUri.Segments[-1]
+    }
+
+    # upload image file to bmc
+    $Logger.Info($(Trace-Session $RedfishSession "$ImageFilePath is a local file, upload to iBMC now"))
+    Invoke-RedfishFirmwareUpload $RedfishSession $UploadFileName $ImageFilePath | Out-Null
+    $Logger.Info($(Trace-Session $RedfishSession "File uploaded as $UploadFileName success"))
+    return "/tmp/web/$UploadFileName";
+  }
+
+  return $ImageFilePath;
 }
 
 

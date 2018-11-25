@@ -131,3 +131,13 @@ try { [BootSequence] | Out-Null } catch {
 '@
 }
 
+
+try { [FirmwareType] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum FirmwareType {
+      OutBand,
+      InBand,
+      SP
+    }
+'@
+}

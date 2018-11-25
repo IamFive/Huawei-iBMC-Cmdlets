@@ -37,14 +37,37 @@ $global:BMC = @{
     "PCIeCards"
   );
 
-  SupportImageFileSchema = @(
+  OutBandImageFileSupportSchema = @(
     "https",
     "scp",
     "sftp",
     "cifs",
     "tftp",
-    "nfs"
-  )
+    "nfs",
+    "file"
+  );
 
+  InBandImageFileSupportSchema = @(
+    "https",
+    "sftp",
+    "nfs",
+    "cifs",
+    "scp",
+    "file"
+  );
+
+  SPImageFileSupportSchema = @(
+    "nfs",
+    "cifs"
+  );
+
+  SignalFileSupportSchema = @(
+    "https",
+    "sftp",
+    "nfs",
+    "cifs",
+    "scp",
+    "file"
+  );
 
 }
