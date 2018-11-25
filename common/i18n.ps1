@@ -15,6 +15,7 @@ $bundle = Data {
   FAIL_NO_LINKUP_INTERFACE = Failure: No LinkUp state Ethernet Interfaces found.
   FAIL_SP_NOT_SUPPORT = Failure: SP Service is not supported on this server.
   FAIL_SP_FILE_TRANSFER = Failure: Transfer update firmware file to SP timeout.
+  FAIL_SP_RESET_SYSTEM = Failure: Failed to restart computer system.
 
   ERROR_INVALID_CREDENTIALS = Error: Invalid credentials
   ERROR_PARAMETER_EMPTY = Error: parameter "{0}" should not be null or empty

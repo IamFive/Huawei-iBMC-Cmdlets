@@ -182,9 +182,9 @@ PS C:\> Update-iBMCFirmware -Session $session -Type Firmware `
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Update-iBMCFirmware -Session $session -Type Firmware `
-          -FileUri nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip `
-          -SignalFileUri nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc
+PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
+          -FileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
+          -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
 
 
 .LINK
@@ -235,17 +235,6 @@ Disconnect-iBMC
 
       $Logger.info($(Trace-Session $RedfishSession "Invoke upgrade $InbandFirmwareType with file $ImageFilePath now"))
 
-      # Enable SP Service
-      $SPServicePath = "/Managers/$($RedfishSession.Id)/SPService"
-      # Enable SP Service
-      $EnableSpServicePayload = @{
-        "SPStartEnabled"= $true;
-        "SysRestartDelaySeconds"= 30;
-        "SPTimeout"= 7200;
-        "SPFinished"= $true;
-      }
-      Invoke-RedfishRequest $RedfishSession $SPServicePath 'PATCH' $EnableSpServicePayload | Out-Null
-
       # transfer firmware image file
       $GetSPUpdateService = "/Managers/$($RedfishSession.Id)/SPService/SPFWUpdate"
       $SPServices = Invoke-RedfishRequest $RedfishSession $GetSPUpdateService | ConvertFrom-WebResponse
@@ -274,7 +263,6 @@ Disconnect-iBMC
         if ($Payload.SignalURI.StartsWith('/tmp/web')) {
           $Payload.SignalURI = "file://$($Payload.SignalURI)";
         }
-
 
         $Logger.Info("payload $Payload")
         $SPServiceOdataId = $SPServices.Members[0].'@odata.id'
@@ -307,17 +295,32 @@ Disconnect-iBMC
           throw $(Get-i18n "FAIL_SP_FILE_TRANSFER")
         }
 
-        # Restart Server
-        if ($Transfered) {
-          $Payload = @{
-            "ResetType" = [ResetType]::ForceRestart;
-          } | Resolve-EnumValues
-          $Path = "/Systems/$($RedfishSession.Id)/Actions/ComputerSystem.Reset"
-          Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload | Out-Null
+        # Enable SP Service
+        $SPServicePath = "/Managers/$($RedfishSession.Id)/SPService"
+        $EnableSpServicePayload = @{
+          "SPStartEnabled"= $true;
+          "SysRestartDelaySeconds"= 30;
+          "SPTimeout"= 7200;
+          "SPFinished"= $true;
         }
+        Invoke-RedfishRequest $RedfishSession $SPServicePath 'PATCH' $EnableSpServicePayload | Out-Null
+
+        # try {
+        #   # Restart Server
+        #   if ($Transfered) {
+        #     $Payload = @{
+        #       "ResetType" = [ResetType]::ForceRestart;
+        #     } | Resolve-EnumValues
+        #     $Path = "/Systems/$($RedfishSession.Id)/Actions/ComputerSystem.Reset"
+        #     Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload | Out-Null
+        #   }
+        # } catch {
+        #   throw $(Get-i18n "FAIL_SP_RESET_SYSTEM")
+        # }
 
         return $null
-      } else {
+      }
+      else {
         throw $(Get-i18n "FAIL_SP_NOT_SUPPORT")
       }
     }

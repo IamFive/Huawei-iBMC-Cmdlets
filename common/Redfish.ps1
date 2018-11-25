@@ -930,10 +930,11 @@ function Get-RedfishResponseFailures {
 
     for ($idx = 0; $idx -lt $ExtendedInfo.Count; $idx++) {
       $Failure = $ExtendedInfo[$idx]
+      $Resolution = "Resolution: $($Failure.Resolution)"
       if ($idx -eq 0 -and -not $Partial) {
-        [Void] $Failures.Add("$Prefix [$($Failure.Severity)] $($Failure.Message)")
+        [Void] $Failures.Add("$Prefix [$($Failure.Severity)] $($Failure.Message) $Resolution")
       } else {
-        [Void] $Failures.Add("$indent [$($Failure.Severity)] $($Failure.Message)")
+        [Void] $Failures.Add("$indent [$($Failure.Severity)] $($Failure.Message) $Resolution")
       }
     }
 
