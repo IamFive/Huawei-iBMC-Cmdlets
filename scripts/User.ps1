@@ -244,10 +244,9 @@ Disconnect-iBMC
         $User = Copy-ObjectProperties $UserResponse $Properties
         [Void] $Users.Add($User)
       }
-
-
-      return $Users
+      return ,$Users.ToArray()
     }
+
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
@@ -313,8 +312,8 @@ Available role value set is:
 Enabled specifies Whether the user is enabled. A power shell bool($true|$false) value is accept.
 
 .PARAMETER Unlocked
-If this switch parameter is present then the modified user's lockout status is set to false.
-
+If this switch parameter is $true then the modified user's lockout status is set to false.
+If this switch parameter is $false then lockout status will not be modified.
 
 .OUTPUTS
 PSObject[]
@@ -329,7 +328,7 @@ PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password
 PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
 PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
-PS C:\> $User = Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator -Enabled $true -Unlocked
+PS C:\> $User = Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator -Enabled $true -Unlocked $true
 PS C:\> $User
 
 Id       : 12
@@ -447,12 +446,12 @@ Disconnect-iBMC
             $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
             $Payload.Password = $PlainPasswd
           }
-          $Response = Invoke-RedfishRequest $Session $User.'@odata.id' 'Patch' $Payload $Headers | ConvertFrom-WebResponse
+          $Response = Invoke-RedfishRequest $Session $User.'@odata.id' 'Patch' $Payload $Headers
           # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
-
+          $SetUser = Resolve-RedfishPartialSuccessResponse $Session $Response
           $Properties = @("Id", "Name", "UserName", "RoleId", "Locked", "Enabled", "Oem")
-          $User = Copy-ObjectProperties $Response $Properties
-          return $User
+          $PrettyUser = Copy-ObjectProperties $SetUser $Properties
+          return $PrettyUser
         }
       }
 
