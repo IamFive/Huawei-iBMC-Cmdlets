@@ -61,7 +61,7 @@ Describe "InbandFirmware" {
         -FileUri "E:\huawei\PowerShell\RAID-SR430C(3108)-FW-V108(4.650.00-6121).zip" `
         -SignalFileUri "E:\huawei\PowerShell\RAID-SR430C(3108)-FW-V108(4.650.00-6121).zip.asc"
 
-        Update-iBMCInbandFirmware -Session $session -Type Firmware `
+      Update-iBMCInbandFirmware -Session $session -Type Firmware `
         -FileUri "E:\huawei\PowerShell\NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
         -SignalFileUri "E:\huawei\PowerShell\NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
     }
