@@ -12,18 +12,18 @@ $CommonFiles | ForEach-Object {
 
 Describe "Connect-iBMC" {
   It "Connect with account" {
-    $connection = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+    $connection = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
     Disconnect-iBMC $connection
   }
 
   # It "Connect with credential" {
-  #   $session = Connect-iBMC -Address 112.93.129.9,112.93.129.117 -Username chajian1,Administrator -Password "chajian12#$",Admin@7000 -TrustCert
+  #   $session = Connect-iBMC -Address 112.93.129.9,112.93.129.117 -Username chajian,Administrator -Password "chajian12#$",Admin@7000 -TrustCert
   # }
 }
 
 Describe "New-iBMCRedfishSession" {
   It "new with account" {
-    $session = New-iBMCRedfishSession -Address 112.93.129.9 -Username "chajian1" -Password "chajian12#$"
+    $session = New-iBMCRedfishSession -Address 112.93.129.9 -Username "chajian" -Password "chajian12#$"
     $Session.Alive | Should -Be $true
     Test-iBMCRedfishSession $session
     $Session.Alive | Should -Be $true
@@ -35,13 +35,13 @@ Describe "New-iBMCRedfishSession" {
   }
 }
 
-Describe "Invoke-FirmwareUpload" {
-  It "new with account" {
-    $session = New-iBMCRedfishSession -Address 112.93.129.9 -Username "chajian1" -Password "chajian12#$"
-    Invoke-FirmwareUpload $session "config.hpm" "C:\Users\Woo\Desktop\config2.xml"
-    Close-iBMCRedfishSession $Session
-  }
-}
+# Describe "Invoke-FirmwareUpload" {
+#   It "new with account" {
+#     $session = New-iBMCRedfishSession -Address 112.93.129.9 -Username "chajian" -Password "chajian12#$"
+#     Invoke-FirmwareUpload $session "config.hpm" "C:\Users\Woo\Desktop\config2.xml"
+#     Close-iBMCRedfishSession $Session
+#   }
+# }
 
 Describe "matches test" {
   It "Test Matches" {

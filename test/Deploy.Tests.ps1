@@ -3,7 +3,7 @@ Import-Module Huawei-iBMC-Cmdlets -Force
 Describe "Virtual Media features" {
   It "Get" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       Get-iBMCVirtualMedia $session
     }
     finally {
@@ -13,7 +13,7 @@ Describe "Virtual Media features" {
 
   It "Connect" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       Connect-iBMCVirtualMedia $session 'nfs://10.10.10.10/usr/SLE-12-Server-DVD-x86_64-GM-DVD1.ISO'
     }
     finally {
@@ -23,7 +23,7 @@ Describe "Virtual Media features" {
 
   It "Disconnect" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       Disconnect-iBMCVirtualMedia $session
     }
     finally {
@@ -37,7 +37,7 @@ Describe "Virtual Media features" {
 Describe "Boot Sequence" {
   It "Get" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       Get-iBMCBootupSequence $session
     }
     finally {
@@ -47,7 +47,7 @@ Describe "Boot Sequence" {
 
   It "Set" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian1 -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       $sequence = ,@('Pxe', 'HDD', 'Cd', 'Others')
       Set-iBMCBootupSequence $session $sequence
     }
