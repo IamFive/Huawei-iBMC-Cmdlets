@@ -71,7 +71,7 @@ Disconnect-iBMC
         $PowerInfo | Add-Member -MemberType NoteProperty "AverageConsumedWatts" "$($Metrics.AverageConsumedWatts) Watts"
         [Void] $Results.Add($PowerInfo)
       }
-      return ,$Results
+      return ,$Results.ToArray()
     }
 
     try {

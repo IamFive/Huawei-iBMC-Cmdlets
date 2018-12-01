@@ -6,9 +6,9 @@ Describe "SNMP-Settings" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 `
        -Username chajian -Password "chajian12#$" -TrustCert
       # $OriginalSettings = Get-iBMCSMTPSetting $session
-      # $OriginalSettings -is [Array] | Should -Be $true
-      # $OriginalSettings[0] -is [psobject] | Should -Be $true
-      # $OriginalSettings[1] -is [psobject] | Should -Be $true
+      # $OriginalSettings -is [array] | Should -BeTrue
+      # $OriginalSettings[0] | Should -BeOfType 'psobject'
+      # $OriginalSettings[1] | Should -BeOfType 'psobject'
 
       $pwd = ConvertTo-SecureString -String "pwd12#$%^" -AsPlainText -Force
       $ServerIdentity = ,@('HostName', 'BoardSN')
@@ -19,7 +19,7 @@ Describe "SNMP-Settings" {
           -AlarmSeverity Major
 
       $UpdatedSettings = Get-iBMCSMTPSetting $session
-      $UpdatedSettings -is [Array] | Should -Be $true
+      $UpdatedSettings -is [array] | Should -BeTrue
       $UpdatedSettings.ServiceEnabled | Should -Be @($true, $true)
       $UpdatedSettings.ServerAddress | Should -Be @('smtp.huawei.com', 'smtp.huawei.com')
       $UpdatedSettings.TLSEnabled | Should -Be @($true, $true)
@@ -59,11 +59,11 @@ Describe "SNMP-Recipients" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $OriginalRecipients = Get-iBMCSMTPRecipients $session
-      $OriginalRecipients -is [Array] | Should -Be $true
-      $OriginalRecipients[0] -is [Array] | Should -Be $true
-      $OriginalRecipients[0].Count | Should -Be 4
-      $OriginalRecipients[1] -is [Array] | Should -Be $true
-      $OriginalRecipients[1].Count | Should -Be 4
+      $OriginalRecipients -is [array] | Should -BeTrue
+      $OriginalRecipients[0] -is [array] | Should -BeTrue
+      $OriginalRecipients[0]| Should -HaveCount 4
+      $OriginalRecipients[1] -is [array] | Should -BeTrue
+      $OriginalRecipients[1]| Should -HaveCount 4
 
       Set-iBMCSMTPRecipient $session -MemberId 1 -Enabled $true `
         -EmailAddress 'recipient2@huawei.com' -Description 'R2'

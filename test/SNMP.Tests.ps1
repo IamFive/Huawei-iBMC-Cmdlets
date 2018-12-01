@@ -15,7 +15,7 @@ Describe "SNMP-Settings" {
       $SettingResult[1] -is [Exception] | Should -Be $true
 
       $Settings = Get-iBMCSNMPSetting $session
-      $Settings -is [Array] | Should -Be $true
+      $Settings -is [array] | Should -BeTrue
       $Settings.SnmpV1Enabled | Should -Be @($true, $true)
       $Settings.SnmpV2CEnabled | Should -Be @($true, $true)
       $Settings.LongPasswordEnabled | Should -Be @($false, $false)
@@ -51,7 +51,7 @@ Describe "SNMP-Trap-Settings" {
 
       $TrapSetting = Get-iBMCSNMPTrapSetting $session
 
-      $TrapSetting -is [Array] | Should -Be $true
+      $TrapSetting -is [array] | Should -BeTrue
       $TrapSetting.ServiceEnabled | Should -Be @($true, $true)
       $TrapSetting.TrapVersion | Should -Be @('V2C', 'V2C')
       $TrapSetting.TrapV3User | Should -Be @('chajian', 'chajian')
@@ -82,11 +82,11 @@ Describe "SNMP-Trap-Server" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
 
       $OriginalTrapServers = Get-iBMCSNMPTrapServer $session
-      $OriginalTrapServers -is [Array] | Should -Be $true
-      $OriginalTrapServers[0] -is [Array] | Should -Be $true
-      $OriginalTrapServers[0].Count | Should -Be 4
-      $OriginalTrapServers[1] -is [Array] | Should -Be $true
-      $OriginalTrapServers[1].Count | Should -Be 4
+      $OriginalTrapServers -is [array] | Should -BeTrue
+      $OriginalTrapServers[0] -is [array] | Should -BeTrue
+      $OriginalTrapServers[0]| Should -HaveCount 4
+      $OriginalTrapServers[1] -is [array] | Should -BeTrue
+      $OriginalTrapServers[1]| Should -HaveCount 4
 
       Set-iBMCSNMPTrapServer $session -MemberId 1 -Enabled $true -TrapServerAddress 192.168.2.10
 

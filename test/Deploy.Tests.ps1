@@ -6,9 +6,8 @@ Describe "Virtual Media features" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $Medias = Get-iBMCVirtualMedia $session
 
-      $Medias -is [Array] | Should -Be $true
-      $Medias[0] -is [psobject] | Should -Be $true
-      $Medias[1] -is [psobject] | Should -Be $true
+      $Medias -is [array] | Should -BeTrue
+      $Medias | Should -BeOfType 'psobject'
       $Medias.Inserted  | Should -Be @($false, $false)
     }
     finally {
@@ -21,9 +20,8 @@ Describe "Virtual Media features" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $Tasks = Connect-iBMCVirtualMedia $session 'nfs://10.10.10.10/usr/SLE-12-Server-DVD-x86_64-GM-DVD1.ISO'
 
-      $Tasks -is [Array] | Should -Be $true
-      $Tasks[0] -is [psobject] | Should -Be $true
-      $Tasks[1] -is [psobject] | Should -Be $true
+      $Tasks -is [array] | Should -BeTrue
+      $Tasks | Should -BeOfType 'psobject'
       $Tasks.TaskState  | Should -Be @('Exception', 'Exception')
     }
     finally {
@@ -36,9 +34,8 @@ Describe "Virtual Media features" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $Tasks = Disconnect-iBMCVirtualMedia $session
 
-      $Tasks -is [Array] | Should -Be $true
-      $Tasks[0] -is [psobject] | Should -Be $true
-      $Tasks[1] -is [psobject] | Should -Be $true
+      $Tasks -is [array] | Should -BeTrue
+      $Tasks | Should -BeOfType 'psobject'
       $Tasks.TaskState  | Should -Be @('Completed', 'Completed')
       $Tasks.TaskStatus  | Should -Be @('OK', 'OK')
     }
@@ -55,11 +52,11 @@ Describe "Boot Sequence" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $OriginalSeq = Get-iBMCBootupSequence $session
-      $OriginalSeq -is [Array] | Should -Be $true
-      $OriginalSeq[0] -is [Array] | Should -Be $true
-      $OriginalSeq[1] -is [Array] | Should -Be $true
-      $OriginalSeq[0].Count | Should -Be 4
-      $OriginalSeq[1].Count | Should -Be 4
+      $OriginalSeq -is [array] | Should -BeTrue
+      $OriginalSeq[0] -is [array] | Should -BeTrue
+      $OriginalSeq[1] -is [array] | Should -BeTrue
+      $OriginalSeq[0]| Should -HaveCount 4
+      $OriginalSeq[1]| Should -HaveCount 4
 
       $sequence = ,@('Cd', 'Pxe', 'HDD', 'Others')
       Set-iBMCBootupSequence $session $sequence
@@ -77,7 +74,7 @@ Describe "Boot Override" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $BootSource = Get-iBMCBootSourceOverride $session
-      $BootSource -is [Array] | Should -Be $true
+      $BootSource -is [array] | Should -BeTrue
       $BootSourceOverrideTargets = @("None", "Pxe", "Floppy", "Cd", "Hdd", "BiosSetup")
       $BootSource[0] -in $BootSourceOverrideTargets | Should -Be $true
       $BootSource[1] -in $BootSourceOverrideTargets | Should -Be $true

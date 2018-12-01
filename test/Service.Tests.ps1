@@ -6,17 +6,16 @@ Describe "Service" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $OriginalServices = Get-iBMCService $session
 
-      $OriginalServices -is [Array] | Should -Be $true
-      $OriginalServices[0] -is [psobject] | Should -Be $true
-      $OriginalServices[1] -is [psobject] | Should -Be $true
+      $OriginalServices -is [array] | Should -BeTrue
+      $OriginalServices | Should -BeOfType 'psobject'
 
       $VncResult = Set-iBMCService $session 'VNC' $true 10001
-      $VncResult -is [Array] | Should -Be $true
+      $VncResult -is [array] | Should -BeTrue
       $VncResult[0] | Should -Be $null
       $VncResult[1] -is [exception] | Should -Be $true
 
       $SetMediaResult = Set-iBMCService $session 'VirtualMedia' $false 10086
-      $SetMediaResult -is [Array] | Should -Be $true
+      $SetMediaResult -is [array] | Should -BeTrue
       $SetMediaResult | Should -Be @($null, $null)
 
       $UpdatedServices = Get-iBMCService $session

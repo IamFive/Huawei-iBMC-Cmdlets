@@ -16,7 +16,7 @@ Describe "Common Utils" {
     $Target = $null
     $Target2 = Get-OptionalMatchedSizeArray $Source $Target
     $Target2.Count | Should -Be 1
-    $Target2 -is [Array] | Should -Be $true
+    $Target2 -is [array] | Should -BeTrue
   }
 
   It "Get-OptionalMatchedSizeArray with same size array" {
@@ -24,7 +24,7 @@ Describe "Common Utils" {
     $Target = @("target")
     $Target2 = Get-OptionalMatchedSizeArray $Source $Target
     $Target2.Count | Should -Be 1
-    $Target2 -is [Array] | Should -Be $true
+    $Target2 -is [array] | Should -BeTrue
     $Target2[0] | Should -Be 'target'
   }
 
@@ -32,8 +32,8 @@ Describe "Common Utils" {
     $Source = @("source1", "source2")
     $Target = @(@("target"))
     $Target2 = Get-OptionalMatchedSizeArray $Source $Target
-    $Target2.Count | Should -Be 2
-    $Target2 -is [Array] | Should -Be $true
+    $Target2| Should -HaveCount 2
+    $Target2 -is [array] | Should -BeTrue
     $Target2 | Should -Be @(@('target'), @('target'))
   }
 }
@@ -44,7 +44,7 @@ Describe "optional matrix" {
     $Target = $null
     $Target2 = Get-OptionalMatchedSizeMatrix $Source $Target $null 'source' 'target'
     $Target2.Count | Should -Be 1
-    $Target2 -is [Array] | Should -Be $true
+    $Target2 -is [array] | Should -BeTrue
   }
 
   It "Get-OptionalMatchedSizeMatrix with array" {
@@ -62,8 +62,8 @@ Describe "optional matrix" {
     $Source = @("source1", "source2")
     $Target = ,@("target")
     $Target2 = Get-OptionalMatchedSizeMatrix $Source $Target $null 'source' 'target'
-    $Target2.Count | Should -Be 2
-    $Target2 -is [Array] | Should -Be $true
+    $Target2| Should -HaveCount 2
+    $Target2 -is [array] | Should -BeTrue
     $Target2 | Should -Be @(@('target'), @('target'))
   }
 
@@ -71,8 +71,8 @@ Describe "optional matrix" {
     $Source = @("source1", "source2")
     $Target = @(@("target"), @("target2"))
     $Target2 = Get-OptionalMatchedSizeMatrix $Source $Target $null 'source' 'target'
-    $Target2.Count | Should -Be 2
-    $Target2 -is [Array] | Should -Be $true
+    $Target2| Should -HaveCount 2
+    $Target2 -is [array] | Should -BeTrue
     $Target2 | Should -Be @(@("target"), @("target2"))
   }
 
@@ -81,8 +81,8 @@ Describe "optional matrix" {
     $Source = @("source1", "source2")
     $Target = @(@("target", "target2"), @("target2"))
     $Target2 = Get-OptionalMatchedSizeMatrix $Source $Target $ValidSet 'source' 'target'
-    $Target2.Count | Should -Be 2
-    $Target2 -is [Array] | Should -Be $true
+    $Target2| Should -HaveCount 2
+    $Target2 -is [array] | Should -BeTrue
     $Target2 | Should -Be @(@("target"), @("target2"))
   }
 
@@ -91,8 +91,8 @@ Describe "optional matrix" {
     $Source = @("source1", "source2")
     $Target = @(@("target"), @("target3"))
     $Target2 = Get-OptionalMatchedSizeMatrix $Source $Target $ValidSet 'source' 'target'
-    $Target2.Count | Should -Be 2
-    $Target2 -is [Array] | Should -Be $true
+    $Target2| Should -HaveCount 2
+    $Target2 -is [array] | Should -BeTrue
     $Target2 | Should -Be @(@("target"), @("target2"))
   }
 }

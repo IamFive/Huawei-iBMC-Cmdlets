@@ -8,15 +8,14 @@ Describe "User Module" {
 
       Remove-iBMCUser -Session $session -Username powershell,powershell | Out-Null
       $Add = Add-iBMCUser -Session $session -Username powershell,powershell -Password $pwd,$pwd -Role Operator,Administrator
-      $Add -is [Array] | Should -Be $true
-      $Add[0] -is [psobject] | Should -Be $true
-      $Add[1] -is [psobject] | Should -Be $true
+      $Add -is [array] | Should -BeTrue
+      $Add | Should -BeOfType 'psobject'
       $Add.UserName  | Should -Be @('powershell', 'powershell')
       $Add.RoleId  | Should -Be @('Operator', 'Administrator')
 
 
       $Set = Set-iBMCUser -Session $session -Username powershell,powershell -NewUsername powershell2 -Unlocked $true
-      $Set -is [Array] | Should -Be $true
+      $Set -is [array] | Should -BeTrue
       $Set.UserName | Should -Be @('powershell2', 'powershell2')
       $Set.Locked | Should -Be @($false, $false)
 
@@ -35,18 +34,18 @@ Describe "User Module" {
       Remove-iBMCUser -Session $session -Username powershell | Out-Null
 
       $UsersList = Get-iBMCUser -Session $session
-      $UsersList -is [Array] | Should -Be $true
-      $UsersList.Count | Should -Be 2
-      $UsersList[0] -is [Array] | Should -Be $true
-      $UsersList[1] -is [Array] | Should -Be $true
+      $UsersList -is [array] | Should -BeTrue
+      $UsersList| Should -HaveCount 2
+      $UsersList[0] -is [array] | Should -BeTrue
+      $UsersList[1] -is [array] | Should -BeTrue
 
       Add-iBMCUser -Session $session -Username powershell -Password $pwd -Role Operator
 
       $UsersList2 = Get-iBMCUser -Session $session
-      $UsersList2 -is [Array] | Should -Be $true
-      $UsersList2.Count | Should -Be 2
-      $UsersList2[0] -is [Array] | Should -Be $true
-      $UsersList2[1] -is [Array] | Should -Be $true
+      $UsersList2 -is [array] | Should -BeTrue
+      $UsersList2| Should -HaveCount 2
+      $UsersList2[0] -is [array] | Should -BeTrue
+      $UsersList2[1] -is [array] | Should -BeTrue
 
       $ExpectUserCount1 = $UsersList[0].Count + 1
       $ExpectUserCount2 = $UsersList[1].Count + 1

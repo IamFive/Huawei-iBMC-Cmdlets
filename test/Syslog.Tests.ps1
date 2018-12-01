@@ -17,9 +17,8 @@ Describe "Syslog-Settings" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
 
       $OriginalSetting = Get-iBMCSyslogSetting $session
-      $OriginalSetting -is [Array] | Should -Be $true
-      $OriginalSetting[0] -is [psobject] | Should -Be $true
-      $OriginalSetting[1] -is [psobject] | Should -Be $true
+      $OriginalSetting -is [array] | Should -BeTrue
+      $OriginalSetting | Should -BeOfType 'psobject'
 
       $Results = Set-iBMCSyslogSetting $session -ServiceEnabled $true -ServerIdentitySource HostName `
         -AlarmSeverity Major -TransmissionProtocol UDP
@@ -67,11 +66,11 @@ Describe "Syslog-Servers" {
         -Port 515 -LogType $LogType
 
       $OriginalServers = Get-iBMCSyslogServer $session
-      $OriginalServers -is [Array] | Should -Be $true
-      $OriginalServers[0] -is [Array] | Should -Be $true
-      $OriginalServers[0].Count | Should -Be 4
-      $OriginalServers[1] -is [Array] | Should -Be $true
-      $OriginalServers[1].Count | Should -Be 4
+      $OriginalServers -is [array] | Should -BeTrue
+      $OriginalServers[0] -is [array] | Should -BeTrue
+      $OriginalServers[0]| Should -HaveCount 4
+      $OriginalServers[1] -is [array] | Should -BeTrue
+      $OriginalServers[1]| Should -HaveCount 4
 
       $LogType = ,@("OperationLog", "SecurityLog", "EventLog")
       Set-ibmcSyslogServer $session -MemberId 1 -Enabled $true -Address 192.168.14.9 `
