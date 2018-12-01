@@ -154,9 +154,11 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $ReadOnlyCommunity = ConvertTo-SecureString -String "SomeP@ssw0rd1" -AsPlainText -Force
+PS C:\> $ReadWriteCommunity = ConvertTo-SecureString -String "SomeP@ssw0rd2" -AsPlainText -Force
 PS C:\> Set-iBMCSNMPSetting $session -SnmpV1Enabled $false -SnmpV2CEnabled $false `
         -LongPasswordEnabled $true -RWCommunityEnabled $true `
-        -ReadOnlyCommunity 'SomeP@ssw0rd' -ReadWriteCommunity 'SomeP@ssw0rd' `
+        -ReadOnlyCommunity $ReadOnlyCommunity -ReadWriteCommunity $ReadWriteCommunity `
         -SnmpV3AuthProtocol MD5 -SnmpV3PrivProtocol DES
 
 
@@ -194,11 +196,11 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $RWCommunityEnabled,
 
-    [string[]]
+    [SecureString[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $ReadOnlyCommunity,
 
-    [string[]]
+    [SecureString[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $ReadWriteCommunity,
 
@@ -229,6 +231,22 @@ Disconnect-iBMC
     $ScriptBlock = {
       param($RedfishSession, $Payload)
       $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Set iBMC SNMP Settings now"))
+
+      $Logger.info("$($Payload.ReadOnlyCommunity)")
+
+      if ($null -ne $Payload.ReadOnlyCommunity) {
+        $Logger.info("into ")
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.ReadOnlyCommunity)
+        $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        $Payload.ReadOnlyCommunity = $PlainPasswd
+      }
+
+      if ($null -ne $Payload.ReadWriteCommunity) {
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.ReadWriteCommunity)
+        $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        $Payload.ReadWriteCommunity = $PlainPasswd
+      }
+
       $Path = "/Managers/$($RedfishSession.Id)/SnmpService"
       $Response = Invoke-RedfishRequest $RedfishSession $Path 'Patch' $Payload
       Resolve-RedfishPartialSuccessResponse $RedfishSession $Response | Out-Null
@@ -420,10 +438,10 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Set-iBMCSNMPSetting $session -SnmpV1Enabled $false -SnmpV2CEnabled $false `
-        -LongPasswordEnabled $true -RWCommunityEnabled $true `
-        -ReadOnlyCommunity 'SomeP@ssw0rd' -ReadWriteCommunity 'SomeP@ssw0rd' `
-        -SnmpV3AuthProtocol MD5 -SnmpV3PrivProtocol DES
+PS C:\> $CommunityName = ConvertTo-SecureString -String "SomeP@ssw0rd" -AsPlainText -Force
+PS C:\> Set-iBMCSNMPTrapSetting -Session $session -ServiceEnabled $true -TrapVersion V2C `
+          -TrapV3User chajian -TrapMode EventCode -TrapServerIdentity BoardSN `
+          -CommunityName $CommunityName -AlarmSeverity Critical
 
 
 .LINK
@@ -465,7 +483,7 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $TrapServerIdentity,
 
-    [String[]]
+    [SecureString[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $CommunityName,
 
@@ -492,7 +510,11 @@ Disconnect-iBMC
       param($RedfishSession, $Payload)
       $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Set BMC SNMP Settings now"))
       $Path = "/Managers/$($RedfishSession.Id)/SnmpService"
-
+      if ($null -ne $Payload.CommunityName) {
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.CommunityName)
+        $Plain = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        $Payload.CommunityName = $Plain
+      }
       $Payload = @{ "SnmpTrapNotification"=$Payload; }
       $Response = Invoke-RedfishRequest $RedfishSession $Path 'Patch' $Payload
       Resolve-RedfishPartialSuccessResponse $RedfishSession $Response | Out-Null
