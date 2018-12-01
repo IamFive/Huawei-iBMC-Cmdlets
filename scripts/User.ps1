@@ -441,7 +441,7 @@ Disconnect-iBMC
           $Logger.info($(Trace-Session $Session "User $($User.UserName) found, will patch user now"))
           $Headers = @{'If-Match'=$UserResponse.Headers['Etag'];}
           $Logger.info($(Trace-Session $Session "User Etag is $($UserResponse.Headers['Etag'])"))
-          if ('Password' -in $Payload) {
+          if ($null -ne $Payload.Password) {
             $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.Password)
             $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
             $Payload.Password = $PlainPasswd
