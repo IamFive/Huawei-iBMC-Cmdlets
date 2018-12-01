@@ -337,7 +337,7 @@ Disconnect-iBMC
       # V3
       if ($null -ne $Response.Oem.Huawei.BootupSequence) {
         $Logger.info($(Trace-Session $RedfishSession "Find System.Oem.Huawei.BootupSequence, return directly"))
-        return $Response.Oem.Huawei.BootupSequence
+        return ,$Response.Oem.Huawei.BootupSequence
       }
       else {
         # V5
@@ -350,7 +350,7 @@ Disconnect-iBMC
           $BootType = $Attrs."BootTypeOrder$_"
           [Void] $seq.Add($BMC.V52V3Mapping[$BootType])
         }
-        return $seq
+        return ,$seq.ToArray()
       }
     }
 
@@ -538,7 +538,7 @@ In case of an error or warning, exception will be returned.
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
 PS C:\> Get-iBMCBootSourceOverride $session
 
-None
+Pxe
 
 
 .LINK
