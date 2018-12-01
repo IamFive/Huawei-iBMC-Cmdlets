@@ -4,7 +4,7 @@ Describe "User Module" {
   It "User Feature Workflow" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian,chajian -Password "chajian12#$" -TrustCert
-      $pwd = ConvertTo-SecureString -String "pwd12#$%^" -AsPlainText -Force
+      $pwd = ConvertTo-SecureString -String "PowershellPwd12#$%^" -AsPlainText -Force
 
       Remove-iBMCUser -Session $session -Username powershell,powershell | Out-Null
       $Add = Add-iBMCUser -Session $session -Username powershell,powershell -Password $pwd,$pwd -Role Operator,Administrator

@@ -97,9 +97,9 @@ Describe "SNMP-Recipients" {
       $UpdatedRecipients[1][3].Description | Should -Be $OriginalRecipients[1][3].Description
 
 
-      Set-iBMCSMTPRecipient $session -MemberId 1 -Enabled @($UpdatedRecipients[0][1].Enabled, $UpdatedRecipients[1][1].Enabled) `
-        -EmailAddress @($UpdatedRecipients[0][1].EmailAddress, $UpdatedRecipients[1][1].EmailAddress) `
-        -Description @($UpdatedRecipients[0][1].Description, $UpdatedRecipients[1][1].Description)
+      Set-iBMCSMTPRecipient $session -MemberId 1 -Enabled @($OriginalRecipients[0][1].Enabled, $OriginalRecipients[1][1].Enabled) `
+        -EmailAddress @($OriginalRecipients[0][1].EmailAddress, $OriginalRecipients[1][1].EmailAddress) `
+        -Description @($OriginalRecipients[0][1].Description, $OriginalRecipients[1][1].Description)
     }
     finally {
       Disconnect-iBMC $session
