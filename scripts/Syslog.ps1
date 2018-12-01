@@ -28,43 +28,13 @@ ServiceEnabled       : True
 ServerIdentitySource : BoardSN
 AlarmSeverity        : Normal
 TransmissionProtocol : UDP
-SyslogServers        : {@{MemberId=0; Enabled=True; Address=192.168.2.96; Port=514; LogType=System.Object[]}, @{MemberId=1;
-                      Enabled=True; Address=192.168.14.8; Port=514; LogType=System.Object[]}, @{MemberId=2; Enabled=True; A
-                      ddress=192.168.3.161; Port=514; LogType=System.Object[]}, @{MemberId=3; Enabled=True; Address=112.93.
-                      129.99; Port=514; LogType=System.Object[]}}
-
-PS C:\> $syslog.SyslogServers
-
-MemberId : 0
-Enabled  : True
-Address  : 192.168.2.96
-Port     : 514
-LogType  : {OperationLog, SecurityLog, EventLog}
-
-MemberId : 1
-Enabled  : True
-Address  : 192.168.14.8
-Port     : 514
-LogType  : {OperationLog, SecurityLog, EventLog}
-
-MemberId : 2
-Enabled  : True
-Address  : 192.168.3.161
-Port     : 514
-LogType  : {OperationLog, SecurityLog, EventLog}
-
-MemberId : 3
-Enabled  : True
-Address  : 112.93.129.99
-Port     : 514
-LogType  : {OperationLog, SecurityLog, EventLog}
-
 
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 Set-iBMCSyslogSetting
+Get-iBMCSyslogServer
 Set-iBMCSyslogServer
 Connect-iBMC
 Disconnect-iBMC
@@ -91,8 +61,7 @@ Disconnect-iBMC
       $Path = "/Managers/$($RedfishSession.Id)/SyslogService"
       $Response = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
       $Properties = @(
-        "ServiceEnabled", "ServerIdentitySource", "AlarmSeverity",
-        "TransmissionProtocol", "SyslogServers"
+        "ServiceEnabled", "ServerIdentitySource", "AlarmSeverity", "TransmissionProtocol"
       )
       $Syslog = Copy-ObjectProperties $Response $Properties
       return $Syslog
@@ -162,6 +131,7 @@ PS C:\> Set-iBMCSyslogSetting $session -ServiceEnabled $true -ServerIdentitySour
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 Get-iBMCSyslogSetting
+Get-iBMCSyslogServer
 Set-iBMCSyslogServer
 Connect-iBMC
 Disconnect-iBMC
@@ -230,6 +200,111 @@ Disconnect-iBMC
         $Parameters = @($RedfishSession, $Payload)
         $Logger.info($(Trace-Session $RedfishSession "Submit Set iBMC Syslog settings task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
+      }
+
+      $Results = Get-AsyncTaskResults $tasks
+      return $Results
+    }
+    finally {
+      $pool.close()
+    }
+  }
+
+  end {
+  }
+}
+
+
+function Get-iBMCSyslogServer {
+<#
+.SYNOPSIS
+Get iBMC Syslog Notification Servers.
+
+.DESCRIPTION
+Get iBMC Syslog Notification Servers.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.OUTPUTS
+PSObject[][]
+Returns PSObject Array indicates Syslog Notification Servers if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $Servers = Get-iBMCSyslogServer $session
+PS C:\> $Servers
+
+MemberId : 0
+Enabled  : False
+Address  :
+Port     : 0
+LogType  : {OperationLog, SecurityLog, EventLog}
+
+MemberId : 1
+Enabled  : False
+Address  :
+Port     : 0
+LogType  : {OperationLog, SecurityLog, EventLog}
+
+MemberId : 2
+Enabled  : False
+Address  :
+Port     : 0
+LogType  : {OperationLog, SecurityLog, EventLog}
+
+MemberId : 3
+Enabled  : False
+Address  :
+Port     : 0
+LogType  : {OperationLog, SecurityLog, EventLog}
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Get-iBMCSyslogSetting
+Set-iBMCSyslogSetting
+Set-iBMCSyslogServer
+Connect-iBMC
+Disconnect-iBMC
+
+#>
+  [CmdletBinding()]
+  param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+    $Session
+  )
+
+  begin {
+    Assert-ArrayNotNull $Session 'Session'
+  }
+
+  process {
+    $Logger.info("Invoke Get BMC Syslog Notification Server function")
+
+    $ScriptBlock = {
+      param($RedfishSession)
+
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Get BMC Syslog Notification Server now"))
+      $Path = "/Managers/$($RedfishSession.Id)/SyslogService"
+      $Response = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
+      # $Properties = @("MemberId", "Enabled", "Address", "Port", "LogType")
+      # $Syslog = Copy-ObjectProperties $Response.SyslogServers $Properties
+      return ,$Response.SyslogServers
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Logger.info($(Trace-Session $RedfishSession "Get BMC Syslog Notification Server"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
       }
 
       $Results = Get-AsyncTaskResults $tasks
@@ -401,4 +476,3 @@ Disconnect-iBMC
   end {
   }
 }
-
