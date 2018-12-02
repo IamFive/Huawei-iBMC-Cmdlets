@@ -23,39 +23,35 @@ PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password
 PS C:\> $System = Get-iBMCSystemInfo $session
 PS C:\> $System
 
-@odata.context     : /redfish/v1/$metadata#Systems/Members/$entity
-@odata.id          : /redfish/v1/Systems/1
-@odata.type        : #ComputerSystem.v1_2_0.ComputerSystem
-Id                 : 1
-Name               : Computer System
-AssetTag           :
-Manufacturer       : Huawei
-Model              : 2288H V5
-SerialNumber       : 2102311TYBN0J3000293
-UUID               : 877AA970-58F9-8432-E811-80345C184638
-HostName           :
-PartNumber         : 02311TYB
-HostingRole        : {ApplicationServer}
-Status             : @{State=Enabled; Health=OK}
-PowerState         : On
-Boot               : @{BootSourceOverrideTarget=None; BootSourceOverrideEnabled=Disabled; BootSourceOverrideMode=UEFI; Bo
-                     otSourceOverrideTarget@Redfish.AllowableValues=System.Object[]}
-TrustedModules     :
-BiosVersion        : 0.81
-ProcessorSummary   : @{Count=2; Model=Central Processor; Status=}
-MemorySummary      : @{TotalSystemMemoryGiB=128; Status=}
-Processors         : @{@odata.id=/redfish/v1/Systems/1/Processors}
-Memory             : @{@odata.id=/redfish/v1/Systems/1/Memory}
-EthernetInterfaces : @{@odata.id=/redfish/v1/Systems/1/EthernetInterfaces}
-Storage            : @{@odata.id=/redfish/v1/Systems/1/Storages}
-NetworkInterfaces  : @{@odata.id=/redfish/v1/Systems/1/NetworkInterfaces}
-LogServices        : @{@odata.id=/redfish/v1/Systems/1/LogServices}
-PCIeDevices        : {}
-PCIeFunctions      : {}
-Bios               : @{@odata.id=/redfish/v1/Systems/1/Bios}
-Links              : @{Chassis=System.Object[]; Managers=System.Object[]}
-Oem                : @{Huawei=}
-Actions            : @{#ComputerSystem.Reset=; Oem=}
+Id               : 1
+Name             : Computer System
+AssetTag         : my test
+Manufacturer     : Huawei
+Model            : 2288H V5
+SerialNumber     : 2102311TYBN0J3000293
+UUID             : 877AA970-58F9-8432-E811-80345C184638
+HostName         :
+PartNumber       : 02311TYB
+HostingRole      : {ApplicationServer}
+Status           : @{State=Disabled; Health=OK}
+PowerState       : Off
+Boot             : @{BootSourceOverrideTarget=Pxe; BootSourceOverrideEnabled=Continuous; BootSourceOverrideMode=Legacy; BootSourceOverride
+                   Target@Redfish.AllowableValues=System.Object[]}
+TrustedModules   :
+BiosVersion      : 0.81
+ProcessorSummary : @{Count=2; Model=Central Processor; Status=}
+MemorySummary    : @{TotalSystemMemoryGiB=128; Status=}
+PCIeDevices      : {}
+PCIeFunctions    : {}
+Bios             : @{@odata.id=/redfish/v1/Systems/1/Bios}
+Oem              : @{Huawei=}
+
+PS C:\> $System.Boot | fl
+
+BootSourceOverrideTarget                         : Pxe
+BootSourceOverrideEnabled                        : Continuous
+BootSourceOverrideMode                           : Legacy
+BootSourceOverrideTarget@Redfish.AllowableValues : {None, Pxe, Floppy, Cd...}
 
 
 .LINK
@@ -83,7 +79,14 @@ Disconnect-iBMC
       $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Get iBMC System now"))
       $Path = "/Systems/$($RedfishSession.Id)"
       $Response = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
-      return $Response
+      $Properties = @(
+        "Id", "Name", "AssetTag", "Manufacturer", "Model", "SerialNumber", "UUID",
+        "HostName", "PartNumber", "HostingRole", "Status", "PowerState", "Boot", "TrustedModules",
+        "BiosVersion", "ProcessorSummary", "MemorySummary", "PCIeDevices", "PCIeFunctions",
+        "Bios", "Oem"
+      )
+      $System = Copy-ObjectProperties $Response $Properties
+      return $System
     }
 
     try {
