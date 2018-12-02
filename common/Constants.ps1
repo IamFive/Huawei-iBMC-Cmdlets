@@ -70,4 +70,14 @@ $global:BMC = @{
     "file"
   );
 
+
+  BIOSConfigFileSupportSchema = @(
+    "https",
+    "sftp",
+    "nfs",
+    "cifs",
+    "scp",
+    "file"
+  );
+
 }

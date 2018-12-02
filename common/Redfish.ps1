@@ -611,11 +611,13 @@ function Invoke-RedfishFirmwareUpload {
 function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $SupportSchema) {
   $ImageFileUri = New-Object System.Uri($ImageFilePath)
   if ($ImageFileUri.Scheme -notin $SupportSchema) {
-    throw $([string]::Format($(Get-i18n ERROR_FILE_URI_NOT_SUPPORT), $ImageFileUri, $SupportSchema.join(", ")))
+    $SupportSchemaString = $SupportSchema -join ", "
+    $Logger.warn("File $ImageFilePath is not in support schema: $SupportSchemaString")
+    throw $([string]::Format($(Get-i18n ERROR_FILE_URI_NOT_SUPPORT), $ImageFileUri, $SupportSchemaString))
   }
 
-  $ImageFileUri = New-Object System.Uri($ImageFilePath)
   if ($ImageFileUri.Scheme -eq 'file') {
+    $Logger.info("File $ImageFilePath is a local file, upload to bmc now")
     $Ext = [System.IO.Path]::GetExtension($ImageFilePath)
     if ($null -eq $Ext -or $Ext -eq '') {
       $UploadFileName = "$(Get-RandomIntGuid).hpm"
@@ -630,6 +632,7 @@ function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $Suppor
     return "/tmp/web/$UploadFileName";
   }
 
+  $Logger.info("File $ImageFilePath is 'network' file, it's support directly.")
   return $ImageFilePath;
 }
 

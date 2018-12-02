@@ -81,13 +81,13 @@ Disconnect-iBMC
     $Logger.info("Invoke Export BIOS Configurations function")
 
     $ScriptBlock = {
-      param($Session, $DestFilePath)
+      param($RedfishSession, $DestFilePath)
       $payload = @{
         'Type'    = "URI";
         'Content' = $DestFilePath;
       }
-      $Path = "/redfish/v1/Managers/1/Actions/Oem/Huawei/Manager.ExportConfiguration"
-      $Response = Invoke-RedfishRequest $Session $Path 'Post' $payload
+      $Path = "/redfish/v1/Managers/$($RedfishSession.Id)/Actions/Oem/Huawei/Manager.ExportConfiguration"
+      $Response = Invoke-RedfishRequest $RedfishSession $Path 'Post' $payload
       return $Response | ConvertFrom-WebResponse
       # Wait-RedfishTask $Session $Task
     }
@@ -178,23 +178,31 @@ Disconnect-iBMC
   begin {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $ConfigFilePath 'ConfigFilePath'
-    $ConfigFilePath = Get-MatchedSizeArray $Session $ConfigFilePath 'Session' 'ConfigFilePath'
+    $ConfigFilePathList = Get-MatchedSizeArray $Session $ConfigFilePath 'Session' 'ConfigFilePath'
   }
 
   process {
     $Logger.info("Invoke Import BIOS Configurations function, batch size: $($Session.Count)")
 
     $ScriptBlock = {
-      param($Session, $ConfigFilePath)
-      $UploadFileName = "$(Get-RandomIntGuid).hpm"
-      Invoke-RedfishFirmwareUpload $Session $UploadFileName $ConfigFilePath | Out-Null
+      param($RedfishSession, $ConfigFilePath)
 
-      $payload = @{
-        'Type'    = "URI";
-        'Content' = "/tmp/web/$UploadFileName";
+      $Logger.Info($(Trace-Session $RedfishSession "schemas: $($BMC.BIOSConfigFileSupportSchema)"))
+      $payload = @{'Type' = "URI";}
+      if ($ConfigFilePath.StartsWith("/tmp")) {
+        $payload.Content = $ConfigFilePath;
+      } else {
+        $ContentURI = Invoke-FileUploadIfNeccessary $RedfishSession $ConfigFilePath $BMC.BIOSConfigFileSupportSchema
+        $Logger.Info($(Trace-Session $RedfishSession "upload file result: $ContentURI"))
+        $Payload.Content = $ContentURI
+        # old implementation: it seems upload xml file is not support?
+        # $UploadFileName = "$(Get-RandomIntGuid).hpm"
+        # Invoke-RedfishFirmwareUpload $Session $UploadFileName $ConfigFilePath | Out-Null
+        # $payload.Content = "/tmp/web/$UploadFileName";
       }
-      $Path = "/redfish/v1/Managers/1/Actions/Oem/Huawei/Manager.ImportConfiguration"
-      $Response = Invoke-RedfishRequest $Session $Path 'Post' $payload
+      $Logger.Info($(Trace-Session $RedfishSession "get here"))
+      $Path = "/redfish/v1/Managers/$($RedfishSession.Id)/Actions/Oem/Huawei/Manager.ImportConfiguration"
+      $Response = Invoke-RedfishRequest $RedfishSession $Path 'Post' $payload
       return $Response | ConvertFrom-WebResponse
     }
 
@@ -203,8 +211,9 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Logger.info($(Trace-Session $RedfishSession "Submit import BIOS config from $ConfigFilePath[$idx] task"))
-        $Parameters = @($RedfishSession, $ConfigFilePath[$idx])
+        $ImportConfigFilePath = $ConfigFilePathList[$idx];
+        $Logger.info($(Trace-Session $RedfishSession "Submit import BIOS config from $ImportConfigFilePath task"))
+        $Parameters = @($RedfishSession, $ImportConfigFilePath)
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 

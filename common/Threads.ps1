@@ -192,8 +192,8 @@ function Get-AsyncTaskResults {
       }
     }
     catch {
-      $Logger.Warn($ex)
       $ex = $_.Exception
+      $Logger.Warn($ex)
       while($null -ne $ex.InnerException) {
         $ex = $ex.InnerException
       }

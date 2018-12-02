@@ -1,19 +1,20 @@
 Import-Module Huawei-iBMC-Cmdlets -Force
 
 Describe "BIOS settings features" {
-  It "Export" {
+  It "Export&Import From NFS" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       Export-iBMCBIOSSetting $session 'nfs://115.159.160.190/data/nfs/9.xml'
+      Import-iBMCBIOSSetting $session 'nfs://115.159.160.190/data/nfs/9.xml'
     }
     finally {
       Disconnect-iBMC $session
     }
   }
 
-  It "Import" {
+  It "Import from local file" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       Import-iBMCBIOSSetting $session 'C:\Users\Woo\Desktop\config2.xml'
     }
     finally {
@@ -21,9 +22,10 @@ Describe "BIOS settings features" {
     }
   }
 
+
   It "Reset" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       Reset-iBMCBIOS $session
     }
     finally {
@@ -33,7 +35,7 @@ Describe "BIOS settings features" {
 
   It "Restore" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       Restore-iBMCFactory $session
     }
     finally {
