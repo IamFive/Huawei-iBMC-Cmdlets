@@ -26,7 +26,7 @@ Describe "BIOS settings features" {
 
   It "Import from local file" {
     try {
-      $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
       Import-iBMCBIOSSetting $session 'C:\Users\Woo\Desktop\9.xml'
     }
     finally {
