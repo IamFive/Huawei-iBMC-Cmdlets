@@ -41,13 +41,13 @@ In case of an error or warning, exception will be returned.
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
 PS C:\> Get-iBMCNTPSetting -Session $session
 
-SnmpV1Enabled       : False
-SnmpV2CEnabled      : False
-SnmpV3Enabled       : True
-LongPasswordEnabled : True
-RWCommunityEnabled  : True
-SnmpV3AuthProtocol  : MD5
-SnmpV3PrivProtocol  : DES
+ServiceEnabled              : True
+PreferredNtpServer          : pre.huawei.com
+AlternateNtpServer          : alt.huawei.com
+NtpAddressOrigin            : Static
+MinPollingInterval          : 10
+MaxPollingInterval          : 12
+ServerAuthenticationEnabled : False
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
