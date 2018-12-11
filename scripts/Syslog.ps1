@@ -48,10 +48,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get BMC Syslog function")
 
     $ScriptBlock = {
@@ -161,15 +162,16 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
 
     $ServiceEnabledList = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
     $ServerIdentitySourceList = Get-OptionalMatchedSizeArray $Session $ServerIdentitySource
     $AlarmSeverityList = Get-OptionalMatchedSizeArray $Session $AlarmSeverity
     $TransmissionProtocolList = Get-OptionalMatchedSizeArray $Session $TransmissionProtocol
-  }
 
-  process {
     $Logger.info("Invoke Set iBMC Syslog settings function")
 
     $ScriptBlock = {
@@ -281,10 +283,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get BMC Syslog Notification Server function")
 
     $ScriptBlock = {
@@ -405,6 +408,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $MemberId 'MemberId'
     $MemberIds = Get-MatchedSizeArray $Session $MemberId
@@ -415,9 +421,7 @@ Disconnect-iBMC
 
     $ValidLogTypes = Get-EnumNames "LogType"
     $LogTypes = Get-OptionalMatchedSizeMatrix $Session $LogType $ValidLogTypes 'Session' 'LogType'
-  }
 
-  process {
     $Logger.info("Invoke Set BMC Syslog Notification Server function")
 
     $ScriptBlock = {

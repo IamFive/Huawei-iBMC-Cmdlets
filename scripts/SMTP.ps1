@@ -52,10 +52,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get iBMC SMTP Settings function")
 
     $ScriptBlock = {
@@ -221,6 +222,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     $ServiceEnabledList = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
     $ServerAddressList = Get-OptionalMatchedSizeArray $Session $ServerAddress
@@ -235,9 +239,7 @@ Disconnect-iBMC
     $EmailSubjectContainsList = Get-OptionalMatchedSizeMatrix $Session $EmailSubjectContains `
       $ValidSet 'Session' 'EmailSubjectContains'
     $AlarmSeverityList = Get-OptionalMatchedSizeArray $Session $AlarmSeverity
-  }
 
-  process {
     $Logger.info("Invoke Set iBMC SMTP Settings function")
 
     $ScriptBlock = {
@@ -342,10 +344,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get iBMC SMTP Notification Recipients function")
 
     $ScriptBlock = {
@@ -451,15 +454,16 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $MemberId 'MemberId'
     $MemberIdList = Get-MatchedSizeArray $Session $MemberId
     $EnabledList = Get-OptionalMatchedSizeArray $Session $Enabled
     $EmailAddressList = Get-OptionalMatchedSizeArray $Session $EmailAddress
     $DescriptionList = Get-OptionalMatchedSizeArray $Session $Description
-  }
 
-  process {
     $Logger.info("Invoke Set BMC SMTP Recipient function")
 
     $ScriptBlock = {

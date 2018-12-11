@@ -117,6 +117,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $Username 'Username'
     Assert-ArrayNotNull $Password 'Password'
@@ -125,9 +128,7 @@ Disconnect-iBMC
     $UsernameList = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
     $PasswordList = Get-MatchedSizeArray $Session $Password 'Session' 'Password'
     $RoleList = Get-MatchedSizeArray $Session $Role 'Session' 'Role'
-  }
 
-  process {
     $AddUserBlock = {
       param($Session, $Username, $SecurePasswd, $Role)
       $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePasswd)
@@ -230,10 +231,10 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
     $GetUserBlock = {
       param($Session)
       $Users = New-Object System.Collections.ArrayList
@@ -415,6 +416,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $Username 'Username'
     $Usernames = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
@@ -423,9 +427,7 @@ Disconnect-iBMC
     $NewRoles = Get-OptionalMatchedSizeArray $Session $NewRole
     $Enableds = Get-OptionalMatchedSizeArray $Session $Enabled
     $Unlockeds = Get-OptionalMatchedSizeArray $Session $Unlocked
-  }
 
-  process {
     $SetUserBlock = {
       param($Session, $Username, $Payload)
       # try load all users
@@ -552,12 +554,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $Username 'Username'
-    $UsernameList = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $Username 'Username'
+    $UsernameList = Get-MatchedSizeArray $Session $Username 'Session' 'Username'
+
     $DeleteUserBlock = {
       param($Session, $Username)
       # try load all users

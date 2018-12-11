@@ -52,10 +52,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get iBMC SNMP Settings function")
 
     $ScriptBlock = {
@@ -214,6 +215,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     $SnmpV1EnabledList = Get-OptionalMatchedSizeArray $Session $SnmpV1Enabled
     $SnmpV2CEnabledList = Get-OptionalMatchedSizeArray $Session $SnmpV2CEnabled
@@ -223,9 +227,7 @@ Disconnect-iBMC
     $ReadWriteCommunityList = Get-OptionalMatchedSizeArray $Session $ReadWriteCommunity
     $SnmpV3AuthProtocolList = Get-OptionalMatchedSizeArray $Session $SnmpV3AuthProtocol
     $SnmpV3PrivProtocolList = Get-OptionalMatchedSizeArray $Session $SnmpV3PrivProtocol
-  }
 
-  process {
     $Logger.info("Invoke Set iBMC SNMP Settings function")
 
     $ScriptBlock = {
@@ -341,10 +343,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get iBMC SNMP Trap Settings function")
 
     $ScriptBlock = {
@@ -493,6 +496,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     $ServiceEnabledList = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
     $TrapVersionList = Get-OptionalMatchedSizeArray $Session $TrapVersion
@@ -501,9 +507,7 @@ Disconnect-iBMC
     $TrapServerIdentityList = Get-OptionalMatchedSizeArray $Session $TrapServerIdentity
     $CommunityNameList = Get-OptionalMatchedSizeArray $Session $CommunityName
     $AlarmSeverityList = Get-OptionalMatchedSizeArray $Session $AlarmSeverity
-  }
 
-  process {
     $Logger.info("Invoke Set BMC SNMP Settings function")
 
     $ScriptBlock = {
@@ -624,10 +628,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get iBMC SNMP Trap Servers function")
 
     $ScriptBlock = {
@@ -738,15 +743,16 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $MemberId 'MemberId'
     $MemberIds = Get-MatchedSizeArray $Session $MemberId
     $Enableds = Get-OptionalMatchedSizeArray $Session $Enabled
     $TrapServerAddresses = Get-OptionalMatchedSizeArray $Session $TrapServerAddress
     $TrapServerPorts = Get-OptionalMatchedSizeArray $Session $TrapServerPort
-  }
 
-  process {
     $Logger.info("Invoke Set BMC SNMP Trap Server function")
 
     $ScriptBlock = {

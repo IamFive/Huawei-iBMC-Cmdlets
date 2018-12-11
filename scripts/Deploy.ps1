@@ -48,10 +48,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get Virtual Media infomation function")
 
     $ScriptBlock = {
@@ -148,12 +149,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $ImageFilePath 'ImageFilePath'
-    $ImageFilePath = Get-MatchedSizeArray $Session $ImageFilePath 'Session' 'ImageFilePath'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $ImageFilePath 'ImageFilePath'
+    $ImageFilePath = Get-MatchedSizeArray $Session $ImageFilePath 'Session' 'ImageFilePath'
+
     $Logger.info("Invoke Connect Virtual Media function")
 
     $ScriptBlock = {
@@ -240,10 +242,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Disconnect Virtual Media function")
 
     $ScriptBlock = {
@@ -324,10 +327,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get Bootup Sequence function")
 
     $ScriptBlock = {
@@ -438,6 +442,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $BootSequence 'BootSequence'
     $BootSequenceList = Get-MatchedSizeArray $Session $BootSequence 'Session' 'BootSequence'
@@ -452,9 +459,7 @@ Disconnect-iBMC
       }
       throw [String]::format($(Get-i18n "ERROR_ILLEGAL_BOOT_SEQ"), $_ -join ",")
     }
-  }
 
-  process {
     $Logger.info("Invoke Set Bootup Sequence function")
 
     $ScriptBlock = {
@@ -559,10 +564,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get Boot Source Override function")
 
     $ScriptBlock = {
@@ -653,12 +659,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $BootSourceOverrideTarget 'BootSourceOverrideTarget'
-    $BootSourceOverrideTargetList = Get-MatchedSizeArray $Session $BootSourceOverrideTarget 'Session' 'BootSourceOverrideTarget'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $BootSourceOverrideTarget 'BootSourceOverrideTarget'
+    $BootSourceOverrideTargetList = Get-MatchedSizeArray $Session $BootSourceOverrideTarget 'Session' 'BootSourceOverrideTarget'
+
     $Logger.info("Invoke Set Bootup Sequence function")
 
     $ScriptBlock = {

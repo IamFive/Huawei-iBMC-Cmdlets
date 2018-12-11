@@ -46,10 +46,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get All iBMC Power Controls Readings function")
 
     $ScriptBlock = {

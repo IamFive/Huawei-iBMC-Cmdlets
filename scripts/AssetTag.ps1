@@ -41,10 +41,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get iBMC AssetTag function")
 
     $ScriptBlock = {
@@ -135,11 +136,12 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    $AssetTagList = Get-OptionalMatchedSizeArray $Session $AssetTag
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    $AssetTagList = Get-OptionalMatchedSizeArray $Session $AssetTag
+
     $Logger.info("Invoke Set iBMC Asset Tag function")
 
     $ScriptBlock = {

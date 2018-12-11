@@ -63,12 +63,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $PowerControlType 'PowerControlType'
-    $PowerControlTypeList = Get-MatchedSizeArray $Session $PowerControlType
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $PowerControlType 'PowerControlType'
+    $PowerControlTypeList = Get-MatchedSizeArray $Session $PowerControlType
+
     $Logger.info("Invoke Control iBMC Server Power function")
 
     $ScriptBlock = {

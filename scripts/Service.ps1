@@ -49,10 +49,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get BMC Service function")
 
     $ScriptBlock = {
@@ -152,6 +153,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $ServiceName 'ServiceName'
     Assert-ArrayNotNull $Enabled 'Enabled'
@@ -160,9 +164,7 @@ Disconnect-iBMC
     $ServiceNameList = Get-MatchedSizeArray $Session $ServiceName 'Session' 'ServiceName'
     $EnabledList = Get-MatchedSizeArray $Session $Enabled 'Session' 'Enabled'
     $PortList = Get-MatchedSizeArray $Session $Port 'Session' 'Port'
-  }
 
-  process {
     $Logger.info("Invoke Set BMC Service function")
 
     $ScriptBlock = {

@@ -7,21 +7,21 @@ Describe "User Module" {
       $pwd = ConvertTo-SecureString -String "PowershellPwd12#$%^" -AsPlainText -Force
 
       Remove-iBMCUser -Session $session -Username powershell,powershell | Out-Null
-      $Add = Add-iBMCUser -Session $session -Username powershell,powershell -Password $pwd,$pwd -Role Operator,Administrator
+      $Add = $($session | Add-iBMCUser -Username powershell,powershell -Password $pwd,$pwd -Role Operator,Administrator)
       $Add -is [array] | Should -BeTrue
       $Add | Should -BeOfType 'psobject'
       $Add.UserName  | Should -Be @('powershell', 'powershell')
       $Add.RoleId  | Should -Be @('Operator', 'Administrator')
 
 
-      $Set = Set-iBMCUser -Session $session -Username powershell,powershell -NewUsername powershell2 -Unlocked $true
+      $Set = $($session | Set-iBMCUser -Username powershell,powershell -NewUsername powershell2 -Unlocked $true)
       $Set -is [array] | Should -BeTrue
       $Set.UserName | Should -Be @('powershell2', 'powershell2')
       $Set.Locked | Should -Be @($false, $false)
 
     } finally {
-        Remove-iBMCUser -Session $session -Username powershell2
-        Disconnect-iBMC $session
+      $session | Remove-iBMCUser -Username powershell2
+      Disconnect-iBMC $session
     }
   }
 
@@ -58,3 +58,14 @@ Describe "User Module" {
   }
 }
 
+
+Describe "User Module2" {
+  It "User list" {
+    try {
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      $session | Get-iBMCUser
+    } finally {
+      Disconnect-iBMC $session
+    }
+  }
+}

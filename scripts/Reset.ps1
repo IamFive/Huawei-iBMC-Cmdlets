@@ -50,10 +50,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Reset iBMC function")
 
     $ScriptBlock = {
@@ -139,12 +140,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $ResetType 'ResetType'
-    $ResetTypeList = Get-MatchedSizeArray $Session $ResetType
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $ResetType 'ResetType'
+    $ResetTypeList = Get-MatchedSizeArray $Session $ResetType
+
     $Logger.info("Invoke Reset iBMC Server function")
 
     $ScriptBlock = {

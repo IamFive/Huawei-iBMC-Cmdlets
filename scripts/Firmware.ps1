@@ -55,10 +55,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get BMC upgradable firmware function")
 
     $ScriptBlock = {
@@ -217,6 +218,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $Type 'Type'
     Assert-ArrayNotNull $FileUri 'FileUri'
@@ -225,9 +229,7 @@ Disconnect-iBMC
     $FirmwareTypeList = Get-MatchedSizeArray $Session $Type 'Session' 'Type'
     $FileUriList = Get-MatchedSizeArray $Session $FileUri 'Session' 'FileUri'
     $SignalFileUriList = Get-MatchedSizeArray $Session $SignalFileUri
-  }
 
-  process {
     $Logger.info("Invoke upgrade BMC inband firmware function")
 
     $ScriptBlock = {
@@ -424,13 +426,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $FileUri 'FileUri'
-
-    $FileUriList = Get-MatchedSizeArray $Session $FileUri 'Session' 'FileUri'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $FileUri 'FileUri'
+    $FileUriList = Get-MatchedSizeArray $Session $FileUri 'Session' 'FileUri'
+
     $Logger.info("Invoke upgrade BMC outband firmware function")
 
     $ScriptBlock = {

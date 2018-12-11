@@ -66,10 +66,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Get iBMC NTP Settings function")
 
     $ScriptBlock = {
@@ -213,6 +214,9 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     $ServiceEnabledList = Get-OptionalMatchedSizeArray $Session $ServiceEnabled
     $PreferredNtpServerList = Get-OptionalMatchedSizeArray $Session $PreferredNtpServer
@@ -221,9 +225,7 @@ Disconnect-iBMC
     $MinPollingIntervalList = Get-OptionalMatchedSizeArray $Session $MinPollingInterval
     $MaxPollingIntervalList = Get-OptionalMatchedSizeArray $Session $MaxPollingInterval
     $ServerAuthenticationEnabledList = Get-OptionalMatchedSizeArray $Session $ServerAuthenticationEnabled
-  }
 
-  process {
     $Logger.info("Invoke Set iBMC NTP Settings function")
 
     $ScriptBlock = {
@@ -344,14 +346,15 @@ Disconnect-iBMC
   )
 
   begin {
+  }
+
+  process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $KeyValueType 'KeyValueType'
     Assert-ArrayNotNull $KeyValue 'KeyValue'
     $KeyValueTypeList = Get-MatchedSizeArray $Session $KeyValueType
     $KeyValueList = Get-MatchedSizeArray $Session $KeyValue
-  }
 
-  process {
     $Logger.info("Invoke Import iBMC NTP Group Key function")
 
     $ScriptBlock = {

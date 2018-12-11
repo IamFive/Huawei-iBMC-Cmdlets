@@ -72,12 +72,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $DestFilePath 'DestFilePath'
-    $DestFilePath = Get-MatchedSizeArray $Session $DestFilePath 'Session' 'DestFilePath'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $DestFilePath 'DestFilePath'
+    $DestFilePath = Get-MatchedSizeArray $Session $DestFilePath 'Session' 'DestFilePath'
+
     $Logger.info("Invoke Export BIOS Configurations function")
 
     $ScriptBlock = {
@@ -176,12 +177,13 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $ConfigFilePath 'ConfigFilePath'
-    $ConfigFilePathList = Get-MatchedSizeArray $Session $ConfigFilePath 'Session' 'ConfigFilePath'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+    Assert-ArrayNotNull $ConfigFilePath 'ConfigFilePath'
+    $ConfigFilePathList = Get-MatchedSizeArray $Session $ConfigFilePath 'Session' 'ConfigFilePath'
+
     $Logger.info("Invoke Import BIOS Configurations function, batch size: $($Session.Count)")
 
     $ScriptBlock = {
@@ -274,10 +276,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Reset BIOS configuration function")
 
     $ScriptBlock = {
@@ -351,10 +354,11 @@ Disconnect-iBMC
   )
 
   begin {
-    Assert-ArrayNotNull $Session 'Session'
   }
 
   process {
+    Assert-ArrayNotNull $Session 'Session'
+
     $Logger.info("Invoke Restore BIOS Factory function")
 
     $ScriptBlock = {
