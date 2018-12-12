@@ -53,15 +53,14 @@ Describe "Boot Sequence" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $OriginalSeq = Get-iBMCBootupSequence $session
       $OriginalSeq -is [array] | Should -BeTrue
-      $OriginalSeq[0] -is [array] | Should -BeTrue
-      $OriginalSeq[1] -is [array] | Should -BeTrue
-      $OriginalSeq[0]| Should -HaveCount 4
-      $OriginalSeq[1]| Should -HaveCount 4
+      $OriginalSeq | Should -BeOfType 'psobject'
+      $OriginalSeq[0].BootupSequence | Should -HaveCount 4
+      $OriginalSeq[1].BootupSequence | Should -HaveCount 4
 
       $sequence = ,@('Cd', 'Pxe', 'HDD', 'Others')
       Set-iBMCBootupSequence $session $sequence
 
-      Set-iBMCBootupSequence $session $OriginalSeq
+      Set-iBMCBootupSequence $session @($OriginalSeq[0].BootupSequence, $OriginalSeq[1].BootupSequence)
     }
     finally {
       Disconnect-iBMC $session

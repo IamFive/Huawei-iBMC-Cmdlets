@@ -302,12 +302,16 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Get-iBMCBootupSequence $session
+PS C:\> $Sequence = Get-iBMCBootupSequence $session
+PS C:\> $Sequence
 
-Hdd
-Cd
-Pxe
-Others
+BootupSequence
+--------------
+{HDD, Cd, Pxe, Others}
+
+PS C:\> $Sequence | fl
+
+BootupSequence : {HDD, Cd, Pxe, Others}
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -341,7 +345,9 @@ Disconnect-iBMC
       # V3
       if ($null -ne $Response.Oem.Huawei.BootupSequence) {
         $Logger.info($(Trace-Session $RedfishSession "Find System.Oem.Huawei.BootupSequence, return directly"))
-        return ,$Response.Oem.Huawei.BootupSequence
+        $Clone = New-Object PSObject
+        $Clone | Add-Member -MemberType NoteProperty "BootupSequence" $Response.Oem.Huawei.BootupSequence
+        return $Clone
       }
       else {
         # V5
@@ -354,7 +360,10 @@ Disconnect-iBMC
           $BootType = $Attrs."BootTypeOrder$_"
           [Void] $seq.Add($BMC.V52V3Mapping[$BootType])
         }
-        return ,$seq.ToArray()
+
+        $Clone = New-Object PSObject
+        $Clone | Add-Member -MemberType NoteProperty "BootupSequence" $seq.ToArray()
+        return $Clone
       }
     }
 
