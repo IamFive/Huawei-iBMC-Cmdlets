@@ -12,7 +12,7 @@ Describe "Asset Tag" {
       $Results | Should -be @($null, $null)
 
       $UpdatedAssetTags = Get-iBMCAssetTag $session
-      $UpdatedAssetTags | Should -be @($NewTag1, $NewTag2)
+      $UpdatedAssetTags.AssetTag | Should -be @($NewTag1, $NewTag2)
 
       Set-iBMCAssetTag $session $OriginalAssetTags
     }
