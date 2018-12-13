@@ -90,7 +90,9 @@ try { [ServiceName] | Out-Null } catch {
       IPMI,
       SSH,
       KVMIP,
-      VNC
+      VNC,
+      Video,
+      NAT
     }
 '@
 }

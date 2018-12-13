@@ -62,9 +62,11 @@ Disconnect-iBMC
       $Path = "/Managers/$($RedfishSession.Id)/NetworkProtocol"
       $Response = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
 
-      $Properties = @("HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP")
+      $Properties = @("HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP", "SSDP")
       $Services = Copy-ObjectProperties $Response $Properties
       $Services | Add-Member -MemberType NoteProperty "VNC" $Response.Oem.Huawei.VNC
+      $Services | Add-Member -MemberType NoteProperty "Video" $Response.Oem.Huawei.Video
+      $Services | Add-Member -MemberType NoteProperty "NAT" $Response.Oem.Huawei.NAT
       return $Services
     }
 
@@ -96,7 +98,7 @@ Modify iBMC service information, including the enablement state and port number.
 
 .DESCRIPTION
 Modify iBMC service information, including the enablement state and port number.
-Support Services: "HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP", "VNC
+Support Services: "HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP", "VNC", "Video", "NAT"
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
@@ -104,7 +106,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER ServiceName
 Indicates the type of service to be modified.
-Support value set: "HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP", "VNC.
+Support value set: "HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMIP",  "VNC", "Video", "NAT".
 
 .PARAMETER Enabled
 Indicates enabled the service or not.
@@ -177,7 +179,7 @@ Disconnect-iBMC
           "Port"            = $Port;
         }
       }
-      if ($ServiceName -eq [ServiceName]::VNC) {
+      if ($ServiceName -in @([ServiceName]::VNC, [ServiceName]::Video, [ServiceName]::NAT)) {
         $Payload = @{
           'Oem' = @{
             'Huawei' = $Payload;
