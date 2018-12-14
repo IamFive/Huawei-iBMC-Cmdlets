@@ -130,7 +130,14 @@ iBMC redfish session object which is created by Connect-iBMC cmdlet.
 A session object identifies an iBMC server to which this cmdlet will be executed.
 
 .PARAMETER ConfigFilePath
-The local bios&bmc configuration file path
+The bios&bmc configuration file path
+
+File path support:
+1. export to local storage, example: C:\config.xml or \\192.168.1.2\config.xml
+2. export to ibmc local temporary storage, example: /tmp/filename.xml
+3. export to remote storage, example: protocol://username:password@hostname/directory/filename.xml
+   support protocol list: sftp, https, nfs, cifs, scp
+
 
 .OUTPUTS
 PSObject[]
@@ -143,6 +150,24 @@ Import local configuration file
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
 PS C:\> $Tasks = Import-iBMCBIOSSetting $session 'C:\10.10.10.2.xml'
+PS C:\> $Tasks
+
+Id           : 2
+Name         : Import Config File Task
+ActivityName : [112.93.129.9] Import Config File Task
+TaskState    : Completed
+StartTime    : 2018-11-14T17:54:54+08:00
+EndTime      : 2018-11-14T17:56:06+08:00
+TaskStatus   : OK
+TaskPercent  : 100%
+
+
+.EXAMPLE
+
+Import NFS configuration file
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $Tasks = Import-iBMCBIOSSetting $session 'nfs://10.10.10.3/data/nfs/bios.xml'
 PS C:\> $Tasks
 
 Id           : 2

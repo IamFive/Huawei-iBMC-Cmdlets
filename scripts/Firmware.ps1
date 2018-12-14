@@ -158,15 +158,28 @@ The firmware upgrade file is in .zip format.
 It supports HTTPS, SFTP, NFS, CIFS, SCP and FILE file transfer protocols.
 The URI cannot contain the following special characters: ||, ;, &&, $, |, >>, >, <
 
+For examples:
+- local storage: C:\Firmware.zip or \\192.168.1.2\Firmware.zip
+- ibmc local temporary storage: /tmp/Firmware.zip
+- remote storage: protocol://username:password@hostname/directory/Firmware.zip
+
 - When "Type" is SP:
 only the CIFS and NFS protocols.
 The URI cannot contain the following special characters: ||, ;, &&, $, |, >>, >, <
+
+For examples:
+- remote storage: nfs://username:password@hostname/directory/Firmware.zip
 
 .PARAMETER SignalFileUri
 Indicates the file path of the certificate file of the upgrade file.
 - Signal file should be in .asc format
 - it supports HTTPS, SFTP, NFS, CIFS, SCP and FILE file transfer protocols.
 - The URI cannot contain the following special characters: ||, ;, &&, $, |, >>, >, <
+
+For examples:
+- local storage: C:\Firmware.zip.asc or \\192.168.1.2\Firmware.zip.asc
+- ibmc local temporary storage: /tmp/Firmware.zip.asc
+- remote storage: protocol://username:password@hostname/directory/Firmware.zip.asc
 
 .OUTPUTS
 Null
@@ -369,7 +382,12 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 Indicates the file uri of firmware update image file.
 
 File Uri should be a string of up to 256 characters.
-It supports HTTPS, SCP, SFTP, CIFS, TFTP, NFS, and FILE file transfer protocols.
+It supports HTTPS, SCP, SFTP, CIFS, TFTP, NFS and FILE file transfer protocols.
+
+For examples:
+- local storage: C:\2288H_V5_5288_V5-iBMC-V318.hpm or \\192.168.1.2\2288H_V5_5288_V5-iBMC-V318.hpm
+- ibmc local temporary storage: /tmp/2288H_V5_5288_V5-iBMC-V318.hpm
+- remote storage: protocol://username:password@hostname/directory/2288H_V5_5288_V5-iBMC-V318.hpm
 
 .OUTPUTS
 PSObject[]
