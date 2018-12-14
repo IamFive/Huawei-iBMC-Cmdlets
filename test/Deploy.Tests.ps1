@@ -74,15 +74,21 @@ Describe "Boot Override" {
       $session = Connect-iBMC -Address 112.93.129.9,112.93.129.96 -Username chajian -Password "chajian12#$" -TrustCert
       $BootSource = Get-iBMCBootSourceOverride $session
       $BootSource -is [array] | Should -BeTrue
+      $BootSource | Should -BeOfType 'psobject'
+
       $BootSourceOverrideTargets = @("None", "Pxe", "Floppy", "Cd", "Hdd", "BiosSetup")
-      $BootSource[0] -in $BootSourceOverrideTargets | Should -Be $true
-      $BootSource[1] -in $BootSourceOverrideTargets | Should -Be $true
+      $BootSourceOverrideEnableds = @("Disabled", "Once", "Continuous")
+      $BootSource[0].BootSourceOverrideTarget | Should -BeIn $BootSourceOverrideTargets
+      $BootSource[1].BootSourceOverrideTarget | Should -BeIn $BootSourceOverrideTargets
+      $BootSource[0].BootSourceOverrideEnabled | Should -BeIn $BootSourceOverrideEnableds
+      $BootSource[1].BootSourceOverrideEnabled | Should -BeIn $BootSourceOverrideEnableds
 
-      Set-iBMCBootSourceOverride $session @('Hdd', 'Floppy')
+      Set-iBMCBootSourceOverride $session @('Hdd', 'Floppy') @('Disabled', 'Once')
       $BootSource2 = Get-iBMCBootSourceOverride $session
-      $BootSource2 | Should -Be @('Hdd', 'Floppy')
+      $BootSource2.BootSourceOverrideTarget | Should -Be @('Hdd', 'Floppy')
+      $BootSource2.BootSourceOverrideEnabled | Should -Be @('Disabled', 'Once')
 
-      Set-iBMCBootSourceOverride $session $BootSource
+      Set-iBMCBootSourceOverride $session $BootSource.BootSourceOverrideTarget $BootSource.BootSourceOverrideEnabled
     }
     finally {
       Disconnect-iBMC $session

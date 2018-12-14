@@ -550,9 +550,12 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Get-iBMCBootSourceOverride $session
+PS C:\> $BootSourceOverride = Get-iBMCBootSourceOverride $session
+PS C:\> $BootSourceOverride
 
-Pxe
+BootSourceOverrideTarget BootSourceOverrideEnabled
+------------------------ -------------------------
+None                     Disabled
 
 
 .LINK
@@ -585,7 +588,10 @@ Disconnect-iBMC
       $(Get-Logger).info($(Trace-Session $RedfishSession "Get boot source override target now"))
       $Path = "/redfish/v1/Systems/$($RedfishSession.Id)"
       $Response = $(Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse)
-      return $Response.Boot.BootSourceOverrideTarget
+      $Properties = @(
+        "BootSourceOverrideTarget", "BootSourceOverrideEnabled"
+      )
+      return Copy-ObjectProperties $Response.Boot $Properties
     }
 
     try {
@@ -635,14 +641,15 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Set-iBMCBootSourceOverride $session 'Pxe'
+PS C:\> Set-iBMCBootSourceOverride $session 'Pxe' 'Once'
 
 Set boot source override target for single iBMC server
 
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2,10.10.10.3 -Username username -Password password -TrustCert
-PS C:\> Set-iBMCBootupSequence $session 'Pxe','Hdd'
+PS C:\> Set-iBMCBootupSequence -Session $session -BootSourceOverrideTarget @('Pxe','Hdd') `
+        -BootSourceOverrideEnabled @('Once', 'Continuous')
 
 Set boot source override target for multiple iBMC server
 
@@ -665,7 +672,11 @@ Disconnect-iBMC
 
     [BootSourceOverrideTarget[]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
-    $BootSourceOverrideTarget
+    $BootSourceOverrideTarget,
+
+    [BootSourceOverrideEnabled[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
+    $BootSourceOverrideEnabled
   )
 
   begin {
@@ -675,16 +686,18 @@ Disconnect-iBMC
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $BootSourceOverrideTarget 'BootSourceOverrideTarget'
     $BootSourceOverrideTargetList = Get-MatchedSizeArray $Session $BootSourceOverrideTarget 'Session' 'BootSourceOverrideTarget'
+    $BootSourceOverrideEnabledList = Get-MatchedSizeArray $Session $BootSourceOverrideEnabled 'Session' 'BootSourceOverrideEnabled'
 
     $Logger.info("Invoke Set Bootup Sequence function")
 
     $ScriptBlock = {
-      param($RedfishSession, $BootSourceOverrideTarget)
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Set boot source override target to $BootSourceOverrideTarget"))
+      param($RedfishSession, $BootSourceOverrideTarget, $BootSourceOverrideEnabled)
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Set boot source override target: $BootSourceOverrideTarget, $BootSourceOverrideEnabled"))
       $Path = "/redfish/v1/Systems/$($RedfishSession.Id)"
       $Payload = @{
         "Boot" = @{
           "BootSourceOverrideTarget" = $BootSourceOverrideTarget.toString();
+          "BootSourceOverrideEnabled" = $BootSourceOverrideEnabled.toString();
         };
       }
 
@@ -697,7 +710,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Parameters = @($RedfishSession, $BootSourceOverrideTargetList[$idx])
+        $Parameters = @($RedfishSession, $BootSourceOverrideTargetList[$idx], $BootSourceOverrideEnabledList[$idx])
         $Logger.info($(Trace-Session $RedfishSession "Submit Set Boot source override target task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }

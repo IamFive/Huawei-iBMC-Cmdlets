@@ -80,6 +80,16 @@ try { [BootSourceOverrideTarget] | Out-Null } catch {
 '@
 }
 
+try { [BootSourceOverrideEnabled] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum BootSourceOverrideEnabled {
+      Disabled,
+      Once,
+      Continuous
+    }
+'@
+}
+
 try { [ServiceName] | Out-Null } catch {
   Add-Type -TypeDefinition @'
     public enum ServiceName {
