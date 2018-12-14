@@ -306,7 +306,9 @@ Available Value Set: Text, URI.
 .PARAMETER KeyValue
 Indicates the Import group key value.
 - if Parameter "KeyValueType" is Text, KeyValue is the content of private key.
-- if Parameter "KeyValueType" is URI, KeyValue is a path to a local certificate (under the /tmp directory only) or a certificate on a remote server. Supported file transfer protocols include HTTPS, SFTP, NFS, SCP, and CIFS.
+- if Parameter "KeyValueType" is URI, KeyValue is a path to a local certificate (under the /tmp directory only)
+  or a certificate on a remote server (Supported file transfer protocols include HTTPS, SFTP, NFS, SCP, and CIFS).
+
 
 .OUTPUTS
 Null
@@ -316,10 +318,8 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Set-iBMCNTPSetting $session -ServiceEnabled $true
-          -PreferredNtpServer 'pre.huawei.com' -AlternateNtpServer 'alt.huawei.com' `
-          -NtpAddressOrigin Static -ServerAuthenticationEnabled $false `
-          -MinPollingInterval 10 -MaxPollingInterval 12
+PS C:\> $KeyValue = 'the-ntp-key-content'
+PS C:\> Import-iBMCNTPGroupKey $session -KeyValueType Text -KeyValue $KeyValue
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
