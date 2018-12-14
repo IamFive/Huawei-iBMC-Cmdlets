@@ -41,7 +41,7 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Set-iBMCServerPower -Session $session
+PS C:\> Set-iBMCServerPower -Session $session -PowerControlType GracefulShutdown
 
 
 .LINK
