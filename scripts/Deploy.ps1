@@ -618,6 +618,7 @@ Modify bios boot source override target.
 .DESCRIPTION
 Modify bios boot source override target.
 Available boot source override target: 'None', 'Pxe', 'Floppy', 'Cd', 'Hdd', 'BiosSetup'.
+This boot source override target takes effect upon the next restart of the system.
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
