@@ -271,6 +271,17 @@ function Copy-ObjectProperties ($Source, $Properties) {
   return $Clone
 }
 
+function Copy-ObjectExcludes ($Source, $excludes) {
+  $Clone = New-Object PSObject
+  $Properties = $Source | Get-Member -MemberType NoteProperty | Select-Object -Expand Name
+  $Properties | ForEach-Object {
+    if ($_ -notin $excludes) {
+      $Clone | Add-Member -MemberType NoteProperty "$_" $Source."$_"
+    }
+  }
+  return $Clone
+}
+
 
 function Resolve-EnumValues {
   [CmdletBinding()]

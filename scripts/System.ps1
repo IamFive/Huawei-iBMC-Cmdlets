@@ -36,14 +36,13 @@ HostingRole      : {ApplicationServer}
 Status           : @{State=Disabled; Health=OK}
 PowerState       : Off
 Boot             : @{BootSourceOverrideTarget=Pxe; BootSourceOverrideEnabled=Continuous; BootSourceOverrideMode=Legacy; BootSourceOverride
-                   Target@Redfish.AllowableValues=System.Object[]}
+                    Target@Redfish.AllowableValues=System.Object[]}
 TrustedModules   :
 BiosVersion      : 0.81
 ProcessorSummary : @{Count=2; Model=Central Processor; Status=}
 MemorySummary    : @{TotalSystemMemoryGiB=128; Status=}
 PCIeDevices      : {}
 PCIeFunctions    : {}
-Bios             : @{@odata.id=/redfish/v1/Systems/1/Bios}
 Oem              : @{Huawei=}
 
 PS C:\> $System.Boot | fl
@@ -84,9 +83,19 @@ Disconnect-iBMC
         "Id", "Name", "AssetTag", "Manufacturer", "Model", "SerialNumber", "UUID",
         "HostName", "PartNumber", "HostingRole", "Status", "PowerState", "Boot", "TrustedModules",
         "BiosVersion", "ProcessorSummary", "MemorySummary", "PCIeDevices", "PCIeFunctions",
-        "Bios", "Oem"
+        "Oem"
       )
+
       $System = Copy-ObjectProperties $Response $Properties
+
+      $Excludes = @(
+        "InfiniBandInterfaces", "NetworkBondings", "ProcessorView",
+        "MemoryView", "ProcessorsHistoryUsageRate", "MemoryHistoryUsageRate",
+        "NetworkHistoryUsageRate"
+      )
+      $Oem = Copy-ObjectExcludes $Response.Oem.Huawei $Excludes
+      $System.Oem.Huawei = $Oem
+      $Logger.info("$(Oem)")
       return $System
     }
 
