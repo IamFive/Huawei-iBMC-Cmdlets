@@ -70,3 +70,17 @@ Describe "InbandFirmware" {
     }
   }
 }
+
+Describe "InbandFirmware Remote" {
+  It "firmware Remote file" {
+    try {
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      Update-iBMCInbandFirmware -Session $session -Type Firmware `
+        -FileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
+        -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+    }
+    finally {
+      Disconnect-iBMC $session
+    }
+  }
+}

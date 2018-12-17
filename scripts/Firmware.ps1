@@ -189,7 +189,7 @@ In case of an error or warning, exception will be returned.
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> Update-iBMCFirmware -Session $session -Type Firmware `
+PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
 
