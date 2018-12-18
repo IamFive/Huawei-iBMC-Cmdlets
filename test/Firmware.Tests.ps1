@@ -14,7 +14,7 @@ Describe "Firmware" {
   It "local file" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
-      Update-iBMCFirmware $session -Type Outband -FileUri E:\huawei\PowerShell\2288H_V5_5288_V5-iBMC-V318.hpm
+      Update-iBMCInbandFirmware $session -FileUri E:\huawei\PowerShell\2288H_V5_5288_V5-iBMC-V318.hpm
     }
     finally {
         Disconnect-iBMC $session
@@ -24,7 +24,7 @@ Describe "Firmware" {
   It "unc file" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
-      Update-iBMCFirmware -Session $session -Type Outband -FileUri \\WOOCUPIC\share\2288H_V5_5288_V5-iBMC-V318.hpm
+      Update-iBMCInbandFirmware -Session $session -FileUri \\WOOCUPIC\share\2288H_V5_5288_V5-iBMC-V318.hpm
     }
     finally {
         Disconnect-iBMC $session
@@ -34,7 +34,7 @@ Describe "Firmware" {
   It "https file" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
-      Update-iBMCFirmware -Session $session -Type Outband -FileUri https://open.turnbig.net/2288H_V5_5288_V5-iBMC-V318.hpm
+      Update-iBMCInbandFirmware -Session $session -FileUri https://open.turnbig.net/2288H_V5_5288_V5-iBMC-V318.hpm
     }
     finally {
         Disconnect-iBMC $session
@@ -44,7 +44,7 @@ Describe "Firmware" {
   It "nfs file" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
-      Update-iBMCFirmware -Session $session -Type Outband -FileUri nfs://115.159.160.190/data/nfs/2288H_V5_5288_V5-iBMC-V318.hpm
+      Update-iBMCInbandFirmware -Session $session -FileUri nfs://115.159.160.190/data/nfs/2288H_V5_5288_V5-iBMC-V318.hpm
     }
     finally {
         Disconnect-iBMC $session

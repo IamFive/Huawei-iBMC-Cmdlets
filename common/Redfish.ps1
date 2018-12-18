@@ -609,15 +609,31 @@ function Invoke-RedfishFirmwareUpload {
 }
 
 function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $SupportSchema) {
-  $ImageFileUri = New-Object System.Uri($ImageFilePath)
+  # iBMC local storage protocol handle
+  $IsBMCFileProtocol = ($ImageFilePath.StartsWith("file:///tmp", "CurrentCultureIgnoreCase") `
+                          -or $ImageFilePath.StartsWith("/tmp", "CurrentCultureIgnoreCase"))
+  if ($IsBMCFileProtocol -and 'file' -in $SupportSchema) {
+    return $ImageFilePath
+  }
+
+  $SupportSchemaString = $SupportSchema -join ", "
+  try {
+    $ImageFileUri = New-Object System.Uri($ImageFilePath)
+  } catch {
+    throw $(Get-i18n ERROR_FILE_URI_ILLEGAL)
+  }
+  $SecureFileUri = $ImageFilePath
+  if($ImageFileUri.UserInfo.Length -gt 0) {
+    $SecureFileUri = $ImageFileUri.AbsoluteUri -replace $ImageFileUri.UserInfo, "***:***"
+  }
+
   if ($ImageFileUri.Scheme -notin $SupportSchema) {
-    $SupportSchemaString = $SupportSchema -join ", "
-    $Logger.warn("File $ImageFilePath is not in support schema: $SupportSchemaString")
+    $Logger.warn("File $SecureFileUri is not in support schema: $SupportSchemaString")
     throw $([string]::Format($(Get-i18n ERROR_FILE_URI_NOT_SUPPORT), $ImageFileUri, $SupportSchemaString))
   }
 
   if ($ImageFileUri.Scheme -eq 'file') {
-    $Logger.info("File $ImageFilePath is a local file, upload to bmc now")
+    $Logger.info("File $SecureFileUri is a local file, upload to bmc now")
     $Ext = [System.IO.Path]::GetExtension($ImageFilePath)
     if ($null -eq $Ext -or $Ext -eq '') {
       $UploadFileName = "$(Get-RandomIntGuid).hpm"
@@ -626,13 +642,13 @@ function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $Suppor
     }
 
     # upload image file to bmc
-    $Logger.Info($(Trace-Session $RedfishSession "$ImageFilePath is a local file, upload to iBMC now"))
+    $Logger.Info($(Trace-Session $RedfishSession "$SecureFileUri is a local file, upload to iBMC now"))
     Invoke-RedfishFirmwareUpload $RedfishSession $UploadFileName $ImageFilePath | Out-Null
     $Logger.Info($(Trace-Session $RedfishSession "File uploaded as $UploadFileName success"))
     return "/tmp/web/$UploadFileName";
   }
 
-  $Logger.info("File $ImageFilePath is 'network' file, it's support directly.")
+  $Logger.info("File $SecureFileUri is 'network' file, it's support directly.")
   return $ImageFilePath;
 }
 

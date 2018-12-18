@@ -275,10 +275,10 @@ Disconnect-iBMC
           $Payload.ImageType = "SP";
         }
 
-        if ($Payload.ImageURI.StartsWith('/tmp/web')) {
+        if ($Payload.ImageURI.StartsWith('/tmp', "CurrentCultureIgnoreCase")) {
           $Payload.ImageURI = "file://$($Payload.ImageURI)";
         }
-        if ($Payload.SignalURI.StartsWith('/tmp/web')) {
+        if ($Payload.SignalURI.StartsWith('/tmp', "CurrentCultureIgnoreCase")) {
           $Payload.SignalURI = "file://$($Payload.SignalURI)";
         }
 
@@ -291,25 +291,24 @@ Disconnect-iBMC
         $Uri = New-Object System.Uri($Payload.ImageURI)
         $FileName = $Uri.Segments[-1]
         $Transfered = $false
-
-        try {
-          $WaitTransfer = 60
-          while ($WaitTransfer -gt 0) {
-            # wait transfer progress finished
-            $Transfer = Invoke-RedfishRequest $RedfishSession $SPServiceOdataId | ConvertFrom-WebResponse
-            $Percent = $Transfer.TransferProgressPercent
-            $Logger.Info($(Trace-Session $RedfishSession "File $($Transfer.TransferFileName) transfer $($Percent)%"))
-            if ($Transfer.TransferFileName -eq $FileName) {
-              if ($null -ne $Percent -and $Percent -eq 100) {
-                $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer finished."))
-                $Transfered = $true
-                break
-              }
+        $WaitTransfer = 60
+        while ($WaitTransfer -gt 0) {
+          # wait transfer progress finished
+          $Transfer = Invoke-RedfishRequest $RedfishSession $SPServiceOdataId | ConvertFrom-WebResponse
+          $Percent = $Transfer.TransferProgressPercent
+          $Logger.Info($(Trace-Session $RedfishSession "File $($Transfer.TransferFileName) transfer $($Percent)%"))
+          if ($Transfer.TransferFileName -eq $FileName) {
+            if ($null -ne $Percent -and $Percent -eq 100) {
+              $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer finished."))
+              $Transfered = $true
+              break
             }
-            $WaitTransfer = $WaitTransfer - 1
-            Start-Sleep -Seconds 2
           }
-        } catch {
+          $WaitTransfer = $WaitTransfer - 1
+          Start-Sleep -Seconds 2
+        }
+
+        if (-not $Transfered) {
           throw $(Get-i18n "FAIL_SP_FILE_TRANSFER")
         }
 
@@ -579,7 +578,7 @@ Disconnect-iBMC
       $Logger.info($(Trace-Session $RedfishSession "Invoke upgrade outband firmware with file $ImageFileUri now"))
       $ImageFilePath = Invoke-FileUploadIfNeccessary $RedfishSession $ImageFilePath $BMC.OutBandImageFileSupportSchema
       $payload = @{'ImageURI' = $ImageFilePath; }
-      if (-not $ImageFilePath.StartsWith('/tmp/web/')) {
+      if (-not $ImageFilePath.StartsWith('/tmp', "CurrentCultureIgnoreCase")) {
         $ImageFileUri = New-Object System.Uri($ImageFilePath)
         if ($ImageFileUri.Scheme -ne 'file') {
           $payload."TransferProtocol" = $ImageFileUri.Scheme.ToUpper();
