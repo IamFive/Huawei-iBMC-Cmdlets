@@ -41,6 +41,7 @@ LOM (X722)@[LOM]                   : 3.33 0x80000f09 255.65535.255
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
+Set-iBMCSPService
 Update-iBMCInbandFirmware
 Update-iBMCOutbandFirmware
 Connect-iBMC
@@ -137,8 +138,9 @@ function Update-iBMCInbandFirmware {
 Updata iBMC Inband firmware.
 
 .DESCRIPTION
-Updata iBMC Inband firmware.
-Only V5 servers used with BIOS version later than 0.39 support this function.
+Updata iBMC Inband firmware. This function transfers firmware to SP service.
+Those transfered firmwares takes effect upon next system restart when SP Service start is enabled (Set-iBMCSPService function is provided for this).
+Tips: Only V5 servers used with BIOS version later than 0.39 support this function.
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
@@ -205,6 +207,7 @@ PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 Get-iBMCFirmwareInfo
+Set-iBMCSPService
 Update-iBMCOutbandFirmware
 Connect-iBMC
 Disconnect-iBMC
@@ -279,7 +282,7 @@ Disconnect-iBMC
           $Payload.SignalURI = "file://$($Payload.SignalURI)";
         }
 
-        $Logger.Info("payload $Payload")
+        $Logger.Info("payload $($Payload | ConvertTo-Json)")
         $SPServiceOdataId = $SPServices.Members[0].'@odata.id'
         $SPFWUpdateUri = "$SPServiceOdataId/Actions/SPFWUpdate.SimpleUpdate"
         Invoke-RedfishRequest $RedfishSession $SPFWUpdateUri 'POST' $Payload | Out-Null
@@ -311,15 +314,14 @@ Disconnect-iBMC
         }
 
         # Enable SP Service
-        $SPServicePath = "/Managers/$($RedfishSession.Id)/SPService"
-        $EnableSpServicePayload = @{
-          "SPStartEnabled"= $true;
-          "SysRestartDelaySeconds"= 30;
-          "SPTimeout"= 7200;
-          "SPFinished"= $true;
-        }
-        Invoke-RedfishRequest $RedfishSession $SPServicePath 'PATCH' $EnableSpServicePayload | Out-Null
-
+        # $SPServicePath = "/Managers/$($RedfishSession.Id)/SPService"
+        # $EnableSpServicePayload = @{
+        #   "SPStartEnabled"= $true;
+        #   "SysRestartDelaySeconds"= 30;
+        #   "SPTimeout"= 7200;
+        #   "SPFinished"= $true;
+        # }
+        # Invoke-RedfishRequest $RedfishSession $SPServicePath 'PATCH' $EnableSpServicePayload | Out-Null
         # try {
         #   # Restart Server
         #   if ($Transfered) {
@@ -363,6 +365,123 @@ Disconnect-iBMC
   end {
   }
 }
+
+
+function Set-iBMCSPService {
+<#
+.SYNOPSIS
+Modify properties of the SP service resource.
+
+.DESCRIPTION
+Modify properties of the SP(Smart Provisioning) service resource.
+Tips: only V5 servers used with BIOS version later than 0.39 support this function.
+
+.PARAMETER Session
+iBMC redfish session object which is created by Connect-iBMC cmdlet.
+A session object identifies an iBMC server to which this cmdlet will be executed.
+
+.PARAMETER StartEnabled
+Indicates Whether SP start is enabled.
+Support values are powershell boolean value: $true, $false.
+
+.PARAMETER SysRestartDelaySeconds
+Indicates Maximum time allowed for the restart of the OS.
+A positive integer value is accept.
+
+.OUTPUTS
+Null
+Returns Null if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
+
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+Get-iBMCFirmwareInfo
+Update-iBMCInbandFirmware
+Update-iBMCOutbandFirmware
+Connect-iBMC
+Disconnect-iBMC
+
+#>
+  [CmdletBinding()]
+  param (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+    $Session,
+
+    [Boolean[]]
+    [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    $StartEnabled,
+
+    [int[]]
+    [ValidateRange(1, [int]::MaxValue)]
+    [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
+    $SysRestartDelaySeconds
+  )
+
+  begin {
+  }
+
+  process {
+    Assert-ArrayNotNull $Session 'Session'
+
+    $StartEnabledList = Get-OptionalMatchedSizeArray $Session $StartEnabled
+    $SysRestartDelaySecondsList = Get-OptionalMatchedSizeArray $Session $SysRestartDelaySeconds
+
+    $Logger.info("Invoke set SP Service function")
+
+    $ScriptBlock = {
+      param($RedfishSession, $Enabled, $SysRestartDelaySeconds)
+
+      $Logger.info($(Trace-Session $RedfishSession "Invoke set SP Service function now"))
+      # Enable SP Service
+      $SPServicePath = "/Managers/$($RedfishSession.Id)/SPService"
+      $EnableSpServicePayload = @{
+        "SPStartEnabled"= $Enabled;
+        "SysRestartDelaySeconds"= $SysRestartDelaySeconds;
+        "SPTimeout"= 7200;
+        "SPFinished"= $true;
+      } | Remove-EmptyValues
+
+      Invoke-RedfishRequest $RedfishSession $SPServicePath 'PATCH' $EnableSpServicePayload | Out-Null
+      return $null
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $ParametersList = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Parameters = @($RedfishSession, $StartEnabledList[$idx], $SysRestartDelaySecondsList[$idx])
+        if ($null -eq $StartEnabledList[$idx] -and $null -eq $SysRestartDelaySecondsList[$idx]) {
+          throw $(Get-i18n FAIL_NO_UPDATE_PARAMETER)
+        }
+        [Void] $ParametersList.Add($Parameters)
+      }
+
+      for ($idx = 0; $idx -lt $ParametersList.Count; $idx++) {
+        $Logger.info($(Trace-Session $RedfishSession "Submit set SP Service task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $ParametersList[$idx]))
+      }
+
+      return Get-AsyncTaskResults $tasks
+    }
+    finally {
+      $pool.close()
+    }
+  }
+
+  end {
+  }
+}
+
 
 
 function Update-iBMCOutbandFirmware {
@@ -428,6 +547,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 
 Get-iBMCFirmwareInfo
 Update-iBMCInbandFirmware
+Set-iBMCSPService
 Connect-iBMC
 Disconnect-iBMC
 

@@ -69,9 +69,7 @@ Describe "InbandFirmware" {
       Disconnect-iBMC $session
     }
   }
-}
 
-Describe "InbandFirmware Remote" {
   It "firmware Remote file" {
     try {
       $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
@@ -83,4 +81,17 @@ Describe "InbandFirmware Remote" {
       Disconnect-iBMC $session
     }
   }
+}
+
+Describe "SP Service" {
+  It "set" {
+    try {
+      $session = Connect-iBMC -Address 112.93.129.9 -Username chajian -Password "chajian12#$" -TrustCert
+      Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
+    }
+    finally {
+      Disconnect-iBMC $session
+    }
+  }
+
 }
