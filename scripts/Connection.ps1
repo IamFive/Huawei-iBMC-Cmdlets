@@ -45,8 +45,13 @@ PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Credential $credential
 PS C:\> $sessions
 
 .EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address "10.1.1.2,5,8" -Username root -Password password
+PS C:\> $sessions
+
+.EXAMPLE
 PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2-10 -Username root -Password password
 PS C:\> $sessions
+
 
 .EXAMPLE
 PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username root -Password password
