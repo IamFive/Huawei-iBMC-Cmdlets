@@ -95,7 +95,6 @@ Disconnect-iBMC
       )
       $Oem = Copy-ObjectExcludes $Response.Oem.Huawei $Excludes
       $System.Oem.Huawei = $Oem
-      $Logger.info("$(Oem)")
       return $System
     }
 
