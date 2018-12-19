@@ -128,6 +128,10 @@ function ConvertFrom-IPV6RangeString {
       $IPRangeString = $IPRangeString.Substring(0, $IPRangeString.IndexOf('%'))
     }
 
+    # if ($IPRangeString.StartsWith("::")) {
+    #   $IPRangeString = "0$IPRangeString"
+    # }
+
     $segments = New-Object System.Collections.ArrayList
     $split = $IPRangeString -split ':'
     $split | ForEach-Object {
@@ -137,6 +141,18 @@ function ConvertFrom-IPV6RangeString {
     $IPV6Array = $(Merge-IPSegments $segments.ToArray() ':')
     $Results = New-Object System.Collections.ArrayList
     for ($idx = 0; $idx -lt $IPV6Array.Count; $idx++) {
+      $IsIPV6 = $false
+      [IPAddress]$ipv6 = $null
+      if ([IPAddress]::TryParse($IPV6Array[$idx], [ref]$ipv6)) {
+        if ($ipv6.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetworkV6) {
+          $IsIPV6 = $true
+        }
+      }
+
+      if (-not $IsIPV6) {
+        throw $([string]::Format($(Get-i18n ERROR_ILLEGAL_ADDR), $IPRangeString))
+      }
+
       [void] $Results.add("$Prefix$($IPV6Array[$idx])$Zone$Suffix")
     }
     return ,$Results.ToArray()

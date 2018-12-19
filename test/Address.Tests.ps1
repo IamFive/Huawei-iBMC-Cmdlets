@@ -80,8 +80,8 @@ Describe "IPV6 Convertor" {
     $result = ConvertFrom-IPRangeString "feef::3:4:5:6:7:8"
     $result | Should -Be @("feef::3:4:5:6:7:8")
 
-    $result = ConvertFrom-IPRangeString "::2:3:4:5:6:7:8"
-    $result | Should -Be @("::2:3:4:5:6:7:8")
+    $result = ConvertFrom-IPRangeString "::3:4:5:6:7:8"
+    $result | Should -Be @("::3:4:5:6:7:8")
 
     $result = ConvertFrom-IPRangeString "::255.255.255.255"
     $result | Should -Be @("::255.255.255.255")
