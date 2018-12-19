@@ -5,8 +5,9 @@ $CommonFiles = @(Get-ChildItem -Path $PSScriptRoot\..\common -Recurse -Filter *.
 $CommonFiles | ForEach-Object {
   try {
     . $_.FullName
-  } catch {
-      Write-Error -Message "Failed to import file $FileFullPath"
+  }
+  catch {
+    Write-Error -Message "Failed to import file $($_.FullName)"
   }
 }
 
@@ -52,7 +53,8 @@ Describe "optional matrix" {
       $Source = @("source")
       $Target = @("OperationLog", "SecurityLog", "EventLog")
       Get-OptionalMatchedSizeMatrix $Source $Target $null 'source' 'target'
-    } catch {
+    }
+    catch {
       $message = [String]::Format($(Get-i18n ERROR_ELEMENT_NOT_ARRAY), 'target')
       $_.Exception.Message | Should -be $message
     }
@@ -60,7 +62,7 @@ Describe "optional matrix" {
 
   It "Get-OptionalMatchedSizeMatrix with not same size matrix" {
     $Source = @("source1", "source2")
-    $Target = ,@("target")
+    $Target = , @("target")
     $Target2 = Get-OptionalMatchedSizeMatrix $Source $Target $null 'source' 'target'
     $Target2| Should -HaveCount 2
     $Target2 -is [array] | Should -BeTrue
@@ -100,12 +102,12 @@ Describe "optional matrix" {
 Describe "Common Utils" {
   It "Remove-EmptyValues " {
     $Source = @{
-      "key1"= "";
-      "key2"= "value2";
-      "key3"= $null;
-      "key4"= @();
-      "key5"= $false;
-      "key6"= $true;
+      "key1" = "";
+      "key2" = "value2";
+      "key3" = $null;
+      "key4" = @();
+      "key5" = $false;
+      "key6" = $true;
     }
 
     $result = Remove-EmptyValues $Source
@@ -119,12 +121,12 @@ Describe "Common Utils" {
   It "Remove-EmptyValues with complex object" {
     $pwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
     $Source = @{
-      "key1"= "";
-      "key2"= $pwd;
-      "key3"= $null;
-      "key4"= @();
-      "key5"= $false;
-      "key6"= $true;
+      "key1" = "";
+      "key2" = $pwd;
+      "key3" = $null;
+      "key4" = @();
+      "key5" = $false;
+      "key6" = $true;
     }
 
     $result = Remove-EmptyValues $Source
@@ -135,3 +137,4 @@ Describe "Common Utils" {
     $result.key6 | Should -Be $true
   }
 }
+

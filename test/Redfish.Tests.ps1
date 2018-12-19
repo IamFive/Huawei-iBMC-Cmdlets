@@ -43,14 +43,6 @@ Describe "New-iBMCRedfishSession" {
 #   }
 # }
 
-Describe "matches test" {
-  It "Test Matches" {
-    $IPRange = @("10.1-2.1,3.1-2,3-4:80 10.3.1.3-4:81 10.4.1.5-6:82", "w-1-w.baidu123.com:80") ;
-    $IPArray = ConvertFrom-IPRangeString $IPRange
-    Write-Host $IPArray
-  }
-}
-
 Describe "write process test" {
   It "sample" {
     for ($I = 1; $I -le 100; $I++ ) {Write-Progress -Activity "Search in Progress" -Status "$I% Complete:" -PercentComplete $I; Start-Sleep -m 100}

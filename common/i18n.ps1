@@ -31,6 +31,7 @@ $bundle = Data {
   ERROR_FILE_URI_NOT_SUPPORT = Error: File Uri "{0}" is not supported, file transfer protocols should be one of "{1}".
   ERROR_FILE_URI_ILLEGAL = Error: File Uri is illegal or not exists, please check it.
   ERROR_SIGNAL_FILE_EMPTY = Error: parameter "SignalFileUri" should not be null or empty.
+  ERROR_ILLEGAL_ADDR = Error: Address "{0}" is illegal.
 '@
 }
 

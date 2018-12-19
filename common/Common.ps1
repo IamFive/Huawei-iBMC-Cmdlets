@@ -9,13 +9,13 @@ function Write-Input {
   return $input
 }
 
-function Convert-IPSegment($IPSegment) {
+function Convert-IPV4Segment($IPSegment) {
 <#
 .DESCRIPTION
 Convert a specified ip segment expression to all possible int ip segment array
 
 .EXAMPLE
-PS C:\> Convert-IPSegment 3-4,5,10
+PS C:\>  Convert-IPV4Segment 3-4,5,10
 PS C:\> 3 4 5 10
 
 #>
@@ -29,7 +29,7 @@ PS C:\> 3 4 5 10
 
 function ConvertFrom-IPRangeString {
   param (
-    [System.String[]][parameter(Mandatory = $false)] $IPRangeString
+    [String][parameter(Mandatory = $true)] $IPRangeString
   )
 
   $port_regex = ':([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])'
@@ -37,50 +37,181 @@ function ConvertFrom-IPRangeString {
   $hostnameSection = "([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])"
   [regex] $hostnameRegex = "^$hostnameSection(\.$hostnameSection)+($port_regex)?`$"
 
-  $ipv4Section = '(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
-  $ipv4RangedSection = "$ipv4Section(-$ipv4Section)?"
-  $ipv4RangeSectionWithComma = "$ipv4RangedSection(,$ipv4RangedSection)*"
-  [regex] $ipv4_regex = "^($ipv4RangeSectionWithComma(\.$ipv4RangeSectionWithComma){3})($port_regex)?`$"
+  # $ipv4Section = '(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
+  # $ipv4RangedSection = "$ipv4Section(-$ipv4Section)?"
+  # $ipv4RangeSectionWithComma = "$ipv4RangedSection(,$ipv4RangedSection)*"
+  # [regex] $ipv4_regex = "^($ipv4RangeSectionWithComma(\.$ipv4RangeSectionWithComma){3})($port_regex)?`$"
 
   # TODO add ipv6 range support
   # $ipv6Section='[0-9A-Fa-f]{1,4}'
   # $ipv6RangedSection="$ipv6Section(-$ipv6Section)?"
   # $ipv6RangedSectionWithComma="$ipv6RangedSection(,$ipv6RangedSection)*"
 
-  $IPArray = New-Object System.Collections.ArrayList
+  # try to treat it as ipv4
+  $IPV4 = ConvertFrom-IPV4RangeString $IPRangeString
+  if ($IPV4 -ne $false) {
+    return ,$IPV4
+  }
 
-  $AllIpRangeString = $IPRangeString -join ' '
-  -split $AllIpRangeString | ForEach-Object {
-    $matches = $ipv4_regex.Matches($_)
-    if ($matches.Count -eq 1) {
-      $singleIpRange = $matches[0].Groups[1].Value
-      $port = $_ -replace $singleIpRange, ''
+  # try to treat it as hostname
+  if ($IPRangeString -match $hostnameRegex) {
+    return ,@($IPRangeString)
+  }
 
-      $segments = $singleIpRange.Split('.')
-      $segment1 = Convert-IPSegment $segments[0]
-      $segment2 = Convert-IPSegment $segments[1]
-      $segment3 = Convert-IPSegment $segments[2]
-      $segment4 = Convert-IPSegment $segments[3]
+  # try to treat it as ipv6
+  $IPV6 = ConvertFrom-IPV6RangeString $IPRangeString
+  if ($IPV6 -ne $false) {
+    return ,$IPV6
+  }
 
-      foreach ($s1 in $segment1) {
-        foreach ($s2 in $segment2) {
-          foreach ($s3 in $segment3) {
-            foreach ($s4 in $segment4) {
-              [Void] $IPArray.Add("$(@($s1, $s2, $s3, $s4) -join '.')$port")
-            }
+  throw $([string]::Format($(Get-i18n ERROR_ILLEGAL_ADDR), $IPRangeString))
+}
+
+
+function ConvertFrom-IPV4RangeString {
+  param(
+    [String][parameter(Mandatory = $false)] $IPRangeString
+  )
+  $port_regex = ':([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])'
+  $ipv4Section = '(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
+  $ipv4RangedSection = "$ipv4Section(-$ipv4Section)?"
+  $ipv4RangeSectionWithComma = "$ipv4RangedSection(,$ipv4RangedSection)*"
+  [regex] $ipv4_regex = "^($ipv4RangeSectionWithComma(\.$ipv4RangeSectionWithComma){3})($port_regex)?`$"
+
+  $matches = $ipv4_regex.Matches($IPRangeString)
+  if ($matches.Count -eq 1) {
+    $singleIpRange = $matches[0].Groups[1].Value
+    $port = $IPRangeString -replace $singleIpRange, ''
+
+    $segments = $singleIpRange.Split('.')
+    $segment1 =  Convert-IPV4Segment $segments[0]
+    $segment2 =  Convert-IPV4Segment $segments[1]
+    $segment3 =  Convert-IPV4Segment $segments[2]
+    $segment4 =  Convert-IPV4Segment $segments[3]
+
+    $IPArray = New-Object System.Collections.ArrayList
+    foreach ($s1 in $segment1) {
+      foreach ($s2 in $segment2) {
+        foreach ($s3 in $segment3) {
+          foreach ($s4 in $segment4) {
+            [Void] $IPArray.Add("$(@($s1, $s2, $s3, $s4) -join '.')$port")
           }
         }
       }
     }
-    elseif ($_ -match $hostnameRegex) {
-      [Void] $IPArray.Add($_)
-    }
-    else {
-      throw "Illegal Address: $_"
-    }
+    return ,$IPArray.ToArray()
   }
 
-  return $IPArray
+  return $false
+}
+
+function ConvertFrom-IPV6RangeString {
+  param(
+    [String][parameter(Mandatory = $false)] $IPRangeString
+  )
+  try {
+
+    $Zone = ''
+    $Suffix = ''
+    $Prefix = ''
+
+    # handle []
+    if ($IPRangeString.StartsWith('[')) {
+      $Prefix = '['
+      $Suffix = $IPRangeString.Substring($IPRangeString.IndexOf(']'))
+      $IPRangeString = $IPRangeString.Substring(1, $IPRangeString.IndexOf(']') - 1)
+    }
+
+    # handle %eth0
+    if ($IPRangeString.IndexOf('%') -gt 0) {
+      $Zone = $IPRangeString.Substring($IPRangeString.IndexOf('%'))
+      $IPRangeString = $IPRangeString.Substring(0, $IPRangeString.IndexOf('%'))
+    }
+
+    $segments = New-Object System.Collections.ArrayList
+    $split = $IPRangeString -split ':'
+    $split | ForEach-Object {
+      [void] $segments.Add($(Convert-IPV6Segment $_))
+    }
+
+    $IPV6Array = $(Merge-IPSegments $segments.ToArray() ':')
+    $Results = New-Object System.Collections.ArrayList
+    for ($idx = 0; $idx -lt $IPV6Array.Count; $idx++) {
+      [void] $Results.add("$Prefix$($IPV6Array[$idx])$Zone$Suffix")
+    }
+    return ,$Results.ToArray()
+  } catch {
+    throw $([string]::Format($(Get-i18n ERROR_ILLEGAL_ADDR), $IPRangeString))
+  }
+}
+
+function Merge-IPSegments {
+  [CmdletBinding()]
+  param(
+    [String[][]]$segments,
+    [String]$join
+  )
+
+  if ($segments.Length -gt 2) {
+    $results = New-Object System.Collections.ArrayList
+    $First, $Rest = $segments
+    $merged = $(Merge-IPSegments $Rest ':')
+    foreach ($s1 in $First) {
+      foreach ($s2 in $merged) {
+        [Void] $results.Add("$s1$join$s2")
+      }
+    }
+    return ,$results.ToArray()
+  }
+
+  if ($segments.Length -eq 2) {
+    $results = New-Object System.Collections.ArrayList
+    foreach ($s1 in $segments[0]) {
+      foreach ($s2 in $segments[1]) {
+        [Void] $results.Add("$s1$join$s2")
+      }
+    }
+    return ,$results.ToArray()
+  }
+}
+
+function Convert-IPV6Segment {
+<#
+.DESCRIPTION
+Convert a specified ip segment expression to all possible int ip segment array
+
+.EXAMPLE
+PS C:\> $result = Convert-IPV6Segment "20F1-20F2,20F4,20F6-20F8"
+PS C:\> $result | Should -be @('20F1', '20F2', '20F4', '20F6', '20F7', '20F8')
+
+#>
+  param([string]$IPSegment)
+
+  $IntResults = @()
+  if ($null -ne $IPSegment -and $IPSegment -ne '') {
+    if ($IPSegment.indexOf('.') -ge 0) {
+      return ConvertFrom-IPV4RangeString $IPSegment
+    }
+
+    $IPSegment.Split(',') | ForEach-Object {
+      # if segment contains '.', treat it as ipv4
+      $split = $_.Split('-')
+      if ($split.count -gt 2) {
+        throw $(Get-i18n ERROR_ILLEGAL_ADDR)
+      }
+      $from = Invoke-Expression "0x$($split[0])"
+      $to = Invoke-Expression "0x$($split[-1])"
+      $IntResults += $($from..$to)
+    }
+  } else {
+    return @('')
+  }
+
+  $result = New-Object System.Collections.ArrayList
+  for ($idx = 0; $idx -lt $IntResults.Count; $idx++) {
+    [void] $result.add($IntResults[$idx].ToString('x'))
+  }
+  return ,$result.ToArray()
 }
 
 
