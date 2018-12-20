@@ -196,8 +196,9 @@ PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -Trust
 PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
 
-update inband firmware with local file
+This example shows how to update inband firmware with local file then enabled SP service
 
 .EXAMPLE
 
@@ -206,8 +207,9 @@ PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -Trust
 PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
 
-update inband firmware with ibmc temp file
+This example shows how to update inband firmware with ibmc temp file then enabled SP service
 
 .EXAMPLE
 
@@ -216,8 +218,9 @@ PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -Trust
 PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
 
-update inband firmware with remote file
+This example shows how to update inband firmware with remote file then enabled SP service
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -544,6 +547,10 @@ EndTime      : 2018-11-23T09:01:24+08:00
 TaskStatus   : OK
 TaskPercent  : 100%
 
+
+This example shows how to update outband firmware with local file
+
+
 .EXAMPLE
 
 PS C:\> $credential = Get-Credential
@@ -558,6 +565,8 @@ StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
 TaskStatus   : OK
 TaskPercent  : 100%
+
+This example shows how to update outband firmware with ibmc temp file
 
 .EXAMPLE
 
@@ -574,6 +583,8 @@ StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
 TaskStatus   : OK
 TaskPercent  : 100%
+
+This example shows how to update outband firmware with NFS network file
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -712,6 +723,7 @@ StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
 TaskStatus   : OK
 TaskPercent  : 100%
+
 
 
 .EXAMPLE

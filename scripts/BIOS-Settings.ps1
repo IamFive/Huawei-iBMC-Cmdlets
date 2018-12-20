@@ -27,15 +27,13 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-Export to remote NFS
-
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Export-iBMCBIOSSetting $session 'nfs://10.10.10.3/data/nfs/bios.xml'
 
-.EXAMPLE
+This example shows how to export bios setting file to remote NFS storage
 
-Export to iBMC local storage
+.EXAMPLE
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
@@ -50,6 +48,8 @@ StartTime    : 2018-11-14T17:52:01+08:00
 EndTime      : 2018-11-14T17:53:20+08:00
 TaskStatus   : OK
 TaskPercent  : 100%
+
+This example shows how to export bios setting file to iBMC local storage
 
 
 .LINK
@@ -148,8 +148,6 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-Import local configuration file
-
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Import-iBMCBIOSSetting $session 'C:\10.10.10.2.xml'
@@ -164,10 +162,28 @@ EndTime      : 2018-11-14T17:56:06+08:00
 TaskStatus   : OK
 TaskPercent  : 100%
 
+This example shows how to import bios settings from local file
 
 .EXAMPLE
 
-Import NFS configuration file
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
+PS C:\> $Tasks = Import-iBMCBIOSSetting $session '/tmp/bios.xml'
+PS C:\> $Tasks
+
+Id           : 2
+Name         : Import Config File Task
+ActivityName : [112.93.129.9] Import Config File Task
+TaskState    : Completed
+StartTime    : 2018-11-14T17:54:54+08:00
+EndTime      : 2018-11-14T17:56:06+08:00
+TaskStatus   : OK
+TaskPercent  : 100%
+
+This example shows how to import bios settings from ibmc temp file
+
+
+.EXAMPLE
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
@@ -182,6 +198,8 @@ StartTime    : 2018-11-14T17:54:54+08:00
 EndTime      : 2018-11-14T17:56:06+08:00
 TaskStatus   : OK
 TaskPercent  : 100%
+
+This example shows how to import bios settings from NFS file
 
 
 .LINK
