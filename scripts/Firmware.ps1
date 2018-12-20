@@ -197,8 +197,9 @@ PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
 PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
+PS C:\> Reset-iBMCServer -Session $session -ResetType ForceRestart
 
-This example shows how to update inband firmware with local file then enabled SP service
+This example shows how to update inband firmware with local file, enabled SP service and restart server
 
 .EXAMPLE
 
@@ -208,8 +209,9 @@ PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
 PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
+PS C:\> Reset-iBMCServer -Session $session -ResetType ForceRestart
 
-This example shows how to update inband firmware with ibmc temp file then enabled SP service
+This example shows how to update inband firmware with ibmc temp file, enabled SP service and restart server
 
 .EXAMPLE
 
@@ -219,8 +221,9 @@ PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
 PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
+PS C:\> Reset-iBMCServer -Session $session -ResetType ForceRestart
 
-This example shows how to update inband firmware with remote file then enabled SP service
+This example shows how to update inband firmware with remote file, enabled SP service and restart server
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
