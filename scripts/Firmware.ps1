@@ -195,6 +195,17 @@ PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
 
+update inband firmware with local file
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
+          -FileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
+          -SignalFileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+
+update inband firmware with ibmc temp file
+
 .EXAMPLE
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
@@ -202,6 +213,7 @@ PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
           -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
 
+update inband firmware with remote file
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -516,6 +528,20 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
 PS C:\> Update-iBMCOutbandFirmware -Session $session -FileUri E:\2288H_V5_5288_V5-iBMC-V318.hpm
+
+Id           : 1
+Name         : Upgarde Task
+ActivityName : [112.93.129.9] Upgarde Task
+TaskState    : Completed
+StartTime    : 2018-11-23T08:57:45+08:00
+EndTime      : 2018-11-23T09:01:24+08:00
+TaskStatus   : OK
+TaskPercent  : 100%
+
+.EXAMPLE
+
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> Update-iBMCOutbandFirmware -Session $session -FileUri '/tmp/2288H_V5_5288_V5-iBMC-V318.hpm'
 
 Id           : 1
 Name         : Upgarde Task

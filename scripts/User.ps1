@@ -529,7 +529,7 @@ PS C:\> Remove-iBMCUser -Session $session -Username user1
 Remove a iBMC user account that has a username "user1"
 
 PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
-PS C:\> $session | Remove-iBMCUser -Username user1
+PS C:\> ,$session | Remove-iBMCUser -Username user1
 
 
 .LINK
