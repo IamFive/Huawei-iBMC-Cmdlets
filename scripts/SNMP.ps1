@@ -21,7 +21,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Get-iBMCSNMPSetting -Session $session
 
 SnmpV1Enabled       : False
@@ -154,7 +155,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $ReadOnlyCommunity = ConvertTo-SecureString -String "SomeP@ssw0rd1" -AsPlainText -Force
 PS C:\> $ReadWriteCommunity = ConvertTo-SecureString -String "SomeP@ssw0rd2" -AsPlainText -Force
 PS C:\> Set-iBMCSNMPSetting $session -SnmpV1Enabled $false -SnmpV2CEnabled $false `
@@ -312,7 +314,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Get-iBMCSNMPTrapSetting -Session $session
 
 ServiceEnabled     : True
@@ -441,7 +444,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $CommunityName = ConvertTo-SecureString -String "SomeP@ssw0rd" -AsPlainText -Force
 PS C:\> Set-iBMCSNMPTrapSetting -Session $session -ServiceEnabled $true -TrapVersion V2C `
           -TrapV3User chajian -TrapMode EventCode -TrapServerIdentity BoardSN `
@@ -582,7 +586,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Get-iBMCSNMPTrapServer -Session $session
 
 MemberId          : 0
@@ -702,7 +707,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Set-iBMCSNMPTrapServer $session -MemberId 1 -Enabled $true -TrapServerAddress 192.168.2.8 -TrapServerPort 1024
 
 

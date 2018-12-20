@@ -38,7 +38,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Get-iBMCNTPSetting -Session $session
 
 ServiceEnabled              : True
@@ -159,7 +160,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Set-iBMCNTPSetting $session -ServiceEnabled $true
           -PreferredNtpServer 'pre.huawei.com' -AlternateNtpServer 'alt.huawei.com' `
           -NtpAddressOrigin Static -ServerAuthenticationEnabled $false `
@@ -317,7 +319,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $KeyValue = 'the-ntp-key-content'
 PS C:\> Import-iBMCNTPGroupKey $session -KeyValueType Text -KeyValue $KeyValue
 

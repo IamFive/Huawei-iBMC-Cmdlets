@@ -24,7 +24,8 @@ This is a sample for get user accounts:
 
 ```powershell
 
-PS C:\> $session = Connect-iBMC -Address 10.0.0.2,10.0.0.3 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Users = Get-iBMCUser -Session $session
 PS C:\> $Users
 

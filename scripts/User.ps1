@@ -43,7 +43,8 @@ In case of an error or warning, exception will be returned.
 
 Create a new user with name "new-user" for a single iBMC server
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> $User = Add-iBMCUser -Session $session -Username new-user -Password $pwd -Role Operator
 PS C:\> $User
@@ -60,7 +61,9 @@ Oem      : @{Huawei=}
 
 Create a new user with name "new-user" for a single iBMC server with pipelined session
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Password password -TrustCert
+
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Credential $credential -TrustCert
 PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> ,$session | Add-iBMCUser -Username new-user -Password $pwd -Role Operator
 
@@ -76,9 +79,18 @@ Oem      : @{Huawei=}
 
 Create a new user with name "new-user" for multiple iBMC servers with pipelined session
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $sessions = Connect-iBMC -Address 10.10.10.2-3 -Credential $credential -TrustCert
 PS C:\> $pwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
-PS C:\> ,$session | Add-iBMCUser -Username new-user,new-user2 -Password $pwd,$pwd -Role Operator,Administrator
+PS C:\> ,$sessions | Add-iBMCUser -Username new-user,new-user2 -Password $pwd,$pwd -Role Operator,Administrator
+
+Id       : 12
+Name     : User Account
+UserName : new-user
+RoleId   : Operator
+Locked   : True
+Enabled  : True
+Oem      : @{Huawei=}
 
 Id       : 12
 Name     : User Account
@@ -185,8 +197,10 @@ In case of an error or warning, exception will be returned.
 
 Get all user account infomation for multiple iBMC servers
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2-10 -Username username -Password password -TrustCert
-PS C:\> $Users = Get-iBMCUser -Session $session
+
+PS C:\> $credential = Get-Credential
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2-3 -Credential $credential -TrustCert
+PS C:\> $Users = Get-iBMCUser -Session $sessions
 PS C:\> $Users
 
 Id       : 2
@@ -325,7 +339,8 @@ In case of an error or warning, exception will be returned.
 
 Create a user account with name powershell and then modify "username", "password", "role", "Enabled", "Locked" properties of this user for a single iBMC server
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
 PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
@@ -344,11 +359,12 @@ Oem      : @{Huawei=}
 
 Create a user account with name powershell and then modify the "username", "password", "role" properties of this user for multiple iBMC servers
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2,10.10.10.4 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.10.10.4 -Credential $credential -TrustCert
 PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
-PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
+PS C:\> Add-iBMCUser -Session $sessions powershell $pwd 'Administrator'
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
-PS C:\> Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator
+PS C:\> Set-iBMCUser -Session $sessions -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator
 
 Id       : 12
 Name     : User Account
@@ -362,9 +378,10 @@ Oem      : @{Huawei=}
 
 Modify "username", "password", "role" properties of a user with name "username" for multiple iBMC servers
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2-3 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2-3 -Credential $credential -TrustCert
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
-PS C:\> ,$session | Set-iBMCUser -Username username -NewUsername new-user2 -NewPassword $newPwd -NewRole Administrator
+PS C:\> ,$sessions | Set-iBMCUser -Username username -NewUsername new-user2 -NewPassword $newPwd -NewRole Administrator
 
 Id       : 12
 Name     : User Account
@@ -520,7 +537,8 @@ In case of an error or warning, exception will be returned.
 
 Remove a iBMC user account that has a username "user1"
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Remove-iBMCUser -Session $session -Username user1
 
 
@@ -528,7 +546,8 @@ PS C:\> Remove-iBMCUser -Session $session -Username user1
 
 Remove a iBMC user account that has a username "user1"
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> ,$session | Remove-iBMCUser -Username user1
 
 

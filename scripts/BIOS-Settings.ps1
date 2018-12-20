@@ -29,14 +29,16 @@ In case of an error or warning, exception will be returned.
 
 Export to remote NFS
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Export-iBMCBIOSSetting $session 'nfs://10.10.10.3/data/nfs/bios.xml'
 
 .EXAMPLE
 
 Export to iBMC local storage
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Export-iBMCBIOSSetting $session '/tmp/bios.xml'
 PS C:\> $Tasks
 
@@ -148,7 +150,8 @@ In case of an error or warning, exception will be returned.
 
 Import local configuration file
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Import-iBMCBIOSSetting $session 'C:\10.10.10.2.xml'
 PS C:\> $Tasks
 
@@ -166,7 +169,8 @@ TaskPercent  : 100%
 
 Import NFS configuration file
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Import-iBMCBIOSSetting $session 'nfs://10.10.10.3/data/nfs/bios.xml'
 PS C:\> $Tasks
 
@@ -279,7 +283,8 @@ In case of an error or warning, exception will be returned.
 
 Restore BIOS default settings
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Reset-iBMCBIOS $session
 
 
@@ -357,7 +362,8 @@ In case of an error or warning, exception will be returned.
 
 Restore factory settings
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Restore-iBMCFactory $session
 
 

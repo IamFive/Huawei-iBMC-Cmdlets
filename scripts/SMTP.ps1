@@ -21,7 +21,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Get-iBMCSMTPSetting -Session $session
 
 ServiceEnabled        : True
@@ -154,7 +155,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $pwd = ConvertTo-SecureString -String "pwd12#$%^" -AsPlainText -Force
 PS C:\> $ServerIdentifer = ,@('HostName', 'BoardSN')
 PS C:\> Set-iBMCSMTPSetting $session -ServiceEnabled $false -ServerAddress smtp.huawei.com `
@@ -315,7 +317,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $recipients = Get-iBMCSMTPRecipients -Session $session
 PS C:\> $recipients
 
@@ -415,7 +418,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Set-iBMCSMTPRecipient $session -MemberId 1 -Enabled $true -EmailAddress r2@huawei.com -Description 'desc'
 
 

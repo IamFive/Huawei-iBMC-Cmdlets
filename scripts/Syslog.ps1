@@ -20,7 +20,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $syslog = Get-iBMCSyslogSetting $session
 PS C:\> $syslog
 
@@ -124,7 +125,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Set-iBMCSyslogSetting $session -ServiceEnabled $true -ServerIdentitySource HostName `
           -AlarmSeverity Major -TransmissionProtocol UDP
 
@@ -236,7 +238,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Servers = Get-iBMCSyslogServer $session
 PS C:\> $Servers
 
@@ -364,7 +367,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $LogType = ,@("OperationLog", "SecurityLog", "EventLog")
 PS C:\> Set-ibmcSyslogServer $session -MemberId 1 -Enabled $true -Address 192.168.14.9 -Port 515 -LogType $LogType
 

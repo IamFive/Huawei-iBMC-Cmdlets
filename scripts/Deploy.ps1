@@ -19,7 +19,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $VirtualMedia = Get-iBMCVirtualMedia $session
 PS C:\> $VirtualMedia
 
@@ -112,7 +113,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Connect-iBMCVirtualMedia $session 'nfs://10.10.10.10/usr/SLE-12-Server-DVD-x86_64-GM-DVD1.ISO'
 PS C:\> $Tasks
 
@@ -212,7 +214,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Tasks = Disconnect-iBMCVirtualMedia $session
 PS C:\> $Tasks
 
@@ -301,7 +304,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $Sequence = Get-iBMCBootupSequence $session
 PS C:\> $Sequence
 
@@ -414,7 +418,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $BootUpSequence = ,@('Pxe', 'Hdd', 'Cd', 'Others')
 PS C:\> Set-iBMCBootupSequence $session $BootUpSequence
 
@@ -422,7 +427,8 @@ Set boot up device sequence for single iBMC server
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2,10.10.10.3 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $BootUpSequence = @(@('Pxe', 'Hdd', 'Cd', 'Others'), @('Cd', 'Pxe', 'Hdd', 'Others'))
 PS C:\> Set-iBMCBootupSequence $session $BootUpSequence
 
@@ -549,7 +555,8 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $BootSourceOverride = Get-iBMCBootSourceOverride $session
 PS C:\> $BootSourceOverride
 
@@ -640,14 +647,16 @@ In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Set-iBMCBootSourceOverride $session 'Pxe' 'Once'
 
 Set boot source override target for single iBMC server
 
 .EXAMPLE
 
-PS C:\> $session = Connect-iBMC -Address 10.10.10.2,10.10.10.3 -Username username -Password password -TrustCert
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Set-iBMCBootupSequence -Session $session -BootSourceOverrideTarget @('Pxe','Hdd') `
         -BootSourceOverrideEnabled @('Once', 'Continuous')
 
