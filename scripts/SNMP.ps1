@@ -360,6 +360,7 @@ Disconnect-iBMC
         "TrapServerIdentity", "AlarmSeverity"
       )
       $TrapSettings = Copy-ObjectProperties $Response.SnmpTrapNotification $Properties
+      $TrapSettings | Add-Member -MemberType NoteProperty "CommunityName" "******"
       return $TrapSettings
     }
 
