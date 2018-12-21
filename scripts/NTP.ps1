@@ -293,36 +293,75 @@ Import the iBMC NTP group key
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
 A session object identifies an iBMC server to which this cmdlet will be executed.
 
-.PARAMETER PreferredNtpServer
-Indicates the address of the preferred NTP server.
-A character string that meets the following requirements:
-- IPv4, IPv6 address or domain name
-- Contains 1 to 67 characters
+.PARAMETER KeyFileUri
+Indicates the path of NTP group key certificate file
 
-.PARAMETER KeyValueType
-Indicates the Import group key value type.
-Available Value Set: Text, URI.
-- text: indicates that value is a private key.
-- URI: indicates that value is a local URI(under iBMC /tmp directory) or remote URI (supports https、sftp、nfs、cifs、scp).
+It supports HTTPS, SFTP, NFS, SCP, and CIFS and FILE file transfer protocols.
 
-.PARAMETER KeyValue
-Indicates the Import group key value.
-- if Parameter "KeyValueType" is Text, KeyValue is the content of private key.
-- if Parameter "KeyValueType" is URI, KeyValue is a path to a local certificate (under the /tmp directory only)
-  or a certificate on a remote server (Supported file transfer protocols include HTTPS, SFTP, NFS, SCP, and CIFS).
+For examples:
+- local storage: C:\ntp.keys or \\192.168.1.2\ntp.keys
+- ibmc local temporary storage: /tmp/ntp.keys
+- remote storage: protocol://username:password@hostname/directory/ntp.keys
 
 
 .OUTPUTS
-Null
-Returns Null if cmdlet executes successfully.
+PSObject[]
+Returns the import group key task details if cmdlet executes successfully.
 In case of an error or warning, exception will be returned.
+
 
 .EXAMPLE
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $KeyValue = 'the-ntp-key-content'
-PS C:\> Import-iBMCNTPGroupKey $session -KeyValueType Text -KeyValue $KeyValue
+PS C:\> Import-iBMCNTPGroupKey -Session $session -KeyFileUri "E:\ntp.keys"
+
+Id           : 1
+Name         : ntp certificate import
+ActivityName : [10.1.1.2] ntp certificate import
+TaskState    : Completed
+StartTime    : 2018-12-21T05:51:46+00:00
+EndTime      : 2018-12-21T05:51:49+00:00
+TaskStatus   : OK
+TaskPercent  : 100%
+
+This example shows how to import NTP group key from local file
+
+
+.EXAMPLE
+
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
+PS C:\> Import-iBMCNTPGroupKey -Session $session -KeyFileUri "/tmp/ntp.keys"
+
+Id           : 1
+Name         : ntp certificate import
+ActivityName : [10.1.1.2] ntp certificate import
+TaskState    : Completed
+StartTime    : 2018-12-21T05:51:46+00:00
+EndTime      : 2018-12-21T05:51:49+00:00
+TaskStatus   : OK
+TaskPercent  : 100%
+
+This example shows how to import NTP group key from ibmc temp file
+
+.EXAMPLE
+
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
+PS C:\> Import-iBMCNTPGroupKey -Session $session -KeyFileUri "nfs://10.10.10.2/data/nfs/ntp.keys"
+
+Id           : 1
+Name         : ntp certificate import
+ActivityName : [10.1.1.2] ntp certificate import
+TaskState    : Completed
+StartTime    : 2018-12-21T05:51:46+00:00
+EndTime      : 2018-12-21T05:51:49+00:00
+TaskStatus   : OK
+TaskPercent  : 100%
+
+This example shows how to import NTP group key from NFS network file
+
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
@@ -339,13 +378,9 @@ Disconnect-iBMC
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
-    [NtpKeyValueType[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
-    $KeyValueType,
-
     [String[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
-    $KeyValue
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    $KeyFileUri
   )
 
   begin {
@@ -353,20 +388,140 @@ Disconnect-iBMC
 
   process {
     Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $KeyValueType 'KeyValueType'
-    Assert-ArrayNotNull $KeyValue 'KeyValue'
-    $KeyValueTypeList = Get-MatchedSizeArray $Session $KeyValueType
-    $KeyValueList = Get-MatchedSizeArray $Session $KeyValue
+    Assert-ArrayNotNull $KeyFileUri 'KeyFileUri'
+    $KeyFileUriList = Get-MatchedSizeArray $Session $KeyFileUri 'Session' 'KeyFileUri'
 
     $Logger.info("Invoke Import iBMC NTP Group Key function")
 
     $ScriptBlock = {
-      param($RedfishSession, $Payload)
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Import iBMC NTP Group Key now"))
+      param($RedfishSession, $KeyFileUri)
+
+      $Logger.info($(Trace-Session $RedfishSession "Invoke Import iBMC NTP Group Key now"))
+
+      $StartTime = Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz'
+      $KeyFilePath = Invoke-FileUploadIfNeccessary $RedfishSession $KeyFileUri $BMC.NTPKeyFileSupportSchema
+      # try submit import ntp key task
       $Path = "/Managers/$($RedfishSession.Id)/NtpService/Actions/NtpService.ImportNtpKey"
-      $Response = Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload
-      Resolve-RedfishPartialSuccessResponse $RedfishSession $Response | Out-Null
-      return $null
+      $Payload = @{
+        Type= "URI";
+        Content=$KeyFilePath;
+      }
+
+      # if a remote URI is provided, will return:
+      #
+      # {
+      #   "error": {
+      #     "code": "Base.1.0.GeneralError",
+      #     "message": "A general error has occurred. See ExtendedInfo for more information.",
+      #     "@Message.ExtendedInfo": [
+      #       {
+      #         "@odata.context": "/redfish/v1/$metadata#TaskService/Tasks/Members/$entity",
+      #         "@odata.type": "#Task.v1_0_2.Task",
+      #         "@odata.id": "/redfish/v1/TaskService/Tasks/1",
+      #         "Id": "1",
+      #         "Name": "ntp certificate import ",
+      #         "TaskState": "Running",
+      #         "StartTime": "2018-12-21T04:10:32+00:00",
+      #         "Messages": [],
+      #         "Oem": {
+      #           "Huawei": {
+      #             "TaskPercentage": null
+      #           }
+      #         }
+      #       }
+      #     ]
+      #   }
+      # }
+
+      # if ibmc temp file uri is provided, will return:
+      # {
+      #   "error": {
+      #     "code": "Base.1.0.GeneralError",
+      #     "message": "A general error has occurred. See ExtendedInfo for more information.",
+      #     "@Message.ExtendedInfo": [
+      #       {
+      #         "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry",
+      #         "MessageId": "iBMC.1.0.UploadNTPSecureGroupKeysuccessfully",
+      #         "RelatedProperties": [],
+      #         "Message": "The NTP group key is uploaded successfully.",
+      #         "MessageArgs": [],
+      #         "Severity": "OK",
+      #         "Resolution": "None"
+      #       }
+      #     ]
+      #   }
+      # }
+
+      # {
+      #   "error": {
+      #     "code": "Base.1.0.GeneralError",
+      #     "message": "A general error has occurred. See ExtendedInfo for more information.",
+      #     "@Message.ExtendedInfo": [
+      #       {
+      #         "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry",
+      #         "MessageId": "iBMC.1.0.UploadNTPSecureGroupKeyFailed",
+      #         "RelatedProperties": [],
+      #         "Message": "Failed to upload the NTP group key.",
+      #         "MessageArgs": [],
+      #         "Severity": "Warning",
+      #         "Resolution": "Make sure that the content or URI of the NTP group key specified in the request body is valid."
+      #       }
+      #     ]
+      #   }
+      # }
+
+      # {
+      #   "@odata.context": "/redfish/v1/$metadata#TaskService/Tasks/Members/$entity",
+      #   "@odata.type": "#Task.v1_0_2.Task",
+      #   "@odata.id": "/redfish/v1/TaskService/Tasks/3",
+      #   "Id": "3",
+      #   "Name": "ntp certificate import ",
+      #   "TaskState": "Exception",
+      #   "StartTime": "2018-12-22T01:28:15+08:00",
+      #   "EndTime": "2018-12-22T01:28:16+08:00",
+      #   "TaskStatus": "Warning",
+      #   "Messages": {
+      #     "@odata.type": "/redfish/v1/$metadata#MessageRegistry.1.0.0.MessageRegistry",
+      #     "MessageId": "iBMC.1.0.UploadNTPSecureGroupKeyFailed",
+      #     "RelatedProperties": [],
+      #     "Message": "Failed to upload the NTP group key.",
+      #     "MessageArgs": [],
+      #     "Severity": "Warning",
+      #     "Resolution": "Make sure that the content or URI of the NTP group key specified in the request body is valid."
+      #   },
+      #   "Oem": {
+      #     "Huawei": {
+      #       "TaskPercentage": null
+      #     }
+      #   }
+      # }
+
+      $Response = Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload -ContinueEvenFailed | ConvertFrom-WebResponse
+      $ExtendInfo = $Response.error.'@Message.ExtendedInfo'[0]
+      if ($ExtendInfo.'@odata.id' -like '/redfish/v1/TaskService/Tasks/*') {
+        return $ExtendInfo
+      } else {
+        $FakeTask = @{
+          "Id"= "0";
+          "Name"= "ntp certificate import ";
+          "TaskState"= "Completed";
+          "StartTime"= $StartTime;
+          "EndTime"= $(Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz');
+          "TaskStatus"= "OK";
+          "Oem"= @{
+            "Huawei"= @{
+              "TaskPercentage"= "100%";
+            }
+          }
+        }
+        if ($ExtendInfo.Severity -ne $BMC.Severity.OK.ToString()) {
+          $FakeTask.TaskState = $BMC.TaskState.Exception
+          $FakeTask.TaskStatus = $ExtendInfo.Severity
+          $FakeTask.Oem.Huawei.TaskPercentage = $null
+          $FakeTask.Messages = $ExtendInfo
+        }
+        return $FakeTask
+      }
     }
 
     try {
@@ -374,18 +529,14 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Payload = @{
-          Type=$KeyValueTypeList[$idx];
-          Content=$KeyValueList[$idx];
-        } | Remove-EmptyValues | Resolve-EnumValues
-
-        $Parameters = @($RedfishSession, $Payload)
+        $Parameters = @($RedfishSession, $KeyFileUriList[$idx])
         $Logger.info($(Trace-Session $RedfishSession "Submit Import iBMC NTP Group Key task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
-      $Results = Get-AsyncTaskResults $tasks
-      return $Results
+      $RedfishTasks = Get-AsyncTaskResults $tasks
+      $Logger.Info("Import NTP group key tasks: " + $RedfishTasks)
+      return Wait-RedfishTasks $pool $Session $RedfishTasks -ShowProgress
     }
     finally {
       $pool.close()

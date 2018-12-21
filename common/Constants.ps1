@@ -25,6 +25,7 @@ $global:BMC = @{
 
   TaskState = @{
     Completed='Completed';
+    Exception='Exception';
   };
 
   FRUOperationSystem = 0;
@@ -70,8 +71,16 @@ $global:BMC = @{
     "file"
   );
 
-
   BIOSConfigFileSupportSchema = @(
+    "https",
+    "sftp",
+    "nfs",
+    "cifs",
+    "scp",
+    "file"
+  );
+
+  NTPKeyFileSupportSchema = @(
     "https",
     "sftp",
     "nfs",

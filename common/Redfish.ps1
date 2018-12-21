@@ -628,12 +628,12 @@ function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $Suppor
   }
 
   if ($ImageFileUri.Scheme -notin $SupportSchema) {
-    $Logger.warn("File $SecureFileUri is not in support schema: $SupportSchemaString")
+    $Logger.warn($(Trace-Session $RedfishSession "File $SecureFileUri is not in support schema: $SupportSchemaString"))
     throw $([string]::Format($(Get-i18n ERROR_FILE_URI_NOT_SUPPORT), $ImageFileUri, $SupportSchemaString))
   }
 
   if ($ImageFileUri.Scheme -eq 'file') {
-    $Logger.info("File $SecureFileUri is a local file, upload to bmc now")
+    $Logger.info($(Trace-Session $RedfishSession"File $SecureFileUri is a local file, upload to bmc now"))
     $Ext = [System.IO.Path]::GetExtension($ImageFilePath)
     if ($null -eq $Ext -or $Ext -eq '') {
       $UploadFileName = "$(Get-RandomIntGuid).hpm"
@@ -648,7 +648,7 @@ function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $Suppor
     return "/tmp/web/$UploadFileName";
   }
 
-  $Logger.info("File $SecureFileUri is 'network' file, it's support directly.")
+  $Logger.info($(Trace-Session $RedfishSession "File $SecureFileUri is 'network' file, it's support directly."))
   return $ImageFilePath;
 }
 
@@ -843,14 +843,6 @@ function Resolve-RedfishFailureResponse ($Session, $Request, $Ex, $ContinueEvenF
   $Logger.Error($(Trace-Session $Session $Ex))
   $response = $Ex.Exception.InnerException.Response
   if ($null -ne $response) {
-    if ($ContinueEvenFailed) {
-      return $response
-    }
-
-    $StatusCode = $response.StatusCode.value__
-    $Content = Get-WebResponseContent $response
-    $Message = "[$($Request.Method)] $($response.ResponseUri) -> code: $StatusCode; content: $Content"
-    $Logger.warn($(Trace-Session $Session $Message))
     if ($StatusCode -eq 403){
       throw $(Get-i18n "FAIL_NO_PRIVILEGE")
     }
@@ -860,6 +852,15 @@ function Resolve-RedfishFailureResponse ($Session, $Request, $Ex, $ContinueEvenF
     elseif ($StatusCode -eq 501) {
       throw $(Get-i18n "FAIL_NOT_SUPPORT")
     }
+
+    if ($ContinueEvenFailed) {
+      return $response
+    }
+
+    $StatusCode = $response.StatusCode.value__
+    $Content = Get-WebResponseContent $response
+    $Message = "[$($Request.Method)] $($response.ResponseUri) -> code: $StatusCode; content: $Content"
+    $Logger.warn($(Trace-Session $Session $Message))
 
     $Failures = Get-RedfishResponseFailures $Content
     if ($null -ne $Failures -and $Failures.Count -gt 0) {

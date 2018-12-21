@@ -543,7 +543,7 @@ PS C:\> Update-iBMCOutbandFirmware -Session $session -FileUri E:\2288H_V5_5288_V
 
 Id           : 1
 Name         : Upgarde Task
-ActivityName : [112.93.129.9] Upgarde Task
+ActivityName : [10.1.1.2] Upgarde Task
 TaskState    : Completed
 StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
@@ -562,7 +562,7 @@ PS C:\> Update-iBMCOutbandFirmware -Session $session -FileUri '/tmp/2288H_V5_528
 
 Id           : 1
 Name         : Upgarde Task
-ActivityName : [112.93.129.9] Upgarde Task
+ActivityName : [10.1.1.2] Upgarde Task
 TaskState    : Completed
 StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
@@ -580,7 +580,7 @@ PS C:\> Update-iBMCOutbandFirmware -Session $session `
 
 Id           : 1
 Name         : Upgarde Task
-ActivityName : [112.93.129.9] Upgarde Task
+ActivityName : [10.1.1.2] Upgarde Task
 TaskState    : Completed
 StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
@@ -623,7 +623,7 @@ Disconnect-iBMC
     $ScriptBlock = {
       param($RedfishSession, $ImageFilePath)
 
-      $Logger.info($(Trace-Session $RedfishSession "Invoke upgrade outband firmware with file $ImageFileUri now"))
+      $Logger.info($(Trace-Session $RedfishSession "Invoke upgrade outband firmware now"))
       $ImageFilePath = Invoke-FileUploadIfNeccessary $RedfishSession $ImageFilePath $BMC.OutBandImageFileSupportSchema
       $payload = @{'ImageURI' = $ImageFilePath; }
       if (-not $ImageFilePath.StartsWith('/tmp', "CurrentCultureIgnoreCase")) {
@@ -720,7 +720,7 @@ PS C:\> Update-iBMCFirmware -Session $session -Type Outband `
 
 Id           : 1
 Name         : Upgarde Task
-ActivityName : [112.93.129.9] Upgarde Task
+ActivityName : [10.1.1.2] Upgarde Task
 TaskState    : Completed
 StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
@@ -738,7 +738,7 @@ PS C:\> Update-iBMCFirmware -Session $session -Type Outband `
 
 Id           : 1
 Name         : Upgarde Task
-ActivityName : [112.93.129.9] Upgarde Task
+ActivityName : [10.1.1.2] Upgarde Task
 TaskState    : Completed
 StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
@@ -755,7 +755,7 @@ PS C:\> Update-iBMCFirmware -Session $session -Type Inband `
 
 Id           : 1
 Name         : Upgarde Task
-ActivityName : [112.93.129.9] Upgarde Task
+ActivityName : [10.1.1.2] Upgarde Task
 TaskState    : Completed
 StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
@@ -773,7 +773,7 @@ PS C:\> Update-iBMCFirmware -Session $session -Type Inband `
 
 Id           : 1
 Name         : Upgarde Task
-ActivityName : [112.93.129.9] Upgarde Task
+ActivityName : [10.1.1.2] Upgarde Task
 TaskState    : Completed
 StartTime    : 2018-11-23T08:57:45+08:00
 EndTime      : 2018-11-23T09:01:24+08:00
