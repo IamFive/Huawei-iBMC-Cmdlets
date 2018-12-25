@@ -477,26 +477,25 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         if ($SPFWUpdate -isnot [Exception]) {
           if ($SPFWUpdate.TransferFileName -eq $SPFWUpdate.TargetFileName) {
             $TransferState = $SPFWUpdate.TransferState
-            if ($TaskState -eq 'Processing') {
-              $Percent = $Transfer.TransferProgressPercent
-              $Logger.Info($(Trace-Session $RedfishSession "File $($Transfer.TransferFileName) transfer $($Percent)%"))
-              if ($null -eq $TaskPercent) {
+            if ($TransferState -eq 'Processing') {
+              $Percent = $SPFWUpdate.TransferProgressPercent
+              $Logger.Info($(Trace-Session $RedfishSession "File $($SPFWUpdate.TransferFileName) transfer $($Percent)%"))
+              if ($null -eq $Percent) {
                 $Percent = 0
-              } else {
-                $Percent = [int]$Percent.replace('%', '')
               }
-              Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -PercentComplete $TaskPercent `
+              Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -PercentComplete $Percent `
                 -Status "$($Percent)% $(Get-i18n MSG_PROGRESS_PERCENT)"
             }
-            elseif ($TaskState -eq 'Completed') {
+            elseif ($TransferState -in @('Completed', 'Success')) {
               $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer finished."))
               Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
             }
-            elseif ($TaskState -eq 'Failure') {
+            elseif ($TransferState -eq 'Failure') {
               $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer Failure."))
               Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_FAILED)
             }
           } else {
+            $Logger.Info($(Trace-Session $RedfishSession "File $SPFWUpdate.TransferFileName not equal $SPFWUpdate.TargetFileName"))
             # if file name changed, treat it as success
             Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
           }
@@ -557,8 +556,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
         "TransferProgressPercent", "FileList", "Messages"
       )
 
-      $CleanTask = Copy-ObjectProperties $Finished $Properties
-      $SPFWUpdates[$Finished.index] = $CleanTask # update task
+      $Clone = Copy-ObjectProperties $Finished $Properties
+      $SPFWUpdates[$Finished.index] = $Clone
     }
 
     $Logger.info("All SPFW Update file transfer done")

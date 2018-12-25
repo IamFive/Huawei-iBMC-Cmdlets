@@ -330,7 +330,7 @@ Disconnect-iBMC
           $Logger.Info($(Trace-Session $RedfishSession "File $($Transfer.TransferFileName) transfer $($Percent)%"))
           if ($Transfer.TransferFileName -eq $FileName) {
             if ($null -ne $Percent -and $Percent -gt 0) {
-              $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer finished."))
+              $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer start."))
               $TransferStart = $true
               break
             }
@@ -389,7 +389,7 @@ Disconnect-iBMC
       }
 
       $TransferResults = Get-AsyncTaskResults $tasks
-      return $(Wait-SPFileTransfer $pool $Session $TransferResults)
+      return $(Wait-SPFileTransfer $pool $Session $TransferResults -ShowProgress)
     }
     finally {
       $pool.close()
