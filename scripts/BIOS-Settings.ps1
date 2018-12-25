@@ -239,7 +239,7 @@ Disconnect-iBMC
       $Logger.Info($(Trace-Session $RedfishSession "schemas: $($BMC.BIOSConfigFileSupportSchema)"))
       $payload = @{'Type' = "URI";}
       if ($ConfigFilePath.StartsWith("/tmp")) {
-        $payload.Content = $ConfigFilePath;
+        $payload.Content = $ConfigFilePath
       } else {
         $ContentURI = Invoke-FileUploadIfNeccessary $RedfishSession $ConfigFilePath $BMC.BIOSConfigFileSupportSchema
         $Logger.Info($(Trace-Session $RedfishSession "upload file result: $ContentURI"))
@@ -247,7 +247,7 @@ Disconnect-iBMC
         # old implementation: it seems upload xml file is not support?
         # $UploadFileName = "$(Get-RandomIntGuid).hpm"
         # Invoke-RedfishFirmwareUpload $Session $UploadFileName $ConfigFilePath | Out-Null
-        # $payload.Content = "/tmp/web/$UploadFileName";
+        # $payload.Content = "/tmp/web/$UploadFileName"
       }
       $Logger.Info($(Trace-Session $RedfishSession "get here"))
       $Path = "/redfish/v1/Managers/$($RedfishSession.Id)/Actions/Oem/Huawei/Manager.ImportConfiguration"

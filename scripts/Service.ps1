@@ -186,7 +186,7 @@ Disconnect-iBMC
           'Oem' = @{
             'Huawei' = $Payload;
           };
-        };
+        }
       }
 
       $(Get-Logger).info($(Trace-Session $RedfishSession "Update Service info: $Payload"))

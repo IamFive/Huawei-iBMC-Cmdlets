@@ -558,7 +558,7 @@ function Invoke-RedfishFirmwareUpload {
     $ContinueEvenFailed
   )
 
-  $Logger.info($(Trace-Session $Session "Uploading $FilePath as $FileName to ibmc"));
+  $Logger.info($(Trace-Session $Session "Uploading $FilePath as $FileName to ibmc"))
   $Request = New-RedfishRequest $Session '/UpdateService/FirmwareInventory' 'POST'
   $Request.Timeout = 300 * 1000
   $Request.ReadWriteTimeout = 300 * 1000
@@ -572,15 +572,15 @@ function Invoke-RedfishFirmwareUpload {
     $Request.KeepAlive = $true
 
     $RequestStream = $Request.GetRequestStream()
-    $RequestStream.Write($BoundaryAsBytes, 0, $BoundaryAsBytes.Length);
+    $RequestStream.Write($BoundaryAsBytes, 0, $BoundaryAsBytes.Length)
 
     $Header = "Content-Disposition: form-data; name=`"imgfile`"; filename=`"$($FileName)`"`
-      \r\nContent-Type: application/octet-stream`r`n`r`n";
-    $HeaderAsBytes = $UTF8Encoder.GetBytes($Header);
-    $RequestStream.Write($HeaderAsBytes, 0, $HeaderAsBytes.Length);
+      \r\nContent-Type: application/octet-stream`r`n`r`n"
+    $HeaderAsBytes = $UTF8Encoder.GetBytes($Header)
+    $RequestStream.Write($HeaderAsBytes, 0, $HeaderAsBytes.Length)
 
     $bytesRead = 0
-    $Buffer = New-Object byte[] 4096;
+    $Buffer = New-Object byte[] 4096
     $FileStream = New-Object IO.FileStream $FilePath ,'Open','Read'
     while (($bytesRead = $FileStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {
       $RequestStream.Write($Buffer, 0, $bytesRead)
@@ -645,11 +645,11 @@ function Invoke-FileUploadIfNeccessary ($RedfishSession, $ImageFilePath, $Suppor
     $Logger.Info($(Trace-Session $RedfishSession "$SecureFileUri is a local file, upload to iBMC now"))
     Invoke-RedfishFirmwareUpload $RedfishSession $UploadFileName $ImageFilePath | Out-Null
     $Logger.Info($(Trace-Session $RedfishSession "File uploaded as $UploadFileName success"))
-    return "/tmp/web/$UploadFileName";
+    return "/tmp/web/$UploadFileName"
   }
 
   $Logger.info($(Trace-Session $RedfishSession "File $SecureFileUri is 'network' file, it's support directly."))
-  return $ImageFilePath;
+  return $ImageFilePath
 }
 
 
@@ -813,10 +813,10 @@ function New-RedfishRequest {
   $Request.UserAgent = "PowerShell Huawei iBMC Cmdlet"
   # $Request.KeepAlive = $true
   # $Request.Accept = "text/html, application/xhtml+xml, application/pdf, */*"
-  # $Request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
-  # $Request.Headers.Add("Cache-Control", "no-cache");
-  # $Request.Headers.Add("Upgrade-Insecure-Requests", "1");
-  # $Request.Headers.Add("Origin", $OdataId);
+  # $Request.Headers.Add("Accept-Language", "en-US,en;q=0.9")
+  # $Request.Headers.Add("Cache-Control", "no-cache")
+  # $Request.Headers.Add("Upgrade-Insecure-Requests", "1")
+  # $Request.Headers.Add("Origin", $OdataId)
   # $Request.ServicePoint.Expect100Continue = $false
   $Request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
   $Request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
@@ -835,7 +835,7 @@ function New-RedfishRequest {
     $Request.Headers.Add('If-Match', $OdataEtag)
   }
 
-  return $Request;
+  return $Request
 }
 
 
@@ -905,9 +905,9 @@ function Get-WebResponseContent {
     $Response
   )
   try {
-    $stream = $response.GetResponseStream();
+    $stream = $response.GetResponseStream()
     $streamReader = New-Object System.IO.StreamReader($stream)
-    $content = $streamReader.ReadToEnd();
+    $content = $streamReader.ReadToEnd()
     # $Logger.debug("Redfish API Response: [$($response.StatusCode.value__)] $content")
     return $content
   }

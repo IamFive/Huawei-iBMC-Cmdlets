@@ -76,7 +76,7 @@ Disconnect-iBMC
       $GetMembersResponse = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
       $Members = $GetMembersResponse.Members
       for ($idx = 0; $idx -lt $Members.Count; $idx++) {
-        $Member = $Members[$idx];
+        $Member = $Members[$idx]
         $OdataId = $Member.'@odata.id'
         $InventoryName = $OdataId.Split("/")[-1]
         if ($InventoryName -in $BMC.OutBandFirmwares) {
@@ -290,18 +290,18 @@ Disconnect-iBMC
           $SignalURI = Invoke-FileUploadIfNeccessary $RedfishSession $SignalFilePath $BMC.SignalFileSupportSchema
           $Payload.ImageURI = $ImageURI
           $Payload.SignalURI = $SignalURI
-          $Payload.ImageType = "Firmware";
+          $Payload.ImageType = "Firmware"
         } else {
           $ImageURI = Invoke-FileUploadIfNeccessary $RedfishSession $ImageFilePath $BMC.SPImageFileSupportSchema
           $Payload.ImageURI = $ImageURI
-          $Payload.ImageType = "SP";
+          $Payload.ImageType = "SP"
         }
 
         if ($Payload.ImageURI.StartsWith('/tmp', "CurrentCultureIgnoreCase")) {
-          $Payload.ImageURI = "file://$($Payload.ImageURI)";
+          $Payload.ImageURI = "file://$($Payload.ImageURI)"
         }
         if ($Payload.SignalURI.StartsWith('/tmp', "CurrentCultureIgnoreCase")) {
-          $Payload.SignalURI = "file://$($Payload.SignalURI)";
+          $Payload.SignalURI = "file://$($Payload.SignalURI)"
         }
 
         $Logger.Info("payload $($Payload | ConvertTo-Json)")
@@ -842,10 +842,10 @@ Disconnect-iBMC
           $Logger.Info($(Trace-Session $RedfishSession "$ImageFilePath is a local file, upload to iBMC now"))
           Invoke-RedfishFirmwareUpload $RedfishSession $UploadFileName $ImageFilePath | Out-Null
           $Logger.Info($(Trace-Session $RedfishSession "File uploaded as $UploadFileName success"))
-          return "/tmp/web/$UploadFileName";
+          return "/tmp/web/$UploadFileName"
         }
 
-        return $ImageFilePath;
+        return $ImageFilePath
       }
 
       function Update-OutbandFirmware ($RedfishSession, $ImageFilePath) {
@@ -853,7 +853,7 @@ Disconnect-iBMC
         if (-not $ImageFilePath.StartsWith('/tmp/web/')) {
           $ImageFileUri = New-Object System.Uri($ImageFilePath)
           if ($ImageFileUri.Scheme -ne 'file') {
-            $payload."TransferProtocol" = $ImageFileUri.Scheme.ToUpper();
+            $payload."TransferProtocol" = $ImageFileUri.Scheme.ToUpper()
           }
         }
         # try submit upgrade outband firmware task
@@ -878,10 +878,10 @@ Disconnect-iBMC
         $SPServices = Invoke-RedfishRequest $RedfishSession $GetSPUpdateService | ConvertFrom-WebResponse
         if ($SPServices.Members.Count -gt 0) {
           if ($payload.ImageURI.StartsWith('/tmp/web')) {
-            $payload."ImageURI" = "file://$($payload.ImageURI)";
+            $payload."ImageURI" = "file://$($payload.ImageURI)"
           }
           if ($payload.SignalURI.StartsWith('/tmp/web')) {
-            $payload."SignalURI" = "file://$($payload.SignalURI)";
+            $payload."SignalURI" = "file://$($payload.SignalURI)"
           }
 
           $SPServiceOdataId = $SPServices.Members[0].'@odata.id'
@@ -935,7 +935,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $FirmwareType = $FirmwareTypeList[$idx];
+        $FirmwareType = $FirmwareTypeList[$idx]
         $ImageFilePath = $FileUriList[$idx]
         $SignalFilePath = $SignalFileUriList[$idx]
         $Parameters = @($RedfishSession, $FirmwareType, $ImageFilePath, $SignalFilePath)
