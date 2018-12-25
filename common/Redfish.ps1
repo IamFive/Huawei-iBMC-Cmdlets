@@ -427,6 +427,179 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
 }
 
 
+function Wait-SPFileTransfer {
+<#
+.SYNOPSIS
+Wait SP file transfer util success or failed
+
+.DESCRIPTION
+Wait SP file transfer util success or failed
+
+.PARAMETER Session
+Session array that created by New-iBMCRedfishSession cmdlet.
+
+.PARAMETER Task
+Task array that return by redfish async job API
+
+.OUTPUTS
+
+.LINK
+http://www.huawei.com/huawei-ibmc-cmdlets-document
+
+#>
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, Position = 0)]
+    $ThreadPool,
+
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, Position=1)]
+    $Sessions,
+
+    [PSObject[]]
+    [parameter(Mandatory = $true, Position=2)]
+    $SPFWUpdates,
+
+    [Parameter(Mandatory = $false, Position = 3)]
+    [switch]
+    $ShowProgress
+  )
+
+  begin {
+    Assert-NotNull $ThreadPool
+    Assert-ArrayNotNull $Sessions
+    Assert-ArrayNotNull $SPFWUpdates
+  }
+
+  process {
+    function Write-SPTransferProgress($SPFWUpdate) {
+      if ($ShowProgress) {
+        if ($SPFWUpdate -isnot [Exception]) {
+          if ($SPFWUpdate.TransferFileName -eq $SPFWUpdate.TargetFileName) {
+            $TransferState = $SPFWUpdate.TransferState
+            if ($TaskState -eq 'Processing') {
+              $Percent = $Transfer.TransferProgressPercent
+              $Logger.Info($(Trace-Session $RedfishSession "File $($Transfer.TransferFileName) transfer $($Percent)%"))
+              if ($null -eq $TaskPercent) {
+                $Percent = 0
+              } else {
+                $Percent = [int]$Percent.replace('%', '')
+              }
+              Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -PercentComplete $TaskPercent `
+                -Status "$($Percent)% $(Get-i18n MSG_PROGRESS_PERCENT)"
+            }
+            elseif ($TaskState -eq 'Completed') {
+              $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer finished."))
+              Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
+            }
+            elseif ($TaskState -eq 'Failure') {
+              $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer Failure."))
+              Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_FAILED)
+            }
+          } else {
+            # if file name changed, treat it as success
+            Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
+          }
+        }
+      }
+    }
+
+    $Logger.info("Start wait for all SPFW Update files transfer done")
+
+    $GuidPrefix = [string] $(Get-RandomIntGuid)
+    # initialize tasks
+    for ($idx=0; $idx -lt $SPFWUpdates.Count; $idx++) {
+      $SPFWUpdate = $SPFWUpdates[$idx]
+      $Session = $Sessions[$idx]
+      if ($SPFWUpdate -isnot [Exception]) {
+        $Guid = [int]$($GuidPrefix + $idx)
+        $SPFWUpdate | Add-Member -MemberType NoteProperty 'index' $idx
+        $SPFWUpdate | Add-Member -MemberType NoteProperty 'Guid' $Guid
+        $SPFWUpdate | Add-Member -MemberType NoteProperty 'ActivityName' "[$($Session.Address)] $($SPFWUpdate.Name)"
+        $SPFWUpdate | Add-Member -MemberType NoteProperty 'TargetFileName' $SPFWUpdate.TransferFileName
+        Write-SPTransferProgress $SPFWUpdate
+      }
+    }
+
+    while ($true) {
+      $Transfering = @($($SPFWUpdates | Where-Object {$_ -isnot [Exception]} | Where-Object TransferState -eq 'Processing'))
+      $Logger.info("Remain Transfering task count: $($Transfering.Count)")
+      # $Logger.info("Remain running tasks: $Transfering")
+      if ($Transfering.Count -eq 0) {
+        break
+      }
+      Start-Sleep -Seconds 1
+      # filter running task and fetch task new status
+      $AsyncTasks = New-Object System.Collections.ArrayList
+      for ($idx=0; $idx -lt $Transfering.Count; $idx++) {
+        $Pending = $Transfering[$idx]
+        $Parameters = @($Sessions[$Pending.index], $Pending)
+        $ScriptBlock = {
+          param($RedfishSession, $Pending)
+          return $(Get-SPFWUpdate $RedfishSession $Pending)
+        }
+        [Void] $AsyncTasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
+      }
+      # new updated task list
+      $Processed = @($(Get-AsyncTaskResults $AsyncTasks))
+      for ($idx=0; $idx -lt $Processed.Count; $idx++) {
+        $ProcessedTask = $Processed[$idx]
+        $SPFWUpdates[$ProcessedTask.index] = $ProcessedTask # update task
+        Write-SPTransferProgress $ProcessedTask
+      }
+    }
+
+    $FinishedFiles = @($($SPFWUpdates | Where-Object {$_ -isnot [Exception]}))
+    for ($idx=0; $idx -lt $FinishedFiles.Count; $idx++) {
+      $Finished = $FinishedFiles[$idx]
+      $Properties = @(
+        "Name", "ActivityName", "TransferState", "TransferFileName",
+        "TransferProgressPercent", "FileList", "Messages"
+      )
+
+      $CleanTask = Copy-ObjectProperties $Finished $Properties
+      $SPFWUpdates[$Finished.index] = $CleanTask # update task
+    }
+
+    $Logger.info("All SPFW Update file transfer done")
+    return $SPFWUpdates
+  }
+
+  end {
+  }
+}
+
+function Get-SPFWUpdate {
+  [CmdletBinding()]
+  param (
+    [RedfishSession]
+    [parameter(Mandatory = $true, Position=0)]
+    $Session,
+
+    [PSObject]
+    [parameter(Mandatory = $true, Position=1)]
+    $SPFWUpdate
+  )
+
+  begin {
+    Assert-NotNull $Session
+    Assert-NotNull $SPFWUpdate
+  }
+
+  process {
+    $OdataId = $SPFWUpdate.'@odata.id'
+    $NewSPFWUpdate = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
+    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'index' $SPFWUpdate.index
+    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'Guid' $SPFWUpdate.Guid
+    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'ActivityName' $SPFWUpdate.ActivityName
+    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'TargetFileName' $SPFWUpdate.TargetFileName
+    return $NewSPFWUpdate
+  }
+
+  end {
+  }
+}
+
 function Get-RedfishTask {
 <#
 .SYNOPSIS

@@ -195,7 +195,8 @@ PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
-          -SignalFileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+          -SignalFileUri "E:\NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc" `
+          -UpgradeMode Recove
 PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
 PS C:\> Reset-iBMCServer -Session $session -ResetType ForceRestart
 
@@ -207,7 +208,8 @@ PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
-          -SignalFileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+          -SignalFileUri "/tmp/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc" `
+          -UpgradeMode Recover
 PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
 PS C:\> Reset-iBMCServer -Session $session -ResetType ForceRestart
 
@@ -219,7 +221,8 @@ PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> Update-iBMCInbandFirmware -Session $session -Type Firmware `
           -FileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
-          -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+          -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc" `
+          -UpgradeMode Recove
 PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelaySeconds 60
 PS C:\> Reset-iBMCServer -Session $session -ResetType ForceRestart
 
@@ -243,16 +246,21 @@ Disconnect-iBMC
 
     [String[]]
     [ValidateSet("Firmware", "SP")]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $Type,
 
     [String[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $FileUri,
 
     [String[]]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 3)]
-    $SignalFileUri
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $SignalFileUri,
+
+    [UpgradeMode[]]
+    [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    $UpgradeMode = [UpgradeMode]::Recover
+
   )
 
   begin {
@@ -263,15 +271,17 @@ Disconnect-iBMC
     Assert-ArrayNotNull $Type 'Type'
     Assert-ArrayNotNull $FileUri 'FileUri'
     Assert-ArrayNotNull $SignalFileUri 'SignalFileUri'
+    Assert-ArrayNotNull $UpgradeMode 'UpgradeMode'
 
     $FirmwareTypeList = Get-MatchedSizeArray $Session $Type 'Session' 'Type'
     $FileUriList = Get-MatchedSizeArray $Session $FileUri 'Session' 'FileUri'
     $SignalFileUriList = Get-MatchedSizeArray $Session $SignalFileUri
+    $UpgradeModeList = Get-MatchedSizeArray $Session $UpgradeMode
 
     $Logger.info("Invoke upgrade BMC inband firmware function")
 
     $ScriptBlock = {
-      param($RedfishSession, $InbandFirmwareType, $ImageFilePath, $SignalFilePath)
+      param($RedfishSession, $InbandFirmwareType, $ImageFilePath, $SignalFilePath, $UpgradeMode)
 
       $Logger.info($(Trace-Session $RedfishSession "Invoke upgrade $InbandFirmwareType with file $ImageFilePath now"))
 
@@ -281,9 +291,9 @@ Disconnect-iBMC
       if ($SPServices.Members.Count -gt 0) {
         $Payload = @{
           "Parameter" = "all";
-          "UpgradeMode" = "Recover";
+          "UpgradeMode" = $UpgradeMode;
           "ActiveMethod" = "OSRestart";
-        }
+        } | Resolve-EnumValues
 
         if ($InbandFirmwareType -eq "Firmware") {
           $ImageURI = Invoke-FileUploadIfNeccessary $RedfishSession $ImageFilePath $BMC.InBandImageFileSupportSchema
@@ -304,35 +314,36 @@ Disconnect-iBMC
           $Payload.SignalURI = "file://$($Payload.SignalURI)"
         }
 
-        $Logger.Info("payload $($Payload | ConvertTo-Json)")
+        # $Logger.Info("payload $($Payload | ConvertTo-Json)")
         $SPServiceOdataId = $SPServices.Members[0].'@odata.id'
         $SPFWUpdateUri = "$SPServiceOdataId/Actions/SPFWUpdate.SimpleUpdate"
         Invoke-RedfishRequest $RedfishSession $SPFWUpdateUri 'POST' $Payload | Out-Null
 
-
         $Uri = New-Object System.Uri($Payload.ImageURI)
         $FileName = $Uri.Segments[-1]
-        $Transfered = $false
-        $WaitTransfer = 60
+        $TransferStart = $false
+        $WaitTransfer = 30
         while ($WaitTransfer -gt 0) {
           # wait transfer progress finished
           $Transfer = Invoke-RedfishRequest $RedfishSession $SPServiceOdataId | ConvertFrom-WebResponse
           $Percent = $Transfer.TransferProgressPercent
           $Logger.Info($(Trace-Session $RedfishSession "File $($Transfer.TransferFileName) transfer $($Percent)%"))
           if ($Transfer.TransferFileName -eq $FileName) {
-            if ($null -ne $Percent -and $Percent -eq 100) {
+            if ($null -ne $Percent -and $Percent -gt 0) {
               $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer finished."))
-              $Transfered = $true
+              $TransferStart = $true
               break
             }
           }
           $WaitTransfer = $WaitTransfer - 1
-          Start-Sleep -Seconds 2
+          Start-Sleep -Seconds 1
         }
 
-        if (-not $Transfered) {
-          throw $(Get-i18n "FAIL_SP_FILE_TRANSFER")
-        }
+        # if (-not $TransferStart) {
+        #   throw $(Get-i18n "FAIL_SP_FILE_TRANSFER")
+        # }
+
+        return $Transfer
 
         # Enable SP Service
         # $SPServicePath = "/Managers/$($RedfishSession.Id)/SPService"
@@ -371,12 +382,14 @@ Disconnect-iBMC
         $FirmwareType = $FirmwareTypeList[$idx];
         $ImageFilePath = $FileUriList[$idx]
         $SignalFilePath = $SignalFileUriList[$idx]
-        $Parameters = @($RedfishSession, $FirmwareType, $ImageFilePath, $SignalFilePath)
+        $UpgradeMode_ = $UpgradeModeList[$idx]
+        $Parameters = @($RedfishSession, $FirmwareType, $ImageFilePath, $SignalFilePath, $UpgradeMode_)
         $Logger.info($(Trace-Session $RedfishSession "Submit upgrade BMC inband firmware task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
-      return Get-AsyncTaskResults $tasks
+      $TransferResults = Get-AsyncTaskResults $tasks
+      return $(Wait-SPFileTransfer $pool $Session $TransferResults)
     }
     finally {
       $pool.close()

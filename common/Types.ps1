@@ -153,3 +153,16 @@ try { [FirmwareType] | Out-Null } catch {
     }
 '@
 }
+
+
+try { [UpgradeMode] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum UpgradeMode {
+      Auto,
+      Full,
+      Recover,
+      APP,
+      Driver
+    }
+'@
+}
