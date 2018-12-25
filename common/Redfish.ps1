@@ -710,7 +710,7 @@ function Invoke-RedfishRequest {
       # $StreamWriter.Flush()
       # $StreamWriter.Close()
       # $RequestStream.close()
-      $Logger.debug($(Trace-Session $Session "Send request payload: $PayloadString"))
+      # $Logger.debug($(Trace-Session $Session "Send request payload: $PayloadString"))
     }
 
     # https://docs.microsoft.com/en-us/dotnet/framework/network-programming/how-to-request-data-using-the-webrequest-class

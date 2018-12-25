@@ -197,7 +197,7 @@ Disconnect-iBMC
       for ($idx=0; $idx -lt $EthernetInterfaces.Members.Count; $idx++) {
         $Member = $EthernetInterfaces.Members[$idx]
         $EthernetInterface = Invoke-RedfishRequest $RedfishSession $Member.'@odata.id' | ConvertFrom-WebResponse
-        $Logger.Debug($(Trace-Session $RedfishSession "Load EthernetInterface: $EthernetInterface"))
+        # $Logger.Debug($(Trace-Session $RedfishSession "Load EthernetInterface: $EthernetInterface"))
         if ($BMC.LinkStatus.LinkUp -eq $EthernetInterface.LinkStatus) {
           $Properties = @(
             "Id", "Name", "PermanentMACAddress", "LinkStatus",
