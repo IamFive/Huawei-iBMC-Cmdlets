@@ -698,7 +698,7 @@ Available values: IPv4, IPv6 address or domain name.
 
 .PARAMETER TrapServerPort
 Indicates the Notificate Server port.
-Available Value Set: OID, EventCode, PreciseAlarm.
+Available Value range: [1, 65535]
 
 .OUTPUTS
 Null
