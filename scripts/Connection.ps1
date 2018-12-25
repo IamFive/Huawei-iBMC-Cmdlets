@@ -62,6 +62,32 @@ PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Username user1,user
 PS C:\> $sessions
 
 
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address 2018::2018 -Username root -Password password
+PS C:\> $sessions
+
+This example shows how to connect to a bmc server using ipv6
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address "[2018::2018]:8080" -Username root -Password password
+PS C:\> $sessions
+
+This example shows how to connect to a bmc server using ipv6 and port
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address "2018::2018,201A" -Username root -Password password
+PS C:\> $sessions
+
+This example shows how to connect to multiple bmc server using "," seperated ipv6 addresses
+
+.EXAMPLE
+PS C:\> $sessions = Connect-iBMC -Address "2018::2018-201A" -Username root -Password password
+PS C:\> $sessions
+
+This example shows how to connect to multiple bmc server using "-" seperated ipv6 addresses
+
+
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
 
