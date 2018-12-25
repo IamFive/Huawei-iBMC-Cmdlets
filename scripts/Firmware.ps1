@@ -150,7 +150,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 .PARAMETER Type
 Indicates the firmware type to be updated.
 Support value set: "Firmware", "SP".
-- Firmware: inband firmware
+- Firmware: NIC, Raid
 - SP: Smart Provisioning Service
 
 .PARAMETER FileUri
