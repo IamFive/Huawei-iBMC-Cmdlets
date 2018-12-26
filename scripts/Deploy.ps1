@@ -428,7 +428,7 @@ Set boot up device sequence for single iBMC server
 .EXAMPLE
 
 PS C:\> $credential = Get-Credential
-PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2,10.1.1.3 -Credential $credential -TrustCert
 PS C:\> $BootUpSequence = @(@('Pxe', 'Hdd', 'Cd', 'Others'), @('Cd', 'Pxe', 'Hdd', 'Others'))
 PS C:\> Set-iBMCBootupSequence $session $BootUpSequence
 
