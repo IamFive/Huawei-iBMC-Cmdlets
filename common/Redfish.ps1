@@ -588,6 +588,13 @@ function Get-SPFWUpdate {
   process {
     $OdataId = $SPFWUpdate.'@odata.id'
     $NewSPFWUpdate = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
+    if ($NewSPFWUpdate.TransferState -in @('Completed', 'Success')) {
+      # try to get new FileList after success
+      Start-Sleep -Seconds 3
+      $GetSPFileList = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
+      $NewSPFWUpdate.FileList = $GetSPFileList.FileList
+    }
+
     $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'index' $SPFWUpdate.index
     $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'Guid' $SPFWUpdate.Guid
     $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'ActivityName' $SPFWUpdate.ActivityName
