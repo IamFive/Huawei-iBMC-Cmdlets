@@ -470,3 +470,19 @@ function Get-EnumNames {
   }
   return $Names.ToArray()
 }
+
+function Protect-NetworkUriUserInfo {
+  [CmdletBinding()]
+  param (
+    [string] $NetworkPath
+  )
+  try {
+    $NetworkUri = New-Object System.Uri($NetworkPath)
+    if($NetworkUri.UserInfo.Length -gt 0) {
+      return $NetworkUri.AbsoluteUri -replace $NetworkUri.UserInfo, "***:***"
+    }
+    return $NetworkUri
+  } catch {
+    return $NetworkPath
+  }
+}

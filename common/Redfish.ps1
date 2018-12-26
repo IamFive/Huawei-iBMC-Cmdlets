@@ -351,6 +351,8 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
             Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
           }
           elseif ($TaskState -eq 'Exception') {
+            $ToJson = $Task | ConvertTo-Json
+            $Logger.Info($(Trace-Session $RedfishSession "Task failed. Response: $ToJson"))
             Write-Progress -Id $Task.Guid -Activity $Task.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_FAILED)
           }
         }
@@ -476,6 +478,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       if ($ShowProgress) {
         if ($SPFWUpdate -isnot [Exception]) {
           if ($SPFWUpdate.TransferFileName -eq $SPFWUpdate.TargetFileName) {
+            $FileName = $SPFWUpdate.TargetFileName
             $TransferState = $SPFWUpdate.TransferState
             if ($TransferState -eq 'Processing') {
               $Percent = $SPFWUpdate.TransferProgressPercent
@@ -491,11 +494,12 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
               Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
             }
             elseif ($TransferState -eq 'Failure') {
-              $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer Failure."))
+              $ToJson = $SPFWUpdate | ConvertTo-Json
+              $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer Failure. Response: $ToJson"))
               Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_FAILED)
             }
           } else {
-            $Logger.Info($(Trace-Session $RedfishSession "File $SPFWUpdate.TransferFileName not equal $SPFWUpdate.TargetFileName"))
+            $Logger.Info($(Trace-Session $RedfishSession "File $($SPFWUpdate.TransferFileName) not equal $($SPFWUpdate.TargetFileName)"))
             # if file name changed, treat it as success
             Write-Progress -Id $SPFWUpdate.Guid -Activity $SPFWUpdate.ActivityName -Completed -Status $(Get-i18n MSG_PROGRESS_COMPLETE)
           }

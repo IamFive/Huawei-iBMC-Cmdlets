@@ -332,11 +332,16 @@ Disconnect-iBMC
           $Payload.SignalURI = "file://$($Payload.SignalURI)"
         }
 
-        # $Logger.Info("payload $($Payload | ConvertTo-Json)")
+        $LogPayload = $Payload.Clone()
+        $LogPayload.ImageURI = Protect-NetworkUriUserInfo $LogPayload.ImageURI
+        $LogPayload.SignalURI = Protect-NetworkUriUserInfo $LogPayload.SignalURI
+        $Logger.Info($(Trace-Session $RedfishSession "Sending payload: $($LogPayload | ConvertTo-Json)"))
+
         $SPServiceOdataId = $SPServices.Members[0].'@odata.id'
         $SPFWUpdateUri = "$SPServiceOdataId/Actions/SPFWUpdate.SimpleUpdate"
         Invoke-RedfishRequest $RedfishSession $SPFWUpdateUri 'POST' $Payload | Out-Null
 
+        Start-Sleep -Seconds 3
         $Uri = New-Object System.Uri($Payload.ImageURI)
         $FileName = $Uri.Segments[-1]
         # $TransferStart = $false
