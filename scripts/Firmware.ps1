@@ -175,6 +175,7 @@ For examples:
 
 .PARAMETER SignalFileUri
 Indicates the file path of the certificate file of the upgrade file.
+It is mandatory when upgrade Firmware while it is redundant when upgrade SP.
 - Signal file should be in .asc format
 - it supports HTTPS, SFTP, NFS, CIFS, SCP and FILE file transfer protocols.
 - The URI cannot contain the following special characters: ||, ;, &&, $, |, >>, >, <
