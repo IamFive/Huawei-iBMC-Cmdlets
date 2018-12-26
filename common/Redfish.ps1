@@ -1012,36 +1012,40 @@ function New-RedfishRequest {
 
 
 function Resolve-RedfishFailureResponse ($Session, $Request, $Ex, $ContinueEvenFailed) {
-  $Logger.Error($(Trace-Session $Session $Ex))
-  $response = $Ex.Exception.InnerException.Response
-  if ($null -ne $response) {
-    if ($StatusCode -eq 403){
-      throw $(Get-i18n "FAIL_NO_PRIVILEGE")
-    }
-    elseif ($StatusCode -eq 500) {
-      throw $(Get-i18n "FAIL_INTERNAL_SERVICE")
-    }
-    elseif ($StatusCode -eq 501) {
-      throw $(Get-i18n "FAIL_NOT_SUPPORT")
-    }
+  try {
+    $Logger.Error($(Trace-Session $Session $Ex))
+    $response = $Ex.Exception.InnerException.Response
+    if ($null -ne $response) {
+      if ($StatusCode -eq 403){
+        throw $(Get-i18n "FAIL_NO_PRIVILEGE")
+      }
+      elseif ($StatusCode -eq 500) {
+        throw $(Get-i18n "FAIL_INTERNAL_SERVICE")
+      }
+      elseif ($StatusCode -eq 501) {
+        throw $(Get-i18n "FAIL_NOT_SUPPORT")
+      }
 
-    if ($ContinueEvenFailed) {
-      return $response
+      if ($ContinueEvenFailed) {
+        return $response
+      }
+
+      $StatusCode = $response.StatusCode.value__
+      $Content = Get-WebResponseContent $response
+      $Message = "[$($Request.Method)] $($response.ResponseUri) -> code: $StatusCode; content: $Content"
+      $Logger.warn($(Trace-Session $Session $Message))
+
+      $Failures = Get-RedfishResponseFailures $Content
+      if ($null -ne $Failures -and $Failures.Count -gt 0) {
+        throw $($Failures -join "`n")
+      }
+
+      throw $Ex.Exception
+    } else {
+      throw $Ex.Exception
     }
-
-    $StatusCode = $response.StatusCode.value__
-    $Content = Get-WebResponseContent $response
-    $Message = "[$($Request.Method)] $($response.ResponseUri) -> code: $StatusCode; content: $Content"
-    $Logger.warn($(Trace-Session $Session $Message))
-
-    $Failures = Get-RedfishResponseFailures $Content
-    if ($null -ne $Failures -and $Failures.Count -gt 0) {
-      throw $($Failures -join "`n")
-    }
-
-    throw $Ex.Exception
-  } else {
-    throw $Ex.Exception
+  } catch {
+    throw "[$($Session.Address)] $($_.Exception)"
   }
 }
 
@@ -1054,7 +1058,8 @@ function Resolve-RedfishPartialSuccessResponse($RedfishSession, $Response) {
   if ($null -ne $Failures -and $Failures.Count -gt 0) {
     $Message = "[$($Response.Method)] $Uri -> code: $StatusCode; content: $ResponseContent"
     $Logger.warn($(Trace-Session $RedfishSession $Message))
-    throw $($Failures -join "`n")
+    $FailuresToString = $($Failures -join "`n")
+    throw "[$($Session.Address)] $($FailuresToString)"
   } else {
     return $ResponseContent | ConvertFrom-Json
   }
