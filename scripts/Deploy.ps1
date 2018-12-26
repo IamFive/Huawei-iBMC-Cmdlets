@@ -656,10 +656,9 @@ Set boot source override target for single iBMC server
 .EXAMPLE
 
 PS C:\> $credential = Get-Credential
-PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> Set-iBMCBootupSequence -Session $session -BootSourceOverrideTarget @('Pxe','Hdd') `
-        -BootSourceOverrideEnabled @('Once', 'Continuous')
-6110a4a72
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2,10.1.1.5 -Credential $credential -TrustCert
+PS C:\> Set-iBMCBootSourceOverride -Session $session -BootSourceOverrideTarget Pxe `
+          -BootSourceOverrideEnabled Once
 
 Set boot source override target for multiple iBMC server
 

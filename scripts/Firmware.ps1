@@ -321,7 +321,7 @@ Disconnect-iBMC
 
         $Uri = New-Object System.Uri($Payload.ImageURI)
         $FileName = $Uri.Segments[-1]
-        $TransferStart = $false
+        # $TransferStart = $false
         $WaitTransfer = 30
         while ($WaitTransfer -gt 0) {
           # wait transfer progress finished
@@ -331,7 +331,7 @@ Disconnect-iBMC
           if ($Transfer.TransferFileName -eq $FileName) {
             if ($null -ne $Percent -and $Percent -gt 0) {
               $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer start."))
-              $TransferStart = $true
+              # $TransferStart = $true
               break
             }
           }
