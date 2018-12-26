@@ -127,7 +127,7 @@ function Get-iBMCSystemNetworkSetting {
 Get system resource details of the server.
 
 .DESCRIPTION
-Get system resource details of the server.
+Get system resource details of the server. Server OS system and iBMA should be installed to support this cmdlet.
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
@@ -146,26 +146,17 @@ PS C:\> $Interfaces = Get-iBMCSystemNetworkSetting $session
 PS C:\> $Interfaces
 
 Id                  : mainboardLOMPort1
-Name                : System Ethernet Interface
-PermanentMACAddress : 58:F9:87:7A:A9:73
+Name                : vmnic0
+PermanentMACAddress : 48:57:02:AB:0D:5A
 LinkStatus          : LinkUp
-IPv4Addresses       : {}
-IPv6Addresses       : {}
-IPv6DefaultGateway  :
+IPv4Addresses       : {@{Address=10.1.1.2; SubnetMask=255.255.0.0; Gateway=10.1.0.1; AddressOrigin=}}
+IPv6Addresses       : {@{Address=2017::d5a; PrefixLength=64; AddressOrigin=SLAAC; AddressState=},
+                      @{Address=2017::d5a;PrefixLength=64; AddressOrigin=SLAAC; AddressState=},
+                      @{Address=fe80::4a57:2ff:feab:d5a; PrefixLength=64; AddressOrigin=Static; AddressState=}}
+IPv6DefaultGateway  : fe80::525d:acff:feed:5c27
 InterfaceType       : Physical
-BandwidthUsage      :
-BDF                 : 0000:1a:00.0
-
-Id                  : mainboardLOMPort2
-Name                : System Ethernet Interface
-PermanentMACAddress : 58:F9:87:7A:A9:74
-LinkStatus          : LinkUp
-IPv4Addresses       : {}
-IPv6Addresses       : {}
-IPv6DefaultGateway  :
-InterfaceType       : Physical
-BandwidthUsage      :
-BDF                 : 0000:1a:00.1
+BandwidthUsage      : 0
+BDF                 : 0000:35:00.2
 
 .LINK
 http://www.huawei.com/huawei-ibmc-cmdlets-document
