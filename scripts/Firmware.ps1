@@ -167,11 +167,11 @@ For examples:
 - remote storage: protocol://username:password@hostname/directory/Firmware.zip
 
 - When "Type" is SP:
-only the CIFS and NFS protocols.
+The firmware upgrade file is in .ISO format. support only the CIFS and NFS protocols.
 The URI cannot contain the following special characters: ||, ;, &&, $, |, >>, >, <
 
 For examples:
-- remote storage: nfs://username:password@hostname/directory/Firmware.zip
+- remote storage: nfs://username:password@hostname/directory/Firmware.ISO
 
 .PARAMETER SignalFileUri
 Indicates the file path of the certificate file of the upgrade file.
@@ -295,7 +295,7 @@ Disconnect-iBMC
     $ScriptBlock = {
       param($RedfishSession, $InbandFirmwareType, $ImageFilePath, $SignalFilePath, $UpgradeMode)
 
-      $Logger.info($(Trace-Session $RedfishSession "Invoke upgrade $InbandFirmwareType with file $ImageFilePath now"))
+      $Logger.info($(Trace-Session $RedfishSession "Invoke upgrade $InbandFirmwareType now"))
 
       # transfer firmware image file
       $GetSPUpdateService = "/Managers/$($RedfishSession.Id)/SPService/SPFWUpdate"
