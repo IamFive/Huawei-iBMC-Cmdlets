@@ -524,8 +524,14 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       }
     }
 
+    $FirstRound = $true
     while ($true) {
-      $Transfering = @($($SPFWUpdates | Where-Object {$_ -isnot [Exception]} | Where-Object TransferState -eq 'Processing'))
+      if ($FirstRound) {
+        $FirstRound = $false
+        $Transfering = @($($SPFWUpdates | Where-Object {$_ -isnot [Exception]} | Where-Object TransferState -ne 'Failure'))
+      } else {
+        $Transfering = @($($SPFWUpdates | Where-Object {$_ -isnot [Exception]} | Where-Object TransferState -eq 'Processing'))
+      }
       $Logger.info("Remain Transfering task count: $($Transfering.Count)")
       # $Logger.info("Remain running tasks: $Transfering")
       if ($Transfering.Count -eq 0) {
