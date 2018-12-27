@@ -345,7 +345,7 @@ Disconnect-iBMC
         $Uri = New-Object System.Uri($Payload.ImageURI)
         $FileName = $Uri.Segments[-1]
         # $TransferStart = $false
-        $WaitTransfer = 30
+        $WaitTransfer = 200
         while ($WaitTransfer -gt 0) {
           # wait transfer progress finished
           $Transfer = Invoke-RedfishRequest $RedfishSession $SPServiceOdataId | ConvertFrom-WebResponse
@@ -359,7 +359,7 @@ Disconnect-iBMC
             }
           }
           $WaitTransfer = $WaitTransfer - 1
-          Start-Sleep -Seconds 1
+          Start-Sleep -Milliseconds 100
         }
 
         # if (-not $TransferStart) {

@@ -537,7 +537,7 @@ http://www.huawei.com/huawei-ibmc-cmdlets-document
       if ($Transfering.Count -eq 0) {
         break
       }
-      Start-Sleep -Seconds 1
+      Start-Sleep -Milliseconds 300
       # filter running task and fetch task new status
       $AsyncTasks = New-Object System.Collections.ArrayList
       for ($idx=0; $idx -lt $Transfering.Count; $idx++) {
@@ -597,12 +597,20 @@ function Get-SPFWUpdate {
 
   process {
     $OdataId = $SPFWUpdate.'@odata.id'
-    $NewSPFWUpdate = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
-    if ($NewSPFWUpdate.TransferState -in @('Completed', 'Success')) {
+    if ($SPFWUpdate.TransferState -in @('Completed', 'Success')) {
+      $NewSPFWUpdate = $SPFWUpdate
       # try to get new FileList after success
       Start-Sleep -Seconds 3
-      $GetSPFileList = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
-      $NewSPFWUpdate.FileList = $GetSPFileList.FileList
+      while ($true) {
+        $GetSPFileList = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
+        if ($null -ne $GetSPFileList.FileList -and $GetSPFileList.FileList.Count -gt 0) {
+          $NewSPFWUpdate.FileList = $GetSPFileList.FileList
+          break
+        }
+        Start-Sleep -Seconds 1
+      }
+    } else {
+      $NewSPFWUpdate = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
     }
 
     $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'index' $SPFWUpdate.index
