@@ -134,7 +134,7 @@ Disconnect-iBMC
 
     [String[]]
     [ValidateLength(0, 48)]
-    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $AssetTag
   )
 
@@ -163,6 +163,9 @@ Disconnect-iBMC
         $RedfishSession = $Session[$idx]
         $Payload = @{
           AssetTag=$AssetTagList[$idx];
+        }
+        if ($Payload.AssetTag -eq '') {
+          $Payload.AssetTag = $null
         }
 
         $Parameters = @($RedfishSession, $Payload)
