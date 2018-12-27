@@ -598,26 +598,25 @@ function Get-SPFWUpdate {
   process {
     $OdataId = $SPFWUpdate.'@odata.id'
     if ($SPFWUpdate.TransferState -in @('Completed', 'Success')) {
-      $NewSPFWUpdate = $SPFWUpdate
       # try to get new FileList after success
       Start-Sleep -Seconds 3
       while ($true) {
         $GetSPFileList = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
         if ($null -ne $GetSPFileList.FileList -and $GetSPFileList.FileList.Count -gt 0) {
-          $NewSPFWUpdate.FileList = $GetSPFileList.FileList
+          $SPFWUpdate.FileList = $GetSPFileList.FileList
           break
         }
         Start-Sleep -Seconds 1
       }
+      return $SPFWUpdate
     } else {
       $NewSPFWUpdate = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
+      $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'index' $SPFWUpdate.index
+      $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'Guid' $SPFWUpdate.Guid
+      $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'ActivityName' $SPFWUpdate.ActivityName
+      $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'TargetFileName' $SPFWUpdate.TargetFileName
+      return $NewSPFWUpdate
     }
-
-    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'index' $SPFWUpdate.index
-    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'Guid' $SPFWUpdate.Guid
-    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'ActivityName' $SPFWUpdate.ActivityName
-    $NewSPFWUpdate | Add-Member -MemberType NoteProperty 'TargetFileName' $SPFWUpdate.TargetFileName
-    return $NewSPFWUpdate
   }
 
   end {
