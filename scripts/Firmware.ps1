@@ -352,7 +352,7 @@ Disconnect-iBMC
           $Percent = $Transfer.TransferProgressPercent
           $Logger.Info($(Trace-Session $RedfishSession "File $($Transfer.TransferFileName) transfer $($Percent)%"))
           if ($Transfer.TransferFileName -eq $FileName) {
-            if ($null -ne $Percent -and $Percent -gt 0) {
+            if ($null -ne $Percent -and $Percent -ge 0) {
               $Logger.Info($(Trace-Session $RedfishSession "File $FileName transfer start."))
               # $TransferStart = $true
               break

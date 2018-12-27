@@ -76,6 +76,10 @@ Describe "InbandFirmware" {
       Update-iBMCInbandFirmware -Session $session -Type Firmware `
         -FileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip" `
         -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(X722)-Electrical-05022FTM-FW(3.33).zip.asc"
+
+      Update-iBMCInbandFirmware -Session $session -Type Firmware `
+        -FileUri "nfs://115.159.160.190/data/nfs/NIC(SP330)-FW(5.05).zip" `
+        -SignalFileUri "nfs://115.159.160.190/data/nfs/NIC(SP330)-FW(5.05).zip.asc"
     }
     finally {
       Disconnect-iBMC $session
