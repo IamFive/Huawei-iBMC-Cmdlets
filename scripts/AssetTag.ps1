@@ -27,7 +27,7 @@ AssetTag : powershell-asset-tag
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCAssetTag
 Connect-iBMC
@@ -119,7 +119,7 @@ Set Asset Tag to null example
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCAssetTag
 Connect-iBMC

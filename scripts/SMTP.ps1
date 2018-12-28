@@ -36,7 +36,7 @@ EmailSubjectContains  : {HostName, BoardSN, ProductAssetTag}
 AlarmSeverity         : Major
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCSMTPSetting
 Get-iBMCSMTPRecipients
@@ -167,7 +167,7 @@ PS C:\> Set-iBMCSMTPSetting $session -ServiceEnabled $false -ServerAddress smtp.
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSMTPSetting
 Get-iBMCSMTPRecipients
@@ -330,7 +330,7 @@ MemberId Enabled EmailAddress    Description
 3          False
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSMTPSetting
 Set-iBMCSMTPSetting
@@ -424,7 +424,7 @@ PS C:\> Set-iBMCSMTPRecipient $session -MemberId 1 -Enabled $true -EmailAddress 
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSMTPSetting
 Set-iBMCSMTPSetting

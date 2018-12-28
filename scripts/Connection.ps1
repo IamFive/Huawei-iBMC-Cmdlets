@@ -89,7 +89,7 @@ This example shows how to connect to multiple bmc server using "-" seperated ipv
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   [cmdletbinding(DefaultParameterSetName = 'AccountSet')]
@@ -217,7 +217,7 @@ PS C:\>
 This will disconnect the sessions given in the variable $Session
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   param
@@ -283,7 +283,7 @@ AuthToken           : eac9b1d6be37f69fd783355ece67f2f2
 TrustCert           : True
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   param

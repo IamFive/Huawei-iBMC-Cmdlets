@@ -32,7 +32,7 @@ TransmissionProtocol : UDP
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCSyslogSetting
 Get-iBMCSyslogServer
@@ -131,7 +131,7 @@ PS C:\> Set-iBMCSyslogSetting $session -ServiceEnabled $true -ServerIdentitySour
           -AlarmSeverity Major -TransmissionProtocol UDP
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSyslogSetting
 Get-iBMCSyslogServer
@@ -269,7 +269,7 @@ LogType  : {OperationLog, SecurityLog, EventLog}
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSyslogSetting
 Set-iBMCSyslogSetting
@@ -373,7 +373,7 @@ PS C:\> $LogType = ,@("OperationLog", "SecurityLog", "EventLog")
 PS C:\> Set-ibmcSyslogServer $session -MemberId 1 -Enabled $true -Address 192.168.14.9 -Port 515 -LogType $LogType
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSyslogSetting
 Set-iBMCSyslogSetting

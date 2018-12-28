@@ -53,7 +53,7 @@ This example shows how to export bios setting file to iBMC local storage
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Import-iBMCBIOSSetting
 Reset-iBMCBIOS
@@ -203,7 +203,7 @@ This example shows how to import bios settings from NFS file
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Export-iBMCBIOSSetting
 Reset-iBMCBIOS
@@ -307,7 +307,7 @@ PS C:\> Reset-iBMCBIOS $session
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 Export-iBMCBIOSSetting
 Import-iBMCBIOSSetting
 Restore-iBMCFactory
@@ -386,7 +386,7 @@ PS C:\> Restore-iBMCFactory $session
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Export-iBMCBIOSSetting
 Import-iBMCBIOSSetting

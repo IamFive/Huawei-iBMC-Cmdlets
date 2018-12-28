@@ -33,7 +33,7 @@ ConnectedVia   : NotConnected
 Inserted       : False
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Connect-iBMCVirtualMedia
 Disconnect-iBMCVirtualMedia
@@ -131,7 +131,7 @@ Messages     : @{@odata.type=/redfish/v1/$metadata#MessageRegistry.1.0.0.Message
                bject[]; Severity=Warning; Resolution=Please try again.}
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCVirtualMedia
 Disconnect-iBMCVirtualMedia
@@ -229,7 +229,7 @@ TaskStatus   : OK
 TaskPercent  :
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCVirtualMedia
 Connect-iBMCVirtualMedia
@@ -318,7 +318,7 @@ PS C:\> $Sequence | fl
 BootupSequence : {HDD, Cd, Pxe, Others}
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCBootupSequence
 Get-iBMCBootSourceOverride
@@ -436,7 +436,7 @@ Set boot up device sequence for multiple iBMC server
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCBootupSequence
 Get-iBMCBootSourceOverride
@@ -566,7 +566,7 @@ None                     Disabled
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCBootupSequence
 Set-iBMCBootupSequence
@@ -664,7 +664,7 @@ Set boot source override target for multiple iBMC server
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCBootupSequence
 Set-iBMCBootupSequence

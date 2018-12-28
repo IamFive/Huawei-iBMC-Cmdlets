@@ -101,7 +101,7 @@ Enabled  : True
 Oem      : @{Huawei=}
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCUser
 Set-iBMCUser
@@ -229,7 +229,7 @@ Oem      : @{Huawei=}
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Add-iBMCUser
 Set-iBMCUser
@@ -392,7 +392,7 @@ Enabled  : True
 Oem      : @{Huawei=}
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Add-iBMCUser
 Get-iBMCUser
@@ -552,7 +552,7 @@ PS C:\> ,$session | Remove-iBMCUser -Username user1
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Add-iBMCUser
 Get-iBMCUser

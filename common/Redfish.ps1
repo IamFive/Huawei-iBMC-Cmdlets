@@ -90,7 +90,7 @@ Location     : https://10.1.1.2/redfish/v1/Sessions/{session-id}/
 RootData     : @{@odata.context=/redfish/v1/$metadata#ServiceRoot/; @odata.id=/redfish/v1/; @odata.type=#ServiceRoot.1.0.0.ServiceRoot; AccountService=; Chassis=; EventService=; Id=v1; JsonSchemas=; Links=; Managers=; Name=HP RESTful Root Service; Oem=; RedfishVersion=1.0.0; Registries=; SessionService=; Systems=; UUID=8dea7372-23f9-565f-9396-2cd07febbe29}
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   [cmdletbinding(DefaultParameterSetName = 'AccountSet')]
@@ -210,7 +210,7 @@ PS C:\>
 This will disconnect the session given in the variable $session
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   param
@@ -260,7 +260,7 @@ PS C:\>
 true
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   param
@@ -305,7 +305,7 @@ PS C:\> Wait-RedfishTasks $Sessions $Tasks
 PS C:\>
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   [CmdletBinding()]
@@ -446,7 +446,7 @@ Task array that return by redfish async job API
 .OUTPUTS
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   [CmdletBinding()]
@@ -710,7 +710,7 @@ PS C:\> Wait-RedfishTask $session $task
 PS C:\>
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
   [CmdletBinding()]

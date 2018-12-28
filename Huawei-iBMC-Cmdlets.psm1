@@ -52,7 +52,7 @@ Description : Huawei iBMC cmdlets provide cmdlets to quick access iBMC Redfish d
 This example shows the cmdlets module details.
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 #>
     [CmdletBinding(PositionalBinding=$false)]

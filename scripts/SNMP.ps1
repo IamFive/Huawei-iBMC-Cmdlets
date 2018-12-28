@@ -34,7 +34,7 @@ SnmpV3AuthProtocol  : MD5
 SnmpV3PrivProtocol  : DES
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCSNMPSetting
 Get-iBMCSNMPTrapSetting
@@ -166,7 +166,7 @@ PS C:\> Set-iBMCSNMPSetting $session -SnmpV1Enabled $false -SnmpV2CEnabled $fals
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSNMPSetting
 Get-iBMCSNMPTrapSetting
@@ -326,7 +326,7 @@ TrapServerIdentity : BoardSN
 AlarmSeverity      : Critical
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSNMPSetting
 Set-iBMCSNMPSetting
@@ -453,7 +453,7 @@ PS C:\> Set-iBMCSNMPTrapSetting -Session $session -ServiceEnabled $true -TrapVer
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSNMPSetting
 Set-iBMCSNMPSetting
@@ -615,7 +615,7 @@ TrapServerAddress : 10.10.10.2
 TrapServerPort    : 202
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSNMPSetting
 Set-iBMCSNMPSetting
@@ -713,7 +713,7 @@ PS C:\> Set-iBMCSNMPTrapServer $session -MemberId 1 -Enabled $true -TrapServerAd
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCSNMPSetting
 Set-iBMCSNMPSetting

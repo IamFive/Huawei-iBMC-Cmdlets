@@ -40,7 +40,7 @@ SR430C-M 1G (SAS3108)@[RAID Card1] : 4.270.00-4382
 LOM (X722)@[LOM]                   : 3.33 0x80000f09 255.65535.255
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCSPService
 Update-iBMCInbandFirmware
@@ -168,7 +168,7 @@ PS C:\> Set-iBMCSPService -Session $session -StartEnabled $true -SysRestartDelay
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCFirmwareInfo
 Update-iBMCInbandFirmware
@@ -336,7 +336,7 @@ TaskPercent  : 100%
 This example shows how to update outband firmware with NFS network file
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCFirmwareInfo
 Update-iBMCInbandFirmware

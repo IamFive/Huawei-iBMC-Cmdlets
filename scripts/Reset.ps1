@@ -37,7 +37,7 @@ PS C:\> Reset-iBMC $session
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Connect-iBMC
 Disconnect-iBMC
@@ -124,7 +124,7 @@ PS C:\> Reset-iBMCServer -Session $session -ResetType ForceRestart
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Connect-iBMC
 Disconnect-iBMC

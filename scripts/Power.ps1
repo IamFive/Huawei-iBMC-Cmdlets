@@ -33,7 +33,7 @@ AverageConsumedWatts : 183 Watts
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Connect-iBMC
 Disconnect-iBMC

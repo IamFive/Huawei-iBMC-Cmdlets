@@ -46,7 +46,7 @@ PS C:\> Set-iBMCServerPower -Session $session -PowerControlType GracefulShutdown
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Connect-iBMC
 Disconnect-iBMC

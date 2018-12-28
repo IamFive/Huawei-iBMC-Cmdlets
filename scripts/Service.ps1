@@ -35,7 +35,7 @@ KVMIP        : @{ProtocolEnabled=True; Port=2198}
 VNC          : @{ProtocolEnabled=False; Port=5900}
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCService
 Connect-iBMC
@@ -129,7 +129,7 @@ PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -Trust
 PS C:\> Set-iBMCService -Session $session -ServiceName VNC -Enabled $true -Port 5900
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCService
 Connect-iBMC

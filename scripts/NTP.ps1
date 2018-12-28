@@ -51,7 +51,7 @@ MaxPollingInterval          : 12
 ServerAuthenticationEnabled : False
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Set-iBMCNTPSetting
 Import-iBMCNTPKey
@@ -168,7 +168,7 @@ PS C:\> Set-iBMCNTPSetting $session -ServiceEnabled $true
           -MinPollingInterval 10 -MaxPollingInterval 12
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCNTPSetting
 Import-iBMCNTPKey
@@ -364,7 +364,7 @@ This example shows how to import NTP group key from NFS network file
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Get-iBMCNTPSetting
 Set-iBMCNTPSetting

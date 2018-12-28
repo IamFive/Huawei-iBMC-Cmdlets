@@ -55,7 +55,7 @@ BootSourceOverrideTarget@Redfish.AllowableValues : {None, Pxe, Floppy, Cd...}
 
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Connect-iBMC
 Disconnect-iBMC
@@ -159,7 +159,7 @@ BandwidthUsage      : 0
 BDF                 : 0000:35:00.2
 
 .LINK
-http://www.huawei.com/huawei-ibmc-cmdlets-document
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Connect-iBMC
 Disconnect-iBMC
