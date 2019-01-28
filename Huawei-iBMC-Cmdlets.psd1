@@ -30,8 +30,9 @@
   Copyright              = '(c) 2018 Huawei Technologies Co., Ltd. All rights reserved.'
 
   # Description of the functionality provided by this module
-  Description            = 'Huawei iBMC cmdlets provide cmdlets to quick access iBMC Redfish devices.
-These cmdlets contains operation used most such as: bios setting, syslog, snmp, network, power and etc.'
+  Description            = 'Huawei iBMC cmdlets provide powershell Cmdlets to manage iBMC Redfish devices.
+These cmdlets contains the most commonly used features such as: information query, RAID configuration, OS deploy, firmware upgrade.
+Support devices include: RH1288 V3, RH2288 V3, RH2288H V3, 1288H V5, 2288H V5, 2288 V5, 2488H V5, CH121 V3, CH242 V3, XH622 V3.'
 
   # Minimum version of the Windows PowerShell engine required by this module
   PowerShellVersion      = '5.0'
