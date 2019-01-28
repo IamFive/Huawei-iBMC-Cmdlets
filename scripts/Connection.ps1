@@ -33,7 +33,8 @@ If not present, server certificate is enabled by default.
 
 .OUTPUTS
 RedfishSession[]
-Connect-iBMC returns a RedfishSession Array
+Returns the created RedfishSession if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2 -Username root -Password password
@@ -155,22 +156,22 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
     #   $Logger.info($p.Count)
     #   if ($p.Count -eq 3) {
     #     $Logger.info("receive parameter length 3")
-    #     New-iBMCRedfishSession -Address $($p[0]) -Credential $($p[1]) -TrustCert $($p[2])
+    #     New-RedfishSession -Address $($p[0]) -Credential $($p[1]) -TrustCert $($p[2])
     #   } else {
     #     $Logger.info("receive parameter length 4")
-    #     New-iBMCRedfishSession -Address $($p[0]) -Username $($p[1]) -Password $($p[2]) -TrustCert $($p[3])
+    #     New-RedfishSession -Address $($p[0]) -Username $($p[1]) -Password $($p[2]) -TrustCert $($p[3])
     #   }
     # }
 
     if ($useCredential) {
       $ScriptBlock = {
         param($Address, $Credential, $TrustCert)
-        New-iBMCRedfishSession -Address $Address -Credential $Credential -TrustCert:$TrustCert
+        New-RedfishSession -Address $Address -Credential $Credential -TrustCert:$TrustCert
       }
     } else {
       $ScriptBlock = {
         param($Address, $Username, $Password, $TrustCert)
-        New-iBMCRedfishSession -Address $Address -Username $Username -Password $Password -TrustCert:$TrustCert
+        New-RedfishSession -Address $Address -Username $Username -Password $Password -TrustCert:$TrustCert
       }
     }
 
@@ -180,7 +181,7 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
     return Get-AsyncTaskResults -AsyncTasks $tasks
   } finally {
-    $pool.close()
+    Close-Pool $pool
   }
 }
 
@@ -233,14 +234,14 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
     $pool = New-RunspacePool $Session.Count
     $ScriptBlock = {
       param($RedfishSession)
-      return $(Close-iBMCRedfishSession $RedfishSession)
+      return $(Close-RedfishSession $RedfishSession)
     }
     $Session | ForEach-Object {
       [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($_)))
     }
     return Get-AsyncTaskResults -AsyncTasks $tasks
   } finally {
-    $pool.close()
+    Close-Pool $pool
   }
 }
 
@@ -264,7 +265,7 @@ RedfishSession Object with field Alive identified whether session is still alive
 
 
 .EXAMPLE
-PS C:\> Test-iBMCRedfishSession -Session $Session
+PS C:\> Test-iBMCConnect -Session $Session
 
 Id                  : 1
 Name                : Manager
@@ -276,7 +277,7 @@ Health              : OK
 State               : Enabled
 DateTime            : 2018-10-16T17:50:05+08:00
 DateTimeLocalOffset : Asia/Chongqing
-BaseUri             : https://112.93.129.9
+BaseUri             : https://10.1.1.2
 Location            : /redfish/v1/SessionService/Sessions/8c2790fbef51b40c
 Alive               : False
 AuthToken           : eac9b1d6be37f69fd783355ece67f2f2
@@ -298,13 +299,13 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
     $pool = New-RunspacePool $Session.Count
     $ScriptBlock = {
       param($RedfishSession)
-      return $(Test-iBMCRedfishSession $RedfishSession)
+      return $(Test-RedfishSession $RedfishSession)
     }
     $Session | ForEach-Object {
       [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($_)))
     }
     return Get-AsyncTaskResults -AsyncTasks $tasks
   } finally {
-    $pool.close()
+    Close-Pool $pool
   }
 }

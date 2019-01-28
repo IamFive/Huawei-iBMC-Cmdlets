@@ -28,6 +28,11 @@ $global:BMC = @{
     Exception='Exception';
   };
 
+  State = @{
+    Absent='Absent';
+    Enabled='Enabled';
+  }
+
   FRUOperationSystem = 0;
 
   OutBandFirmwares = @(
@@ -88,5 +93,22 @@ $global:BMC = @{
     "scp",
     "file"
   );
+
+  CollectFileSupportSchema = @(
+    "https",
+    "sftp",
+    "nfs",
+    "cifs",
+    "scp",
+    "file"
+  );
+
+  OdataProperties = @(
+    "@odata.context",
+    "@odata.id",
+    "@odata.type",
+    "Links",
+    "Actions"
+  )
 
 }

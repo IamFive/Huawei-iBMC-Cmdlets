@@ -81,10 +81,10 @@ Disconnect-iBMC
       }
 
       $Results = Get-AsyncTaskResults $tasks
-      return $Results
+      return ,$Results
     }
     finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 
@@ -111,7 +111,7 @@ Support value set: "HTTP", "HTTPS", "SNMP", "VirtualMedia", "IPMI", "SSH", "KVMI
 
 .PARAMETER Enabled
 Indicates enabled the service or not.
-Support values are powershell boolean value: $true, $false.
+Support values are powershell boolean value: $true(1), $false(0).
 
 .PARAMETER Port
 Indicates the network port which this service listen on.
@@ -189,7 +189,7 @@ Disconnect-iBMC
         }
       }
 
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Update Service info: $Payload"))
+      $Logger.info($(Trace-Session $RedfishSession "Sending payload: $($Payload | ConvertTo-Json -Depth 5)"))
       Invoke-RedfishRequest $RedfishSession $Path 'Patch' $Payload | Out-Null
       return $null
     }
@@ -205,10 +205,10 @@ Disconnect-iBMC
       }
 
       $Results = Get-AsyncTaskResults $tasks
-      return $Results
+      return ,$Results
     }
     finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 

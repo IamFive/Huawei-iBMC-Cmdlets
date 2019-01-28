@@ -145,12 +145,16 @@ Disconnect-iBMC
       param($Session, $Username, $SecurePasswd, $Role)
       $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePasswd)
       $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-      $payload = @{
+      $Payload = @{
         'UserName' = "$Username";
         'Password' = "$PlainPasswd";
         'RoleId' = $Role;
       } | Resolve-EnumValues
-      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload | ConvertFrom-WebResponse
+
+      $Clone = $Payload.clone()
+      $Clone.Password = "******"
+      $Logger.info($(Trace-Session $Session "Sending payload: $($Clone | ConvertTo-Json)"))
+      $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $Payload | ConvertFrom-WebResponse
       # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
 
       $Properties = @("Id", "Name", "UserName", "RoleId", "Locked", "Enabled", "Oem")
@@ -166,7 +170,7 @@ Disconnect-iBMC
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
     } finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 
@@ -270,7 +274,7 @@ Disconnect-iBMC
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
     } finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 
@@ -341,7 +345,7 @@ Create a user account with name powershell and then modify "username", "password
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
+PS C:\> $pwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
 PS C:\> Add-iBMCUser $session powershell $pwd 'Administrator'
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> $User = Set-iBMCUser -Session $session -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator -Enabled $true -Unlocked $true
@@ -361,7 +365,7 @@ Create a user account with name powershell and then modify the "username", "pass
 
 PS C:\> $credential = Get-Credential
 PS C:\> $sessions = Connect-iBMC -Address 10.1.1.2,10.10.10.4 -Credential $credential -TrustCert
-PS C:\> $oldPwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
+PS C:\> $pwd = ConvertTo-SecureString -String old-user-password -AsPlainText -Force
 PS C:\> Add-iBMCUser -Session $sessions powershell $pwd 'Administrator'
 PS C:\> $newPwd = ConvertTo-SecureString -String new-user-password -AsPlainText -Force
 PS C:\> Set-iBMCUser -Session $sessions -Username powershell -NewUsername powershell2 -NewPassword $newPwd -NewRole Operator
@@ -459,12 +463,17 @@ Disconnect-iBMC
           # Update user with provided $Username
           $Logger.info($(Trace-Session $Session "User $($User.UserName) found, will patch user now"))
           $Headers = @{'If-Match'=$UserResponse.Headers['Etag'];}
-          $Logger.info($(Trace-Session $Session "User Etag is $($UserResponse.Headers['Etag'])"))
+          # $Logger.info($(Trace-Session $Session "User Etag is $($UserResponse.Headers['Etag'])"))
+
+          $Clone = $Payload.clone()
           if ($null -ne $Payload.Password) {
             $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.Password)
             $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
             $Payload.Password = $PlainPasswd
+            $Clone.Password = "******"
           }
+
+          $Logger.info($(Trace-Session $Session "Sending payload: $($Clone | ConvertTo-Json)"))
           $Response = Invoke-RedfishRequest $Session $User.'@odata.id' 'Patch' $Payload $Headers
           # $response = Invoke-RedfishRequest $Session '/AccountService/Accounts' 'Post' $payload -ContinueEvenFailed
           $SetUser = Resolve-RedfishPartialSuccessResponse $Session $Response
@@ -505,7 +514,7 @@ Disconnect-iBMC
       return Get-AsyncTaskResults -AsyncTasks $tasks
     }
     finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 
@@ -600,6 +609,8 @@ Disconnect-iBMC
 
       if (-not $success) {
         throw $([string]::Format($(Get-i18n FAIL_NO_USER_WITH_NAME_EXISTS), $Username))
+      } else {
+        return $null
       }
     }
 
@@ -612,7 +623,7 @@ Disconnect-iBMC
       }
       return Get-AsyncTaskResults -AsyncTasks $tasks
     } finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 

@@ -1,4 +1,4 @@
-<# NOTE: iBMC AssetTag module Cmdlets #>
+<# NOTE: iBMC Systems module Cmdlets #>
 
 function Get-iBMCSystemInfo {
 <#
@@ -109,10 +109,10 @@ Disconnect-iBMC
       }
 
       $Results = Get-AsyncTaskResults $tasks
-      return $Results
+      return ,$Results
     }
     finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 
@@ -221,7 +221,7 @@ Disconnect-iBMC
       return ,$Results
     }
     finally {
-      $pool.close()
+      Close-Pool $pool
     }
   }
 
