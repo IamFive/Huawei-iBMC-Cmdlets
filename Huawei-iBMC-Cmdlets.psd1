@@ -31,7 +31,7 @@
 
   # Description of the functionality provided by this module
   Description            = 'Huawei iBMC cmdlets provide cmdlets to quick access iBMC Redfish devices.
-These cmdlets contains operation used most such as: bois setting, syslog, snmp, network, power and etc.'
+These cmdlets contains operation used most such as: bios setting, syslog, snmp, network, power and etc.'
 
   # Minimum version of the Windows PowerShell engine required by this module
   PowerShellVersion      = '5.0'
