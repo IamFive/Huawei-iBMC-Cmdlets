@@ -997,6 +997,10 @@ function New-RedfishRequest {
 
   $Request.ServerCertificateValidationCallback = {
     param($sender, $certificate, $chain, $errors)
+    if ($errors -eq 'None') {
+      return $true
+    }
+
     if ($true -eq $session.TrustCert) {
       # $Logger.debug("TrustCert present, Ignore HTTPS certification")
       return $true
@@ -1005,11 +1009,10 @@ function New-RedfishRequest {
       $Certificates = $(Get-ChildItem -Path cert:\ -Recurse | where-object Thumbprint -eq $certificate.Thumbprint)
       if ($null -ne $Certificates -and $Certificates.count -gt 0) {
         return $true
-      } else {
-        return $false
       }
     }
-    return $($errors -eq 'None')
+
+    return $false
   }
 
   # $Logger.info("The 'ProtocolVersion' of the protocol used is $($Request.ProtocolVersion)")
