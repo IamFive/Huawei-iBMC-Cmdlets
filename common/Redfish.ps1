@@ -1005,12 +1005,14 @@ function New-RedfishRequest {
       # $Logger.debug("TrustCert present, Ignore HTTPS certification")
       return $true
     }
-    if ($Request -eq $sender) {
-      $Certificates = $(Get-ChildItem -Path cert:\ -Recurse | where-object Thumbprint -eq $certificate.Thumbprint)
-      if ($null -ne $Certificates -and $Certificates.count -gt 0) {
-        return $true
-      }
-    }
+
+    # enable fingerprint match testing
+    # if ($Request -eq $sender) {
+    #   $Certificates = $(Get-ChildItem -Path cert:\ -Recurse | where-object Thumbprint -eq $certificate.Thumbprint)
+    #   if ($null -ne $Certificates -and $Certificates.count -gt 0) {
+    #     return $true
+    #   }
+    # }
 
     return $false
   }
