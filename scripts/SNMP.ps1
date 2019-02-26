@@ -197,11 +197,11 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $RWCommunityEnabled,
 
-    [SecureString[]]
+    [System.Object[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $ReadOnlyCommunity,
 
-    [SecureString[]]
+    [System.Object[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $ReadWriteCommunity,
 
@@ -236,17 +236,14 @@ Disconnect-iBMC
 
       $Clone = $Payload.clone()
       if ($null -ne $Payload.ReadOnlyCommunity) {
-        $Logger.info("into ")
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.ReadOnlyCommunity)
-        $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-        $Payload.ReadOnlyCommunity = $PlainPasswd
+        $Plain = ConvertTo-PlainString $Payload.ReadOnlyCommunity "ReadOnlyCommunity"
+        $Payload.ReadOnlyCommunity = $Plain
         $Clone.ReadOnlyCommunity = "******"
       }
 
       if ($null -ne $Payload.ReadWriteCommunity) {
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.ReadWriteCommunity)
-        $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-        $Payload.ReadWriteCommunity = $PlainPasswd
+        $Plain = ConvertTo-PlainString $Payload.ReadWriteCommunity "ReadWriteCommunity"
+        $Payload.ReadWriteCommunity = $Plain
         $Clone.ReadWriteCommunity = "******"
       }
 
@@ -491,7 +488,7 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $TrapServerIdentity,
 
-    [SecureString[]]
+    [System.Object[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $CommunityName,
 
@@ -521,8 +518,7 @@ Disconnect-iBMC
       $Path = "/Managers/$($RedfishSession.Id)/SnmpService"
       $Clone = $Payload.clone()
       if ($null -ne $Payload.CommunityName) {
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.CommunityName)
-        $Plain = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        $Plain = ConvertTo-PlainString $Payload.CommunityName "CommunityName"
         $Payload.CommunityName = $Plain
         $Clone.CommunityName = "******"
       }

@@ -1,6 +1,6 @@
 <# NOTE: iBMC Network Adapter module Cmdlets #>
 
-function Get-iBMCNetworkAdapter {
+function Get-iBMCNetworkAdapters {
 <#
 .SYNOPSIS
 Query information about the network adapter resource collection of a server.
@@ -21,7 +21,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $NetworkAdaptersArray = Get-iBMCNetworkAdapter -Session $session
+PS C:\> $NetworkAdaptersArray = Get-iBMCNetworkAdapters -Session $session
 PS C:\> $NetworkAdaptersArray
 
 Host              : 10.1.1.2
@@ -67,7 +67,7 @@ NetworkPorts      : {@{Name=1; Id=1; PhysicalPortNumber=1; LinkStatus=; Associat
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCNetworkAdapterHealth
+Get-iBMCNetworkAdaptersHealth
 Connect-iBMC
 Disconnect-iBMC
 #>
@@ -136,7 +136,7 @@ Disconnect-iBMC
   }
 }
 
-function Get-iBMCNetworkAdapterHealth {
+function Get-iBMCNetworkAdaptersHealth {
 <#
 .SYNOPSIS
 Query health information about the network adapter resources of a server.
@@ -157,7 +157,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $health = Get-iBMCNetworkAdapterHealth -Session $session
+PS C:\> $health = Get-iBMCNetworkAdaptersHealth -Session $session
 PS C:\> $health | fl
 
 Host            : 10.1.1.2
@@ -167,7 +167,7 @@ ID#mainboardLOM : @{Health=OK; State=Enabled; Name=mainboardLOM}
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCNetworkAdapter
+Get-iBMCNetworkAdapters
 Connect-iBMC
 Disconnect-iBMC
 #>

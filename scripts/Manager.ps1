@@ -132,6 +132,12 @@ Disconnect-iBMC
 
     $ExportToList = Get-OptionalMatchedSizeArray $Session $ExportTo
 
+    if ($ExportTo.Count -eq 1 -and $Session.Count -gt 1) {
+      if ($ExportTo[0] -notlike '/tmp/*') {
+        throw $(Get-i18n ERROR_EXPORT_TO_SAME_NFS)
+      }
+    }
+
     $Logger.info("Invoke Collect maintenance infomation function")
 
     $ScriptBlock = {

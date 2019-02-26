@@ -1,6 +1,6 @@
 <# NOTE: iBMC Storage module Cmdlets #>
 
-function Get-iBMCRAIDController {
+function Get-iBMCRAIDControllers {
 <#
 .SYNOPSIS
 Query information about the RAID controller resource collection of a server.
@@ -22,7 +22,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $Session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $RAID = Get-iBMCRAIDController -Session $Session
+PS C:\> $RAID = Get-iBMCRAIDControllers -Session $Session
 PS C:\> $RAID
 
 Host                     : 10.1.1.2
@@ -56,7 +56,7 @@ MaxStripeSizeBytes       : 1048576
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCRAIDHealth
+Get-iBMCRAIDControllersHealth
 Set-iBMCRAIDController
 Restore-iBMCRAIDController
 Connect-iBMC
@@ -123,7 +123,7 @@ Disconnect-iBMC
   }
 }
 
-function Get-iBMCRAIDHealth {
+function Get-iBMCRAIDControllersHealth {
 <#
 .SYNOPSIS
 Query health information about the RAID resources of a server.
@@ -144,7 +144,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $health = Get-iBMCRAIDHealth -Session $session
+PS C:\> $health = Get-iBMCRAIDControllersHealth -Session $session
 PS C:\> $health | fl
 
 Host            : 10.1.1.2
@@ -155,7 +155,7 @@ ID#RAIDStorage1 : @{Health=OK; State=Enabled; Name=PCIe Card 5 (RAID) Controller
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCRAIDController
+Get-iBMCRAIDControllers
 Set-iBMCRAIDController
 Restore-iBMCRAIDController
 Connect-iBMC
@@ -236,7 +236,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER StorageId
 Indicates the identifier of the storage to modify.
-The Id properties of "Get-iBMCRAIDController" cmdlet's return value represents Storage ID.
+The Id properties of "Get-iBMCRAIDControllers" cmdlet's return value represents Storage ID.
 
 .PARAMETER CopyBackEnabled
 Indicates Whether copyback is enabled.
@@ -266,8 +266,8 @@ PS C:\> Set-iBMCRAIDController -Session $session -StorageId RAIDStorage0 `
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCRAIDController
-Get-iBMCRAIDHealth
+Get-iBMCRAIDControllers
+Get-iBMCRAIDControllersHealth
 Restore-iBMCRAIDController
 Connect-iBMC
 Disconnect-iBMC
@@ -398,8 +398,8 @@ PS C:\> Restore-iBMCRAIDController -Session $Session -StorageId RAIDStorage0
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCRAIDController
-Get-iBMCRAIDHealth
+Get-iBMCRAIDControllers
+Get-iBMCRAIDControllersHealth
 Set-iBMCRAIDController
 Connect-iBMC
 Disconnect-iBMC

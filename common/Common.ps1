@@ -632,3 +632,42 @@ function Assert-NetworkUriInSchema ($RedfishSession, $FilePath, $SupportSchema) 
 
   return Resolve-NetworkUriSchema $FilePath
 }
+
+
+function ConvertTo-PlainString {
+  [CmdletBinding()]
+  param (
+    [System.Object] [parameter(Mandatory = $true)] $SensitiveString,
+    [System.String] [parameter(Mandatory = $true)] $ParameterName
+  )
+
+  # if ($SensitiveString -isnot [SecureString] -and $SensitiveString -isnot [String]) {
+  #   throw $([string]::Format($(Get-i18n ERROR_INVAIL_SENSITIVE_STRING), $ParameterName))
+  # }
+
+  $PlainPasswd = $SensitiveString.ToString()
+  if ($SensitiveString -is [SecureString]) {
+    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SensitiveString)
+    $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    return $PlainPasswd
+  }
+
+  return $PlainPasswd
+}
+
+function Assert-IsSensitiveString {
+  [CmdletBinding()]
+  param (
+    [System.Object[]] [parameter(Mandatory = $true)] $SensitiveStringList,
+    [System.String] [parameter(Mandatory = $true)] $ParameterName
+  )
+
+  for ($idx=0; $idx -lt $SensitiveStringList.Count; $idx++) {
+    $SensitiveString = $SensitiveStringList[$idx]
+    if ($SensitiveString -isnot [SecureString] -and $SensitiveString -isnot [String]) {
+      throw $([string]::Format($(Get-i18n ERROR_INVAIL_SENSITIVE_STRING), $ParameterName))
+    }
+  }
+
+}
+

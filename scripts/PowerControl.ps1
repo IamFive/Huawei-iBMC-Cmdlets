@@ -1,32 +1,24 @@
 <# NOTE: iBMC Power Control module Cmdlets #>
 
-try { [PowerControlType] | Out-Null } catch {
-Add-Type -TypeDefinition @'
-    public enum PowerControlType {
-      On,
-      GracefulShutdown,
-      ForceRestart,
-      Nmi,
-      ForcePowerCycle
-    }
-'@
-}
-
 function Set-iBMCFruControl {
 <#
 .SYNOPSIS
 Perform power control on a field replaceable unit (FRU).
 
 .DESCRIPTION
-Perform power control on a field replaceable unit (FRU). Currently, only Operation System is support.
+Perform power control on a field replaceable unit (FRU).
 Note: This cmdlet may affect the normal operation of system. It should be used with caution.
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
 A session object identifies an iBMC server to which this cmdlet will be executed.
 
-.PARAMETER PowerControlType
-Indicates the Server Power type.
+.PARAMETER FRU
+Indicates the FRU to control.
+Available Value Set: OS, Base, Fabric, FC.
+
+.PARAMETER ControlType
+Indicates the FRU power control type.
 Available Value Set:  On, GracefulShutdown, ForceRestart, Nmi, ForcePowerCycle.
 - On: power on the Server.
 - GracefulShutdown: gracefully shut down the Server.
@@ -43,7 +35,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> Set-iBMCFruControl -Session $session -PowerControlType GracefulShutdown
+PS C:\> Set-iBMCFruControl -Session $session -FRU OS -ControlType On
 
 
 .LINK
@@ -59,9 +51,13 @@ Disconnect-iBMC
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
     $Session,
 
-    [PowerControlType[]]
+    [FRU[]]
     [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
-    $PowerControlType
+    $FRU,
+
+    [ControlType[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
+    $ControlType
   )
 
   begin {
@@ -69,8 +65,10 @@ Disconnect-iBMC
 
   process {
     Assert-ArrayNotNull $Session 'Session'
-    Assert-ArrayNotNull $PowerControlType 'PowerControlType'
-    $PowerControlTypeList = Get-MatchedSizeArray $Session $PowerControlType
+    Assert-ArrayNotNull $ControlType 'ControlType'
+    Assert-ArrayNotNull $FRU 'FRU'
+    $FRUList = Get-MatchedSizeArray $Session $FRU
+    $PowerControlTypeList = Get-MatchedSizeArray $Session $ControlType
 
     $Logger.info("Invoke Control iBMC Server Power function")
 
@@ -90,7 +88,7 @@ Disconnect-iBMC
         $RedfishSession = $Session[$idx]
         $Payload = @{
           FruControlType=$PowerControlTypeList[$idx];
-          FruID=$BMC.FRUOperationSystem;
+          FruID=$FRUList[$idx].value__;
         } | Resolve-EnumValues
 
         $Parameters = @($RedfishSession, $Payload)

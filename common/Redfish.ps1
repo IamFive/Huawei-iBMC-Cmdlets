@@ -274,13 +274,16 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
     throw $([string]::Format($(Get-i18n ERROR_PARAMETER_ILLEGAL), 'Session'))
   }
 
-  $method = "GET"
-  $path = $session.Location
-  $response = Invoke-RedfishRequest -Session $session -Path $path -Method $method -ContinueEvenFailed
-  $response.close()
+  try {
+    $method = "GET"
+    $path = $session.Location
+    Invoke-RedfishRequest -Session $session -Path $path -Method $method | Out-Null
+  } catch {
+    # we do not care about the reason of failure.
+    # if any exception is thrown, we treat it as session timeout
+    $session.Alive = $false
+  }
 
-  $success = $response.StatusCode.value__ -lt 400
-  $session.Alive = $success
   return $session
 }
 
@@ -545,7 +548,8 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
         $Parameters = @($Sessions[$Pending.index], $Pending)
         $ScriptBlock = {
           param($RedfishSession, $Pending)
-          return $(Get-SPFWUpdate $RedfishSession $Pending)
+          $SPFWUpdate = Get-SPFWUpdate $RedfishSession $Pending
+          return $SPFWUpdate
         }
         [Void] $AsyncTasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
@@ -598,19 +602,22 @@ function Get-SPFWUpdate {
   process {
 
     function Update-FileListIfNeccess($Session, $SPFWUpdate) {
+      $SuccessStatus = @('Completed', 'Success')
       if ($SPFWUpdate.TransferState -in $SuccessStatus) {
         # try to get new FileList after success
         Start-Sleep -Seconds 3
-        while ($true) {
+        $TryTimes = 20
+        while ($TryTimes -gt 0) {
           $GetSPFileList = Invoke-RedfishRequest $Session $OdataId | ConvertFrom-WebResponse
           if ($null -ne $GetSPFileList.FileList -and $GetSPFileList.FileList.Count -gt 0) {
             $SPFWUpdate.FileList = $GetSPFileList.FileList
             break
           }
+          $TryTimes = $TryTimes - 1
           Start-Sleep -Seconds 1
         }
-        return $SPFWUpdate
       }
+      return $SPFWUpdate
     }
 
     $OdataId = $SPFWUpdate.'@odata.id'

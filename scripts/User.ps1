@@ -119,7 +119,7 @@ Disconnect-iBMC
     [parameter(Mandatory = $true, Position=1)]
     $Username,
 
-    [SecureString[]]
+    [System.Object[]]
     [parameter(Mandatory = $true, Position=2)]
     $Password,
 
@@ -143,11 +143,10 @@ Disconnect-iBMC
 
     $AddUserBlock = {
       param($Session, $Username, $SecurePasswd, $Role)
-      $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePasswd)
-      $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+      $Plain = ConvertTo-PlainString $SecurePasswd "Password"
       $Payload = @{
         'UserName' = "$Username";
-        'Password' = "$PlainPasswd";
+        'Password' = "$Plain";
         'RoleId' = $Role;
       } | Resolve-EnumValues
 
@@ -419,7 +418,7 @@ Disconnect-iBMC
     [parameter(Mandatory = $false)]
     $NewUsername,
 
-    [SecureString[]]
+    [System.Object[]]
     [parameter(Mandatory = $false)]
     $NewPassword,
 
@@ -467,8 +466,7 @@ Disconnect-iBMC
 
           $Clone = $Payload.clone()
           if ($null -ne $Payload.Password) {
-            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.Password)
-            $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+            $PlainPasswd = ConvertTo-PlainString $Payload.Password "NewPassword"
             $Payload.Password = $PlainPasswd
             $Clone.Password = "******"
           }

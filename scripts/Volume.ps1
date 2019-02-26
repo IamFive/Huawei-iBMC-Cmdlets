@@ -15,7 +15,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER StorageId
 Indicates the identifier of the storage which the volume belongs to.
-The Id properties of "Get-iBMCRAIDController" cmdlet's return value represents Storage ID.
+The Id properties of "Get-iBMCRAIDControllers" cmdlet's return value represents Storage ID.
 
 .OUTPUTS
 PSObject[][]
@@ -151,7 +151,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER StorageId
 Indicates the identifier of the storage which the volume belongs to.
-The Id properties of "Get-iBMCRAIDController" cmdlet's return value represents Storage ID.
+The Id properties of "Get-iBMCRAIDControllers" cmdlet's return value represents Storage ID.
 
 .PARAMETER VolumeId
 Indicates the identifier of the Volume to initialize.
@@ -304,7 +304,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER StorageId
 Indicates the identifier of the storage which the volume belongs to.
-The Id properties of "Get-iBMCRAIDController" cmdlet's return value represents Storage ID.
+The Id properties of "Get-iBMCRAIDControllers" cmdlet's return value represents Storage ID.
 
 .PARAMETER VolumeId
 Indicates the identifier of the volume to remove.
@@ -415,7 +415,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER StorageId
 Indicates the identifier of the storage which the volume will be attached to.
-The Id properties of "Get-iBMCRAIDController" cmdlet's return value represents Storage ID.
+The Id properties of "Get-iBMCRAIDControllers" cmdlet's return value represents Storage ID.
 
 .PARAMETER RAIDLevel
 Indicates the RAID level of volume.
@@ -432,7 +432,7 @@ example: $Drives = ,@(DriveID-1, DriveID-2, ..)
 Notes:
 - All the member disks must have the same type of interfaces and storage media.
 - When adding a volume to an existing drive group, enter the ID of any drive of the drive group.
-- The DriveID is represented by the Id properties of "Get-iBMCDrive" cmdlet's return value.
+- The DriveID is represented by the Id properties of "Get-iBMCDrives" cmdlet's return value.
 
 .PARAMETER CacheCade
 Indicates whether it is a CacheCade volume.
@@ -771,11 +771,11 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER StorageId
 Indicates the identifier of the storage which the volume belongs to.
-The Id properties of "Get-iBMCRAIDController" cmdlet's return value represents Storage ID.
+The Id properties of "Get-iBMCRAIDControllers" cmdlet's return value represents Storage ID.
 
 .PARAMETER VolumeId
 Indicates the identifier of the volume to be modified.
-The Id properties of "Get-iBMCRAIDController" cmdlet's return value represents Storage ID.
+The Id properties of "Get-iBMCRAIDControllers" cmdlet's return value represents Storage ID.
 
 .PARAMETER VolumeName
 Indicates the Volume name.

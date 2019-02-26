@@ -92,6 +92,11 @@ This example shows how to connect to multiple bmc server using "-" seperated ipv
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
+Get-iBMCSessionTimeout
+Set-iBMCSessionTimeout
+Connect-iBMC
+Disconnect-iBMC
+Test-iBMCConnect
 #>
   [cmdletbinding(DefaultParameterSetName = 'AccountSet')]
   param
@@ -104,7 +109,7 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
     [parameter(ParameterSetName = "AccountSet", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 1)]
     $Username,
 
-    [System.String[]]
+    [System.Object[]]
     [parameter(ParameterSetName = "AccountSet", Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 2)]
     $Password,
 
@@ -127,7 +132,8 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
     Assert-ArrayNotNull $Username 'Username'
     Assert-ArrayNotNull $Password 'Password'
     $Username = Get-MatchedSizeArray $Address $Username 'Address' 'Username'
-    $Password = Get-MatchedSizeArray $Username $Password 'Username' 'Password'
+    $Password = Get-MatchedSizeArray $Address $Password 'Address' 'Password'
+    # Assert-IsSensitiveString $Password "Password"
   }
 
   $ParametersArray = New-Object System.Collections.ArrayList
@@ -171,7 +177,8 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
     } else {
       $ScriptBlock = {
         param($Address, $Username, $Password, $TrustCert)
-        New-RedfishSession -Address $Address -Username $Username -Password $Password -TrustCert:$TrustCert
+        $Plain = ConvertTo-PlainString $Password "Password"
+        New-RedfishSession -Address $Address -Username $Username -Password $Plain -TrustCert:$TrustCert
       }
     }
 
@@ -220,6 +227,11 @@ This will disconnect the sessions given in the variable $Session
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
+Get-iBMCSessionTimeout
+Set-iBMCSessionTimeout
+Connect-iBMC
+Disconnect-iBMC
+Test-iBMCConnect
 #>
   param
   (
@@ -245,6 +257,170 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
   }
 }
 
+function Set-iBMCSessionTimeout {
+<#
+.SYNOPSIS
+Modify the iBMC session timeout period.
+
+.DESCRIPTION
+Modify the iBMC session timeout period.
+
+.PARAMETER Session
+RedfishSession object that returned by Connect-iBMC cmdlet.
+
+.INPUTS
+You can pipe the RedfishSession array to Set-iBMCSessionTimeout.
+The RedfishSession array is obtained from executing Connect-iBMC cmdlet.
+
+.OUTPUTS
+Null
+Returns Null if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
+PS C:\> Set-iBMCSessionTimeout -Session $session -Timeout 600
+
+.LINK
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
+
+Get-iBMCSessionTimeout
+Set-iBMCSessionTimeout
+Connect-iBMC
+Disconnect-iBMC
+Test-iBMCConnect
+#>
+  param
+  (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session,
+
+    [int[]]
+    [ValidateRange(30, 86400)]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=1)]
+    $Timeout
+  )
+
+  Assert-ArrayNotNull $Session 'Session'
+  Assert-ArrayNotNull $Timeout 'Timeout'
+  $TimeoutList = Get-MatchedSizeArray $Session $Timeout 'Session' 'Timeout'
+
+  $Logger.info("Invoke set iBMC session timeout function")
+
+  $ScriptBlock = {
+    param($RedfishSession, $timeout)
+    $Logger.info($(Trace-Session $RedfishSession "Invoke set iBMC session timeout now"))
+
+    $Path = "/SessionService"
+    $Payload = @{
+      SessionTimeout=$timeout;
+    }
+    $Logger.info($(Trace-Session $RedfishSession "Sending payload: $($Payload | ConvertTo-Json)"))
+    Invoke-RedfishRequest $RedfishSession $Path 'Patch' $Payload | Out-Null
+    return $null
+  }
+
+  try {
+    $tasks = New-Object System.Collections.ArrayList
+    $pool = New-RunspacePool $Session.Count
+    for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+      $RedfishSession = $Session[$idx]
+      $Parameters = @($RedfishSession, $TimeoutList[$idx])
+      $Logger.info($(Trace-Session $RedfishSession "Submit set iBMC session timeout task"))
+      [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
+    }
+
+    $Results = Get-AsyncTaskResults $tasks
+    return ,$Results
+  }
+  finally {
+    Close-Pool $pool
+  }
+}
+
+function Get-iBMCSessionTimeout {
+<#
+.SYNOPSIS
+Get the iBMC session timeout period.
+
+.DESCRIPTION
+Get the iBMC session timeout period.
+
+.PARAMETER Session
+RedfishSession object that returned by Connect-iBMC cmdlet.
+
+.INPUTS
+You can pipe the RedfishSession array to Set-iBMCSessionTimeout.
+The RedfishSession array is obtained from executing Connect-iBMC cmdlet.
+
+.OUTPUTS
+PSObject[]
+Returns PSObject indicates session timeout informations if cmdlet executes successfully.
+In case of an error or warning, exception will be returned.
+
+.EXAMPLE
+PS C:\> $credential = Get-Credential
+PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
+PS C:\> Get-iBMCSessionTimeout -Session $session
+
+SessionTimeout
+--------------
+           600
+
+.LINK
+https://github.com/Huawei/Huawei-iBMC-Cmdlets
+
+Get-iBMCSessionTimeout
+Set-iBMCSessionTimeout
+Connect-iBMC
+Disconnect-iBMC
+Test-iBMCConnect
+#>
+  param
+  (
+    [RedfishSession[]]
+    [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position=0)]
+    $Session
+  )
+
+  begin {
+  }
+
+  process {
+    Assert-ArrayNotNull $Session 'Session'
+
+    $Logger.info("Invoke Get iBMC session timeout function")
+
+    $ScriptBlock = {
+      param($RedfishSession)
+      $Logger.info($(Trace-Session $RedfishSession "Invoke Get iBMC session timeout now"))
+      $Path = "/SessionService"
+      $Response = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
+      return Copy-ObjectProperties $Response @('SessionTimeout')
+    }
+
+    try {
+      $tasks = New-Object System.Collections.ArrayList
+      $pool = New-RunspacePool $Session.Count
+      for ($idx = 0; $idx -lt $Session.Count; $idx++) {
+        $RedfishSession = $Session[$idx]
+        $Logger.info($(Trace-Session $RedfishSession "Submit Get iBMC session timeout task"))
+        [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
+      }
+
+      $Results = Get-AsyncTaskResults $tasks
+      return ,$Results
+    }
+    finally {
+      Close-Pool $pool
+    }
+  }
+
+  end {
+  }
+}
 
 function Test-iBMCConnect {
 <#
@@ -286,6 +462,11 @@ TrustCert           : True
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
+Get-iBMCSessionTimeout
+Set-iBMCSessionTimeout
+Connect-iBMC
+Disconnect-iBMC
+Test-iBMCConnect
 #>
   param
   (

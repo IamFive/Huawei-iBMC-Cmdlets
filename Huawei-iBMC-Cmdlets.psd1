@@ -12,7 +12,7 @@
   RootModule             = 'Huawei-iBMC-Cmdlets.psm1'
 
   # Version number of this module.
-  ModuleVersion          = '1.0.2'
+  ModuleVersion          = '1.1.0'
 
   # Supported PSEditions
   # CompatiblePSEditions = @()
@@ -145,7 +145,7 @@ Support devices include: RH1288 V3, RH2288 V3, RH2288H V3, 1288H V5, 2288H V5, 2
       # IconUri = ''
 
       # ReleaseNotes of this module
-      ReleaseNotes = 'Huawei-iBMC-Cmdlets - Version 1.0.0'
+      ReleaseNotes = 'Huawei-iBMC-Cmdlets - Version 1.1.0'
 
     } # End of PSData hashtable
 

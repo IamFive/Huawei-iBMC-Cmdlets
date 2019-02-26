@@ -36,7 +36,9 @@ $global:BMC = @{
   FRUOperationSystem = 0;
 
   OutBandFirmwares = @(
-    "ActiveBMC", "BackupBMC", "Bios", "MainBoardCPLD", "chassisDiskBP1CPLD"
+    "ActiveBMC",
+    "BackupBMC",
+    "Bios"
   );
 
   InBandFirmwares = @(

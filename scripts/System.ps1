@@ -121,7 +121,7 @@ Disconnect-iBMC
 }
 
 
-function Get-iBMCSystemNetworkSetting {
+function Get-iBMCSystemNetworkSettings {
 <#
 .SYNOPSIS
 Get system resource details of the server.
@@ -142,7 +142,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $Interfaces = Get-iBMCSystemNetworkSetting $session
+PS C:\> $Interfaces = Get-iBMCSystemNetworkSettings $session
 PS C:\> $Interfaces
 
 Id                  : mainboardLOMPort1

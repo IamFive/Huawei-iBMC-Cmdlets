@@ -40,6 +40,8 @@ $bundle = Data {
   ERROR_VOLUMEID_MANDATORY = Error: When HotSpareType is Dedicated, VolumeId is mandatory.
   ERROR_VOLUMEID_NOT_EXISTS = Error: Could not find volume with Id "{0}".
   ERROR_STORAGE_ID_NOT_EXISTS = Error: Could not find storage with Id "{0}".
+  ERROR_EXPORT_TO_SAME_NFS = Error: Should not export to a same file for multiple server.
+  ERROR_INVAIL_SENSITIVE_STRING = Error: Parameter "{0}" should be a String or SecureString.
 '@
 }
 

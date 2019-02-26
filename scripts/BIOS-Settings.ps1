@@ -88,8 +88,8 @@ This example shows how to export bios setting file to iBMC local storage and dow
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Import-iBMCBIOSSetting
-Reset-iBMCBIOS
-Restore-iBMCFactory
+Reset-iBMCBIOSSetting
+Restore-iBMCFactorySetting
 Connect-iBMC
 Disconnect-iBMC
 
@@ -111,7 +111,13 @@ Disconnect-iBMC
   process {
     Assert-ArrayNotNull $Session 'Session'
     Assert-ArrayNotNull $DestFilePath 'DestFilePath'
-    $DestFilePath = Get-MatchedSizeArray $Session $DestFilePath 'Session' 'DestFilePath'
+    $DestFilePathList = Get-MatchedSizeArray $Session $DestFilePath 'Session' 'DestFilePath'
+
+    if ($DestFilePath.Count -eq 1 -and $Session.Count -gt 1) {
+      if ($DestFilePath[0] -notlike '/tmp/*') {
+        throw $(Get-i18n ERROR_EXPORT_TO_SAME_NFS)
+      }
+    }
 
     $Logger.info("Invoke Export BIOS Configurations function")
 
@@ -135,10 +141,11 @@ Disconnect-iBMC
     try {
       $tasks = New-Object System.Collections.ArrayList
       $pool = New-RunspacePool $Session.Count
+
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
         $Logger.info($(Trace-Session $RedfishSession "Submit export BIOS configs task"))
-        $Parameters = @($RedfishSession, $DestFilePath[$idx])
+        $Parameters = @($RedfishSession, $DestFilePathList[$idx])
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock $Parameters))
       }
 
@@ -263,8 +270,8 @@ This example shows how to import bios settings from NFS file
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Export-iBMCBIOSSetting
-Reset-iBMCBIOS
-Restore-iBMCFactory
+Reset-iBMCBIOSSetting
+Restore-iBMCFactorySetting
 Connect-iBMC
 Disconnect-iBMC
 
@@ -340,7 +347,7 @@ Disconnect-iBMC
 }
 
 
-function Reset-iBMCBIOS {
+function Reset-iBMCBIOSSetting {
 <#
 .SYNOPSIS
 Restore BIOS default settings.
@@ -365,14 +372,14 @@ Restore BIOS default settings
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> Reset-iBMCBIOS $session
+PS C:\> Reset-iBMCBIOSSetting $session
 
 
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 Export-iBMCBIOSSetting
 Import-iBMCBIOSSetting
-Restore-iBMCFactory
+Restore-iBMCFactorySetting
 Connect-iBMC
 Disconnect-iBMC
 

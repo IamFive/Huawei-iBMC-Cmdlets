@@ -79,7 +79,7 @@ Disconnect-iBMC
 }
 
 
-function Restore-iBMCFactory {
+function Restore-iBMCFactorySetting {
 <#
 .SYNOPSIS
 Restore the factory settings.
@@ -103,7 +103,7 @@ Restore factory settings
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> Restore-iBMCFactory $session
+PS C:\> Restore-iBMCFactorySetting $session
 
 
 .LINK
@@ -111,7 +111,7 @@ https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
 Export-iBMCBIOSSetting
 Import-iBMCBIOSSetting
-Reset-iBMCBIOS
+Reset-iBMCBIOSSetting
 Connect-iBMC
 Disconnect-iBMC
 

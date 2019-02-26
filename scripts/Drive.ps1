@@ -1,6 +1,6 @@
 <# NOTE: iBMC Drive module Cmdlets #>
 
-function Get-iBMCDrive {
+function Get-iBMCDrives {
 <#
 .SYNOPSIS
 Query information about the drive resource collection of a server.
@@ -22,7 +22,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $Session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $Drives = Get-iBMCDrive -Session $Session
+PS C:\> $Drives = Get-iBMCDrives -Session $Session
 PS C:\> $Drives
 
 Host                          : 10.1.1.2
@@ -94,7 +94,7 @@ Type                          : Disk
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCDriveHealth
+Get-iBMCDrivesHealth
 Set-iBMCDrive
 Connect-iBMC
 Disconnect-iBMC
@@ -151,7 +151,7 @@ Disconnect-iBMC
   }
 }
 
-function Get-iBMCDriveHealth {
+function Get-iBMCDrivesHealth {
 <#
 .SYNOPSIS
 Query health information about the Drive resources of a server.
@@ -172,7 +172,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $health = Get-iBMCDriveHealth -Session $session
+PS C:\> $health = Get-iBMCDrivesHealth -Session $session
 PS C:\> $health | fl
 
 Host              : 10.1.1.2
@@ -192,7 +192,7 @@ ID#HDDPlaneDisk41 : @{Health=OK; State=; Name=Disk41}
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCDrive
+Get-iBMCDrives
 Set-iBMCDrive
 Connect-iBMC
 Disconnect-iBMC
@@ -271,7 +271,7 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .PARAMETER DriveId
 Indicates the identifier of the drive to modify.
-The Id properties of "Get-iBMCDrive" cmdlet's return value represents Drive ID.
+The Id properties of "Get-iBMCDrives" cmdlet's return value represents Drive ID.
 
 .PARAMETER State
 Indicates the state of a drive.
@@ -346,8 +346,8 @@ This example shows how to set drive's hot-spare type to "None"
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCDrive
-Get-iBMCDriveHealth
+Get-iBMCDrives
+Get-iBMCDrivesHealth
 Connect-iBMC
 Disconnect-iBMC
 #>

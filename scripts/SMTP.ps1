@@ -204,7 +204,7 @@ Disconnect-iBMC
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $SenderAddress,
 
-    [SecureString[]]
+    [System.Object[]]
     [parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     $SenderPassword,
 
@@ -248,12 +248,9 @@ Disconnect-iBMC
 
       $Clone = $Payload.Clone()
       $Path = "/Managers/$($RedfishSession.Id)/SmtpService"
-      if ($Payload.SenderPassword -is [securestring]) {
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Payload.SenderPassword)
-        $PlainPasswd = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-        $Payload.SenderPassword = $PlainPasswd
-        $Clone.SenderPassword = "******"
-      }
+      $PlainPasswd = ConvertTo-PlainString $Payload.SenderPassword "SenderPassword"
+      $Payload.SenderPassword = $PlainPasswd
+      $Clone.SenderPassword = "******"
 
       $Logger.info($(Trace-Session $RedfishSession "Sending payload: $($Clone | ConvertTo-Json -Depth 5)"))
       $Response = Invoke-RedfishRequest $RedfishSession $Path 'Patch' $Payload

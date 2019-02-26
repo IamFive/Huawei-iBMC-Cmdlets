@@ -1,12 +1,12 @@
 <# NOTE: iBMC SP RAID Storage module Cmdlets #>
 
-function Get-iBMCSPRAIDConfigurations {
+function Get-iBMCSPRAIDSetting {
 <#
 .SYNOPSIS
-Query the current RAID configuration resource collection of the SP service.
+Query the current RAID setting resource collection of the SP service.
 
 .DESCRIPTION
-Query the current RAID configuration resource collection of the SP service.
+Query the current RAID setting resource collection of the SP service.
 This cmdlet only supports manage server with single "LSI3008" RAID card.
 Note: Only the V5 servers with the BIOS version later than 0.39 and the SP version 113 or later support this function.
 
@@ -16,18 +16,18 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .OUTPUTS
 PSObject[][]
-Returns an array of PSObject indicates current RAID configuration resources of SP Service if cmdlet executes successfully.
+Returns an array of PSObject indicates current RAID setting resources of SP Service if cmdlet executes successfully.
 In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
 PS C:\> $credential = Get-Credential
 PS C:\> $Session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> Export-iBMCSPRAIDConfigurations -Session $Session
+PS C:\> Export-iBMCSPRAIDSetting -Session $Session
 PS C:\> Set-iBMCSPService -Session $Session -StartEnabled $true -SysRestartDelaySeconds 60
 PS C:\> Set-iBMCServerPower -Session $Session -ResetType ForceRestart
-PS C:\> $Configurations = Get-iBMCSPRAIDConfigurations -Session $Session
-PS C:\> $Configurations
+PS C:\> $Setting = Get-iBMCSPRAIDSetting -Session $Session
+PS C:\> $Setting
 
 Host           : 10.1.1.2
 Id             : mainboardRaidCard1
@@ -38,21 +38,21 @@ GlobalHotSpare : {5, 6}
 Location       : mainboard
 DriveGroupList : {@{VolumeList=System.Object[]; VolumeRaidLevel=RAID1; Drives=System.Object[]}}
 
-This example shows how to get SP-RAID configurations from startup.
+This example shows how to get SP-RAID setting from startup.
 It contains several steps:
-1. Export SP-RAID configurations
+1. Export SP-RAID setting
 2. Enable SP-Service
 3. Restart Server (may take a long time, please be patience)
-4. Get SP-RAID configurations
+4. Get SP-RAID setting
 
-If step 1,2,3 has be executed before, "Get-iBMCSPRAIDConfigurations" could be executed directly.
+If step 1,2,3 has be executed before, "Get-iBMCSPRAIDSetting" could be executed directly.
 
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Export-iBMCSPRAIDConfigurations
-Set-iBMCSPRAIDConfigurations
-Clear-iBMCSPRAIDConfigurations
+Export-iBMCSPRAIDSetting
+Set-iBMCSPRAIDSetting
+Clear-iBMCSPRAIDSetting
 Add-iBMCSPRAIDVolume
 Connect-iBMC
 Disconnect-iBMC
@@ -70,22 +70,22 @@ Disconnect-iBMC
   process {
     Assert-ArrayNotNull $Session 'Session'
 
-    $Logger.info("Invoke Get iBMC RAID configuration resources of SPService function")
+    $Logger.info("Invoke Get iBMC RAID setting resources of SPService function")
 
     $ScriptBlock = {
       param($RedfishSession)
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Get iBMC RAID configuration resources of SPService now"))
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Get iBMC RAID setting resources of SPService now"))
 
       $GetSPRAIDPath = "/Managers/$($RedfishSession.Id)/SPService/SPRAIDCurrentConfigurations"
       $Collection = Invoke-RedfishRequest $RedfishSession $GetSPRAIDPath | ConvertFrom-WebResponse
-      $Configurations = New-Object System.Collections.ArrayList
+      $Setting = New-Object System.Collections.ArrayList
       $Collection.Members | ForEach-Object {
         $Path = $_."@odata.id"
         $Config = Invoke-RedfishRequest $RedfishSession $Path | ConvertFrom-WebResponse
         $CleanUp = $Config | Clear-OdataProperties
-        [Void] $Configurations.Add($(Update-SessionAddress $RedfishSession $CleanUp))
+        [Void] $Setting.Add($(Update-SessionAddress $RedfishSession $CleanUp))
       }
-      return , $Configurations.ToArray()
+      return , $Setting.ToArray()
     }
 
     try {
@@ -93,7 +93,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Logger.info($(Trace-Session $RedfishSession "Submit Get iBMC RAID configuration resources of SPService task"))
+        $Logger.info($(Trace-Session $RedfishSession "Submit Get iBMC RAID setting resources of SPService task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
       }
       $Results = Get-AsyncTaskResults $tasks
@@ -109,13 +109,13 @@ Disconnect-iBMC
 }
 
 
-function Export-iBMCSPRAIDConfigurations {
+function Export-iBMCSPRAIDSetting {
 <#
 .SYNOPSIS
-Triggering the Export of the current RAID configuration of the SP service.
+Triggering the Export of the current RAID setting of the SP service.
 
 .DESCRIPTION
-Triggering the Export of the current RAID configuration of the SP service.
+Triggering the Export of the current RAID setting of the SP service.
 This cmdlet only supports manage server with single "LSI3008" RAID card.
 Note: Only the V5 servers with the BIOS version later than 0.39 and the SP version 113 or later support this function.
 
@@ -132,15 +132,15 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $Session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> Export-iBMCSPRAIDConfigurations -Session $Session
+PS C:\> Export-iBMCSPRAIDSetting -Session $Session
 
 
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCSPRAIDConfigurations
-Set-iBMCSPRAIDConfigurations
-Clear-iBMCSPRAIDConfigurations
+Get-iBMCSPRAIDSetting
+Set-iBMCSPRAIDSetting
+Clear-iBMCSPRAIDSetting
 Add-iBMCSPRAIDVolume
 Connect-iBMC
 Disconnect-iBMC
@@ -158,11 +158,11 @@ Disconnect-iBMC
   process {
     Assert-ArrayNotNull $Session 'Session'
 
-    $Logger.info("Invoke Export current SP RAID configuration of SPService function")
+    $Logger.info("Invoke Export current SP RAID setting of SPService function")
 
     $ScriptBlock = {
       param($RedfishSession)
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Export current SP RAID configuration of SPService now"))
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Export current SP RAID setting of SPService now"))
       $Path = "/Managers/$($RedfishSession.Id)/SPService/Actions/SPService.ExportSPRAIDConfigurations"
       Invoke-RedfishRequest $RedfishSession $Path 'POST' $null | Out-Null
       return $null
@@ -173,7 +173,7 @@ Disconnect-iBMC
       $pool = New-RunspacePool $Session.Count
       for ($idx = 0; $idx -lt $Session.Count; $idx++) {
         $RedfishSession = $Session[$idx]
-        $Logger.info($(Trace-Session $RedfishSession "Submit Export current SP RAID configuration of SPService task"))
+        $Logger.info($(Trace-Session $RedfishSession "Submit Export current SP RAID setting of SPService task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession)))
       }
       $Results = Get-AsyncTaskResults $tasks
@@ -189,13 +189,13 @@ Disconnect-iBMC
 }
 
 
-function Clear-iBMCSPRAIDConfigurations {
+function Clear-iBMCSPRAIDSetting {
 <#
 .SYNOPSIS
-Clear current RAID configuration of the SP service.
+Clear current RAID setting of the SP service.
 
 .DESCRIPTION
-Clear current RAID configuration of the SP service.
+Clear current RAID setting of the SP service.
 This cmdlet only supports manage server with single "LSI3008" RAID card.
 Note: Only the V5 servers with the BIOS version later than 0.39 and the SP version 113 or later support this function.
 
@@ -223,15 +223,19 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $Session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> Clear-iBMCSPRAIDConfigurations $session -Location mainboard -DeviceName RAIDStorage1
+PS C:\> Clear-iBMCSPRAIDSetting $session -Location mainboard -DeviceName RAIDStorage1
+PS C:\>
+PS C:\> Export-iBMCSPRAIDSetting -Session $Session
+PS C:\> Set-iBMCSPService -Session $Session -StartEnabled $true -SysRestartDelaySeconds 60
+PS C:\> Set-iBMCServerPower -Session $Session -ResetType ForceRestart
 
 
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCSPRAIDConfigurations
-Export-iBMCSPRAIDConfigurations
-Set-iBMCSPRAIDConfigurations
+Get-iBMCSPRAIDSetting
+Export-iBMCSPRAIDSetting
+Set-iBMCSPRAIDSetting
 Add-iBMCSPRAIDVolume
 Connect-iBMC
 Disconnect-iBMC
@@ -268,12 +272,12 @@ Disconnect-iBMC
     $DeviceNameList = Get-MatchedSizeArray $Session $DeviceName "Session" "DeviceName"
     $CardModelList = Get-MatchedSizeArray $Session $CardModel "Session" "CardModel"
 
-    $Logger.info("Invoke Clear current SP RAID configuration of SPService function")
+    $Logger.info("Invoke Clear current SP RAID setting of SPService function")
 
     $ScriptBlock = {
       param($RedfishSession, $Payload)
 
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Clear current SP RAID configuration of SPService now"))
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Clear current SP RAID setting of SPService now"))
       $Path = "/Managers/$($RedfishSession.Id)/SPService/SPRAID"
       $Payload.ClearConfig = $true
       $Logger.info($(Trace-Session $RedfishSession "Sending payload: $($Payload | ConvertTo-Json)"))
@@ -293,7 +297,7 @@ Disconnect-iBMC
           "Location"   = $LocationList[$idx];
           "DeviceName" = $DeviceNameList[$idx];
         } | Resolve-EnumValues
-        $Logger.info($(Trace-Session $RedfishSession "Submit Clear current SP RAID configuration of SPService task"))
+        $Logger.info($(Trace-Session $RedfishSession "Submit Clear current SP RAID setting of SPService task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession, $Payload)))
       }
 
@@ -309,13 +313,13 @@ Disconnect-iBMC
   }
 }
 
-function Set-iBMCSPRAIDConfigurations {
+function Set-iBMCSPRAIDSetting {
 <#
 .SYNOPSIS
-Modify current RAID configuration of the SP service.
+Modify current RAID setting of the SP service.
 
 .DESCRIPTION
-Modify current RAID configuration of the SP service.
+Modify current RAID setting of the SP service.
 This cmdlet only supports manage server with single "LSI3008" RAID card.
 Note: Only the V5 servers with the BIOS version later than 0.39 and the SP version 113 or later support this function.
 
@@ -336,7 +340,7 @@ example: $HotSpareDrives = ,@(DriveID-1, DriveID-2, ..)
 Notes:
 - All the member disks must have the same type of interfaces and storage media.
 - When adding a volume to an existing drive group, enter the ID of any drive of the drive group.
-- The DriveID is represented by the Id properties of "Get-iBMCDrive" cmdlet's return value.
+- The DriveID is represented by the Id properties of "Get-iBMCDrives" cmdlet's return value.
 
 .PARAMETER CardModel
 Indicates the RAID controller card model.
@@ -353,10 +357,10 @@ In case of an error or warning, exception will be returned.
 PS C:\> $credential = Get-Credential
 PS C:\> $Session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
 PS C:\> $HotSpareDrives = ,@(5, 6)
-PS C:\> Set-iBMCSPRAIDConfigurations $session -Location mainboard -DeviceName RAIDStorage1 `
+PS C:\> Set-iBMCSPRAIDSetting $session -Location mainboard -DeviceName RAIDStorage1 `
           -HotSpareDrives $HotSpareDrives
 PS C:\>
-PS C:\> Export-iBMCSPRAIDConfigurations -Session $Session
+PS C:\> Export-iBMCSPRAIDSetting -Session $Session
 PS C:\> Set-iBMCSPService -Session $Session -StartEnabled $true -SysRestartDelaySeconds 60
 PS C:\> Set-iBMCServerPower -Session $Session -ResetType ForceRestart
 
@@ -369,14 +373,14 @@ GlobalHotSpare : {5, 6}
 Location       : mainboard
 DriveGroupList : {@{VolumeList=System.Object[]; VolumeRaidLevel=RAID1; Drives=System.Object[]}}
 
-This example shows how to modify SP-RAID configuration.
+This example shows how to modify SP-RAID setting.
 It contains several steps:
-1. Modify SP-RAID configuration
-2. Export SP-RAID configurations
+1. Modify SP-RAID setting
+2. Export SP-RAID setting
 3. Enable SP-Service
 4. Restart Server (may take a long time, please be patience)
 
-Step 1 will update SP-RAID configuration, while step 2,3,4 will make it effect.
+Step 1 will update SP-RAID setting, while step 2,3,4 will make it effect.
 
 
 .LINK
@@ -423,12 +427,12 @@ Disconnect-iBMC
     $CardModelList = Get-MatchedSizeArray $Session $CardModel "Session" "CardModel"
     $HotSpareDrivesList = Get-OptionalMatchedSizeMatrix $Session $HotSpareDrives $null 'Session' 'HotSpareDrives'
 
-    $Logger.info("Invoke Clear current SP RAID configuration of SPService function")
+    $Logger.info("Invoke Clear current SP RAID setting of SPService function")
 
     $ScriptBlock = {
       param($RedfishSession, $Payload)
 
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Clear current SP RAID configuration of SPService now"))
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke Clear current SP RAID setting of SPService now"))
       $Path = "/Managers/$($RedfishSession.Id)/SPService/SPRAID"
       $Logger.info($(Trace-Session $RedfishSession "Sending payload: $($Payload | ConvertTo-Json)"))
       Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload | Out-Null
@@ -448,7 +452,7 @@ Disconnect-iBMC
           "DeviceName" = $DeviceNameList[$idx];
           "GlobalHotSpare" = $HotSpareDrivesList[$idx];
         } | Resolve-EnumValues
-        $Logger.info($(Trace-Session $RedfishSession "Submit Clear current SP RAID configuration of SPService task"))
+        $Logger.info($(Trace-Session $RedfishSession "Submit Clear current SP RAID setting of SPService task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession, $Payload)))
       }
 
@@ -467,10 +471,10 @@ Disconnect-iBMC
 function Add-iBMCSPRAIDVolume {
 <#
 .SYNOPSIS
-Add new volume for current RAID configuration of the SP service.
+Add new volume for current RAID setting of the SP service.
 
 .DESCRIPTION
-Add new volume for current RAID configuration of the SP service.
+Add new volume for current RAID setting of the SP service.
 This cmdlet only supports manage server with single "LSI3008" RAID card.
 Note: Only the V5 servers with the version BIOS>=0.39, SP>=113, BMC>=3.20 support this function.
 
@@ -503,7 +507,7 @@ example: $Drives = ,@(DriveID-1, DriveID-2, ..)
 Notes:
 - All the member disks must have the same type of interfaces and storage media.
 - When adding a volume to an existing drive group, enter the ID of any drive of the drive group.
-- The DriveID is represented by the Id properties of "Get-iBMCDrive" cmdlet's return value.
+- The DriveID is represented by the Id properties of "Get-iBMCDrives" cmdlet's return value.
 
 .PARAMETER BootEnabled
 Indicates whether the volume is the boot device.
@@ -535,7 +539,7 @@ PS C:\> Add-iBMCSPRAIDVolume $session -Location mainboard -DeviceName RAIDCard1 
          -VolumeName $VolumeName -CapacityMB 1048576 -BootEnabled $true `
          -RAIDLevel RAID1 -Drives $Drives
 PS C:\>
-PS C:\> Export-iBMCSPRAIDConfigurations -Session $Session
+PS C:\> Export-iBMCSPRAIDSetting -Session $Session
 PS C:\> Set-iBMCSPService -Session $Session -StartEnabled $true -SysRestartDelaySeconds 60
 PS C:\> Set-iBMCServerPower -Session $Session -ResetType ForceRestart
 
@@ -551,7 +555,7 @@ DriveGroupList : {@{VolumeList=System.Object[]; VolumeRaidLevel=RAID1; Drives=Sy
 This example shows how to add a volume for SP-RAID.
 It contains several steps:
 1. Add a new volume
-2. Export SP-RAID configurations
+2. Export SP-RAID setting
 3. Enable SP-Service
 4. Restart Server (may take a long time, please be patience)
 
@@ -560,10 +564,10 @@ Step 1 will config a new volume (not effect), while step 2,3,4 will make it effe
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCSPRAIDConfigurations
-Export-iBMCSPRAIDConfigurations
-Set-iBMCSPRAIDConfigurations
-Clear-iBMCSPRAIDConfigurations
+Get-iBMCSPRAIDSetting
+Export-iBMCSPRAIDSetting
+Set-iBMCSPRAIDSetting
+Clear-iBMCSPRAIDSetting
 Connect-iBMC
 Disconnect-iBMC
 #>
@@ -627,12 +631,12 @@ Disconnect-iBMC
     $VolumeNameList = Get-OptionalMatchedSizeArray $Session $VolumeName
     $CapacityMBList = Get-OptionalMatchedSizeArray $Session $CapacityMB
 
-    $Logger.info("Invoke add volume for current SP RAID configuration of SPService function")
+    $Logger.info("Invoke add volume for current SP RAID setting of SPService function")
 
     $ScriptBlock = {
       param($RedfishSession, $Payload)
 
-      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke add volume for current SP RAID configuration of SPService now"))
+      $(Get-Logger).info($(Trace-Session $RedfishSession "Invoke add volume for current SP RAID setting of SPService now"))
       $Path = "/Managers/$($RedfishSession.Id)/SPService/SPRAID"
       $Logger.info($(Trace-Session $RedfishSession "Sending payload: $($Payload | ConvertTo-Json -Depth 5)"))
       Invoke-RedfishRequest $RedfishSession $Path 'POST' $Payload | Out-Null
@@ -667,7 +671,7 @@ Disconnect-iBMC
           "DeviceName" = $DeviceNameList[$idx];
           "DriveGroupList" = @($DriveGroup);
         } | Resolve-EnumValues
-        $Logger.info($(Trace-Session $RedfishSession "Submit add volume for current SP RAID configuration of SPService task"))
+        $Logger.info($(Trace-Session $RedfishSession "Submit add volume for current SP RAID setting of SPService task"))
         [Void] $tasks.Add($(Start-ScriptBlockThread $pool $ScriptBlock @($RedfishSession, $Payload)))
       }
 

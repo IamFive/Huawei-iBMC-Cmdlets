@@ -98,7 +98,7 @@ Disconnect-iBMC
 }
 
 
-function Get-iBMCPowerSupply {
+function Get-iBMCPowerSupplies {
 <#
 .SYNOPSIS
 Query information about the power supply resource collection of a server.
@@ -119,7 +119,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $PowerSuppliesArray = Get-iBMCPowerSupply -Session $session
+PS C:\> $PowerSuppliesArray = Get-iBMCPowerSupplies -Session $session
 PS C:\> $PowerSuppliesArray
 
 Host               : 10.1.1.2
@@ -172,7 +172,7 @@ Protocol           : PSU
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCPowerSupplyHealth
+Get-iBMCPowerSuppliesHealth
 Connect-iBMC
 Disconnect-iBMC
 #>
@@ -227,7 +227,7 @@ Disconnect-iBMC
 }
 
 
-function Get-iBMCPowerSupplyHealth {
+function Get-iBMCPowerSuppliesHealth {
 <#
 .SYNOPSIS
 Query health information about the power supply resources of a server.
@@ -248,7 +248,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $health = Get-iBMCPowerSupplyHealth -Session $session
+PS C:\> $health = Get-iBMCPowerSuppliesHealth -Session $session
 PS C:\> $health | fl
 
 Host       : 10.1.1.2
@@ -259,7 +259,7 @@ MemberId#1 : @{Health=Critical; State=Enabled; Name=PS2}
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCPowerSupply
+Get-iBMCPowerSupplies
 Connect-iBMC
 Disconnect-iBMC
 #>

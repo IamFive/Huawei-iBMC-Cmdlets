@@ -322,3 +322,26 @@ try { [RAIDCardModel] | Out-Null } catch {
     }
 '@
 }
+
+try { [FRU] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum FRU {
+      OS = 0,
+      Base = 1,
+      Fabric = 2,
+      FC = 3
+    }
+'@
+}
+
+try { [ControlType] | Out-Null } catch {
+  Add-Type -TypeDefinition @'
+    public enum ControlType {
+      On,
+      GracefulShutdown,
+      ForceRestart,
+      Nmi,
+      ForcePowerCycle
+    }
+'@
+}

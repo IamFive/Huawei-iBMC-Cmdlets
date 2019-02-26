@@ -1,12 +1,12 @@
 <# NOTE: iBMC CPU module Cmdlets #>
 
-function Get-iBMCCPU {
+function Get-iBMCProcessors {
   <#
 .SYNOPSIS
-Query information about the CPU resource collection of a server.
+Query information about the Processor resources collection of a server.
 
 .DESCRIPTION
-Query information about the CPU resource collection of a server.
+Query information about the Processor resources collection of a server.
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
@@ -14,14 +14,14 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .OUTPUTS
 PSObject[][]
-Returns an array of PSObject indicates all CPU Health if cmdlet executes successfully.
+Returns an array of PSObject indicates all Processor resources if cmdlet executes successfully.
 In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $ProcessorsArray = Get-iBMCCPU -Session $session
+PS C:\> $ProcessorsArray = Get-iBMCProcessors -Session $session
 PS C:\> $ProcessorsArray
 
 Host                    : 10.1.1.2
@@ -76,7 +76,7 @@ Status                  : @{State=Enabled; Health=OK}
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCCPUHealth
+Get-iBMCProcessorsHealth
 Connect-iBMC
 Disconnect-iBMC
 
@@ -175,13 +175,13 @@ Disconnect-iBMC
 }
 
 
-function Get-iBMCCPUHealth {
+function Get-iBMCProcessorsHealth {
 <#
 .SYNOPSIS
-Query health information about the CPU of a server.
+Query health information about the Processors of a server.
 
 .DESCRIPTION
-Query health information about the CPU of a server including summary health status and every CPU health status.
+Query health information about the Processors of a server including summary health status and every CPU health status.
 
 .PARAMETER Session
 iBMC redfish session object which is created by Connect-iBMC cmdlet.
@@ -189,14 +189,14 @@ A session object identifies an iBMC server to which this cmdlet will be executed
 
 .OUTPUTS
 PSObject[]
-Returns PSObject indicates CPU health status of server if cmdlet executes successfully.
+Returns PSObject indicates Processor health status of server if cmdlet executes successfully.
 In case of an error or warning, exception will be returned.
 
 .EXAMPLE
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $health = Get-iBMCCPUHealth -Session $session
+PS C:\> $health = Get-iBMCProcessorsHealth -Session $session
 PS C:\> $health | fl
 
 Host    : 10.1.1.2
@@ -207,7 +207,7 @@ ID#2    : @{Health=OK; State=Enabled; DeviceLocator=CPU2}
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCCPU
+Get-iBMCProcessors
 Connect-iBMC
 Disconnect-iBMC
 

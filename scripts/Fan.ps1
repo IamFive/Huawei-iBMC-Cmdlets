@@ -1,6 +1,6 @@
 <# NOTE: iBMC Fan module Cmdlets #>
 
-function Get-iBMCFan {
+function Get-iBMCFans {
 <#
 .SYNOPSIS
 Query information about the fan resource collection of a server.
@@ -21,7 +21,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $FansArray = Get-iBMCFan -Session $session
+PS C:\> $FansArray = Get-iBMCFans -Session $session
 PS C:\> $FansArray
 
 Host                      : 10.1.1.2
@@ -63,7 +63,7 @@ SpeedRatio                : 32
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCFanHealth
+Get-iBMCFansHealth
 Connect-iBMC
 Disconnect-iBMC
 
@@ -118,7 +118,7 @@ Disconnect-iBMC
   }
 }
 
-function Get-iBMCFanHealth {
+function Get-iBMCFansHealth {
 <#
 .SYNOPSIS
 Query health information about the fan resources of a server.
@@ -139,7 +139,7 @@ In case of an error or warning, exception will be returned.
 
 PS C:\> $credential = Get-Credential
 PS C:\> $session = Connect-iBMC -Address 10.1.1.2 -Credential $credential -TrustCert
-PS C:\> $health = Get-iBMCFanHealth -Session $session
+PS C:\> $health = Get-iBMCFansHealth -Session $session
 PS C:\> $health | fl
 
 Host       : 10.1.1.2
@@ -152,7 +152,7 @@ MemberId#3 : @{Health=OK; State=Enabled; Name=Fan Module4 Front}
 .LINK
 https://github.com/Huawei/Huawei-iBMC-Cmdlets
 
-Get-iBMCFan
+Get-iBMCFans
 Connect-iBMC
 Disconnect-iBMC
 #>
